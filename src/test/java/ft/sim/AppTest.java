@@ -1,4 +1,4 @@
-package ferromone.trails.trainsim;
+package ft.sim;
 
 
 import org.junit.After;
