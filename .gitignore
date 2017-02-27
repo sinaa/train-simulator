@@ -144,3 +144,4 @@ modules.xml
 .idea/misc.xml
 *.ipr
 .idea/compiler.xml
+.idea/jsLibraryMappings.xml

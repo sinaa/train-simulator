@@ -14,6 +14,9 @@ public class Switch implements Connectable {
 
   private Map<Track, Track> status = new HashMap<Track, Track>(2);
 
+  // By default, a switch is 5 metres long
+  private int length = 5;
+
   public Switch(List<Track> a, List<Track> b) {
     from = a;
     to = b;
@@ -35,4 +38,8 @@ public class Switch implements Connectable {
     return status;
   }
 
+  @Override
+  public int getLength() {
+    return length;
+  }
 }

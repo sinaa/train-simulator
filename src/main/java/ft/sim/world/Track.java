@@ -10,7 +10,7 @@ public class Track implements Connectable {
 
   List<Section> sections;
 
-  int length;
+  int length = DEFAULT_LENGTH;
   public static final transient int DEFAULT_LENGTH = 20;
 
   public Track() {
@@ -20,7 +20,9 @@ public class Track implements Connectable {
   public Track(int numSections) {
     sections = new ArrayList<Section>(numSections);
     for (int i = 0; i < numSections; i++) {
-      sections.add(new Section());
+      Section trainSection = new Section();
+      sections.add(trainSection);
+      length += trainSection.length;
     }
   }
 
@@ -28,4 +30,8 @@ public class Track implements Connectable {
     this.sections = sections;
   }
 
+  @Override
+  public int getLength() {
+    return length;
+  }
 }
