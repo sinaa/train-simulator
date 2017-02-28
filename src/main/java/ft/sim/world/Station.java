@@ -5,7 +5,8 @@ package ft.sim.world;
  */
 public class Station implements Connectable {
 
-  int length = 500;
+  // in meters
+  private int length = 400;
 
   @Override
   public int getLength() {

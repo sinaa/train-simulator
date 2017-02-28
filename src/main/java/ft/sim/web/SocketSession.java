@@ -1,5 +1,6 @@
 package ft.sim.web;
 
+import com.fasterxml.jackson.databind.deser.Deserializers.Base;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import ft.sim.simulation.BasicSimulation;
@@ -25,13 +26,9 @@ public class SocketSession {
 
   public SocketSession(WebSocketSession session) {
     this.session = session;
-
-
   }
 
   public String getResponse(String message) {
-
-    BasicSimulation sim = BaseController.simulation;
 
     /*if (message.equals("start trains")) {
       sim.startTrains();
@@ -49,13 +46,35 @@ public class SocketSession {
         String command = map.get("command");
         switch (command) {
           case "start trains":
-            sim.startTrains();
+            BaseController.simulation.startTrains();
             return "OK";
-          case "stop trains":
-            sim.kill();
+          case "stop simulation":
+            BaseController.simulation.kill();
             return "OK";
           case "get push data":
-            sim.setSocketSession(this);
+            BaseController.simulation.setSocketSession(this);
+            return "OK";
+          case "start simulation":
+            try {
+              if (BaseController.simulation != null) {
+                BaseController.simulation.setSocketSession(null);
+                BaseController.simulation.kill();
+                BaseController.simulation = null;
+              }
+              BaseController.simulation = new BasicSimulation();
+            } catch (Throwable t) {
+              t.printStackTrace();
+            }
+            return "OK";
+        }
+      }
+      if (map.containsKey("type") && map.get("type").equals("set")) {
+        String set = map.get("set");
+        switch (set) {
+          case "trainTargetSpeed":
+            int trainID = Integer.valueOf(map.get("targetID"));
+            double targetSpeed = Double.valueOf(map.get("data"));
+            BaseController.simulation.world.getTrain(trainID).getEngine().setTargetSpeed(targetSpeed);
             return "OK";
         }
       }

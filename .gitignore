@@ -145,3 +145,4 @@ modules.xml
 *.ipr
 .idea/compiler.xml
 .idea/jsLibraryMappings.xml
+.idea/inspectionProfiles/Project_Default.xml

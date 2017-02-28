@@ -1,22 +1,27 @@
 package ft.sim.train;
 
+import ft.sim.simulation.BasicSimulation;
+
 /**
  * Created by Sina on 21/02/2017.
  */
 public class Engine {
 
   // Which train does this engine belong to (one-to-one relationship)
-  private Train belongsTo;
+  private int belongsToTrainID;
 
   // 201.6 km/h (56 m/s)
-  double maxSpeed = 56;
+  // 300 km/h
+  double maxSpeed = 83.33;
 
   // accelration in m/sec2
   double maxAcceleration = 1.0;
   double maxDeceleration = -9 * (g / 100.0);
 
-  double normalAcceleration = 1.0;
-  double normalDeceleration = -7 * (g / 100.0);
+  /*double normalAcceleration = 1.0;
+  double normalDeceleration = -7 * (g / 100.0);*/
+  double normalAcceleration = 0.4;
+  double normalDeceleration = -0.5;
 
   // G-force
   public static final double g = 9.86;
@@ -29,11 +34,15 @@ public class Engine {
   // temporary variable to store the last distance travelled
   double lastDistanceTravelled = 0;
 
+  double totalTravelled = 0;
+
   /*
    * Construct an engine, along with the train this engine belongs to
    */
   public Engine(Train train) {
-    this.belongsTo = train;
+    /*if (BasicSimulation.world != null) {
+      this.belongsToTrainID = BasicSimulation.world.getTrainID(train);
+    }*/
   }
 
   /*
@@ -110,22 +119,23 @@ public class Engine {
     double speedTargetDifference = targetSpeed - speed;
 
     // if within 1 m/s of the target speed, stop accelerating/decelerating
-    if (targetSpeed > 0 && Math.abs(speedTargetDifference) < 1) {
+    if (targetSpeed > 0 && Math.abs(speedTargetDifference) < 0.5) {
       acceleration = 0;
-    } else if (speed > targetSpeed && acceleration <= 0) { // if going over target speed
+    } else if (speedTargetDifference < 0 && acceleration >= 0) { // if going over target speed
       acceleration = normalDeceleration;
-    } else if (speed < targetSpeed && acceleration >= 0) { // if going under target speed
+    } else if (speedTargetDifference > 0 && acceleration <= 0) { // if going under target speed
       acceleration = normalAcceleration;
     }
   }
 
   public double getLastDistanceTravelled() {
     double dist = lastDistanceTravelled;
+    totalTravelled += dist;
     lastDistanceTravelled = 0;
     return dist;
   }
 
-  public Train belongsTo() {
-    return belongsTo;
-  }
+  /*public int belongsToTrainID() {
+    return belongsToTrainID;
+  }*/
 }

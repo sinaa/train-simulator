@@ -1,22 +1,19 @@
 package ft.sim.simulation;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import ft.sim.train.Train;
 import ft.sim.web.SocketSession;
 import ft.sim.world.GlobalMap;
+import ft.sim.world.JourneyPath;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.socket.TextMessage;
@@ -28,13 +25,17 @@ public class BasicSimulation {
 
   protected Logger logger = LoggerFactory.getLogger(BasicSimulation.class);
 
-  GlobalMap world;
+  public static GlobalMap world = null;
   // From the point of view of a user, how many ticks we should do per second
-  int ticksPerSecond = 120;
+  int ticksPerSecond = 300;
   // From the view of the simulation, how much time passed since last tick (in seconds)
-  double secondsPerTick = 1.0 / ticksPerSecond;
+  double secondsPerTick = 1.0 / 100.0;
+
+  // How often to send request to user
+  int userRefreshRate = 500;
 
   long ticksElapsed = 0;
+  long timeElapsed = 0;
 
   Thread simThread;
 
@@ -44,44 +45,51 @@ public class BasicSimulation {
     world = new GlobalMap();
     createJourneys();
 
-    simThread = new Thread(new Runnable() {
-      public void run() {
-        while (!Thread.currentThread().isInterrupted()) {
-          long startTime = System.nanoTime();
-          for (Map.Entry<Integer, Journey> entry : journeysMap.entrySet()) {
-            Journey j = entry.getValue();
-            j.tick(secondsPerTick);
-          }
-          ticksElapsed++;
-          long elapsed = System.nanoTime() - startTime;
-          double ms = NANOSECONDS.toMillis(elapsed);
-          int waitTime = (int) Math.floor((1000.0 / ticksPerSecond) - ms);
-          if (waitTime > 0) {
-            try {
-              Thread.sleep(waitTime);
-            } catch (InterruptedException e) {
-              e.printStackTrace();
-              Thread.currentThread().interrupt();
-            }
-          }
-
-          if (ticksElapsed % ticksPerSecond == 0) {
-            if (socketSession != null) {
-
-              Gson gson = new Gson();
-              String json = gson.toJson(journeysMap);
-              logger.info("JSON: {}", json);
-              try {
-                socketSession.getSession().sendMessage(new TextMessage(json));
-              } catch (IOException e) {
-                e.printStackTrace();
-              }
-            }
-            displayStatistics();
-            //logger.info("tick: {}", ticksElapsed);
-          }
-
+    simThread = new Thread(() -> {
+      while (!Thread.currentThread().isInterrupted()) {
+        long startTime = System.nanoTime();
+        for (Map.Entry<Integer, Journey> entry : journeysMap.entrySet()) {
+          Journey j = entry.getValue();
+          j.tick(secondsPerTick);
         }
+        ticksElapsed++;
+        long elapsed = System.nanoTime() - startTime;
+        double ms = NANOSECONDS.toMillis(elapsed);
+        timeElapsed += ms;
+        int waitTime = (int) Math.floor((userRefreshRate / ticksPerSecond) - ms);
+        if (waitTime > 0) {
+          try {
+            Thread.sleep(waitTime);
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+            Thread.currentThread().interrupt();
+          }
+        }
+
+        if (ticksElapsed % ticksPerSecond == 0) {
+          if (socketSession != null) {
+
+            JsonObject jsonObject = new JsonObject();
+
+            Gson gson = new Gson();
+            jsonObject.addProperty("type", "journeyMap");
+            jsonObject.add("journeys", gson.toJsonTree(journeysMap));
+            jsonObject.add("world", gson.toJsonTree(world));
+
+            //String json = gson.toJson(journeysMap);
+            String json = gson.toJson(jsonObject);
+            logger.info("JSON: {}", json);
+            try {
+              socketSession.getSession().sendMessage(new TextMessage(json));
+            } catch (Exception e) {
+              socketSession = null;
+              e.printStackTrace();
+            }
+          }
+          displayStatistics();
+          //logger.info("tick: {}", ticksElapsed);
+        }
+
       }
     });
     simThread.start();
@@ -89,6 +97,7 @@ public class BasicSimulation {
 
   public void kill() {
     simThread.interrupt();
+    world = null;
   }
 
   public void setSocketSession(SocketSession socketSession) {
@@ -97,7 +106,7 @@ public class BasicSimulation {
 
   BiMap<Integer, Journey> journeysMap = HashBiMap.create();
 
-  void createJourneys() {
+  private void createJourneys() {
     JourneyPath jp1 = world.getJourneyPaths().get(1);
     Train t1 = world.getTrains().get(1);
     Journey j1 = new Journey(jp1, t1, true);
@@ -112,12 +121,16 @@ public class BasicSimulation {
 
   public void startTrains() {
     List<Journey> journeys = new ArrayList<Journey>(journeysMap.values());
+    int i = 0;
     for (Journey j : journeys) {
-      j.getTrain().getEngine().setTargetSpeed(60);
+      i++;
+      j.getTrain().getEngine().setTargetSpeed(60 + (i*30));
     }
   }
 
-  int getJourneyID(Journey j) {
+
+
+  public int getJourneyID(Journey j) {
     return journeysMap.inverse().get(j);
   }
 

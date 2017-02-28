@@ -1,6 +1,7 @@
 package ft.sim.simulation;
 
 import ft.sim.train.Train;
+import ft.sim.world.JourneyPath;
 
 /**
  * Created by Sina on 27/02/2017.
@@ -64,8 +65,8 @@ public class Journey {
   @Override
   public String toString() {
     String journey = "";
-    journey += "train {speed: " + train.getEngine().getSpeed() + ", acceleration: " + train.getEngine().getAcceleration() + ", targetSpeed: " + train.getEngine().getTargetSpeed()  + "}\n";
-    journey += "journey {headPosition: " + headPosition + ", tailPOsition: " + tailPosition + ", isForward:" + directionForward + "}";
+    journey += "train: {speed: " + train.getEngine().getSpeed() + ", acceleration: " + train.getEngine().getAcceleration() + ", targetSpeed: " + train.getEngine().getTargetSpeed()  + "}, ";
+    journey += "journey: {headPosition: " + headPosition + ", tailPOsition: " + tailPosition + ", isForward:" + directionForward + "}";
     return journey;
   }
 }

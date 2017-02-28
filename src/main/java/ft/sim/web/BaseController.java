@@ -17,7 +17,7 @@ public class BaseController {
 
   @RequestMapping("/")
   public String index(Model model) {
-    return "index";
+    return "home";
   }
 
   @RequestMapping("/hi")
@@ -28,13 +28,9 @@ public class BaseController {
     return "hi";
   }
 
-  @RequestMapping("/simulate")
-  public String simulate(Model model) {
-    if (simulation != null) {
-      simulation.kill();
-    }
-    simulation = new BasicSimulation();
-    return "index";
+  @RequestMapping("/simulation")
+  public String simulation(Model model) {
+    return "simulation";
   }
 
   @RequestMapping("/trains/start")

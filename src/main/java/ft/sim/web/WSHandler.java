@@ -20,7 +20,6 @@ public class WSHandler extends TextWebSocketHandler {
 
   protected Log logger = LogFactory.getLog(WSHandler.class);
 
-
   //private final CountDownLatch latch = new CountDownLatch(5);
 
   private AtomicReference<String> messagePayload;
@@ -35,7 +34,7 @@ public class WSHandler extends TextWebSocketHandler {
   public void afterConnectionEstablished(WebSocketSession session) throws Exception {
     ss = new SocketSession(session);
 
-    TextMessage message = new TextMessage("hi");
+    TextMessage message = new TextMessage("Socket session opened!");
     session.sendMessage(message);
     logger.info("Opened new session in instance " + this);
     //boop();
@@ -68,7 +67,6 @@ public class WSHandler extends TextWebSocketHandler {
     session.close(CloseStatus.SERVER_ERROR);
     logger.info("session closed: " + this);
   }
-
 
 
 }

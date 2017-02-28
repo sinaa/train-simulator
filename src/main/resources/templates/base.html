@@ -14,41 +14,17 @@
           th:src="@{/webjars/jquery/3.1.1-1/jquery.min.js}"></script>
 
   <script src="https://cdn.jsdelivr.net/sockjs/1.1.2/sockjs.min.js"></script>
-  <script type="text/javascript" th:inline="javascript">
-    var ws = null;
-    function connect() {
-      var target = /*[[@{/ws}]]*/ null;
+  <script src="http://bernii.github.io/gauge.js/dist/gauge.min.js"></script>
 
-      ws = new SockJS(target);
-      ws.onopen = function() {
-        console.log('open');
-      };
-      ws.onmessage = function(e) {
-        console.log('message', e.data);
-      };
-      ws.onclose = function() {
-        console.log('close');
-      };
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.7.2/css/bootstrap-slider.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.7.2/bootstrap-slider.min.js" />
+  <style>
+    .slider-selection{
+      background: #6ed2e8;
     }
-    function disconnect() {
-      if (ws != null) {
-        ws.close();
-        ws = null;
-      }
-    }
-    function wsm(msg) {
-      if (ws != null) {
-        log('Sent: ' + msg);
-        ws.send(msg);
-      } else {
-        log('WebSocket connection not established, please connect.');
-      }
-    }
-    function log(message) {
-      console.log(message);
-    }
-    connect();
-  </script>
+  </style>
+
+  <th:block layout:fragment="script"></th:block>
 </head>
 <body>
 <!-- Header -->
@@ -63,13 +39,14 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="#">Ferromone Trails</a>
+      <a class="navbar-brand" href="/">Ferromone Trails</a>
     </div>
 
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-      <ul class="nav navbar-nav">
-        <li class="active"><a href="#">Home</a></li>
+      <ul class="nav navbar-nav" th:with="view=${#httpServletRequest.getServletPath()}">
+        <li th:classappend="${#strings.equals(view,'/')? 'active' : ''}"><a href="#" th:href="@{/}">Home</a></li>
+        <li th:classappend="${#strings.equals(view,'/simulation')? 'active' : ''}"><a href="/" th:href="@{/simulation}">Simulation</a></li>
 
       </ul>
 
@@ -81,12 +58,12 @@
 </nav>
 
 <div class="container">
-  <div class="hero-unit">
-    <h1>Welcome</h1>
-    <p>
-      Ferromone Trails - Train Simulation
-    </p>
+  <div layout:fragment="content">
+    <div class="hero-unit">
+      <h1>You've reached a template :-)</h1>
+    </div>
   </div>
 </div>
+
 </body>
 </html>

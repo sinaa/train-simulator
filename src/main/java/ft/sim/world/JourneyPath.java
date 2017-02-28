@@ -1,4 +1,4 @@
-package ft.sim.simulation;
+package ft.sim.world;
 
 import ft.sim.world.Connectable;
 import ft.sim.world.Track;
@@ -11,15 +11,15 @@ import java.util.List;
  */
 public class JourneyPath {
 
-  List<Connectable> path = new ArrayList<>();
+  private List<Connectable> path = new ArrayList<>();
 
-  int length = 0;
+  private int length = 0;
 
   public JourneyPath(List<Connectable> path) {
     this.path.addAll(path);
   }
 
-  int getLength() {
+  public int getLength() {
     if (length == 0) {
       for (Connectable c : path) {
         length += c.getLength();

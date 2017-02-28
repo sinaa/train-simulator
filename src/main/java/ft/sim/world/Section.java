@@ -11,5 +11,4 @@ public class Section {
   public static final transient int DEFAULT_LENGTH = 1;
 
 
-
 }

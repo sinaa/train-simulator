@@ -5,5 +5,7 @@ package ft.sim.world;
  */
 public class Balise {
 
+  BaliseType type = BaliseType.FIXED;
+
 
 }

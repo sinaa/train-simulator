@@ -2,13 +2,9 @@ package ft.sim.world;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import ft.sim.simulation.JourneyPath;
 import ft.sim.train.Train;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 /**
  * Created by Sina on 21/02/2017.
@@ -22,13 +18,13 @@ public class GlobalMap {
     createTrains();
   }
 
-  BiMap<Integer, JourneyPath> journeyPathsMap = HashBiMap.create();
+  private BiMap<Integer, JourneyPath> journeyPathsMap = HashBiMap.create();
 
   public BiMap<Integer, JourneyPath> getJourneyPaths() {
     return journeyPathsMap;
   }
 
-  void createJourneyPaths() {
+  private void createJourneyPaths() {
     List<Connectable> journeyPath1 = new ArrayList<>();
     journeyPath1.add(getTrack(1));
     journeyPath1.add(getSwitch(1));
@@ -45,13 +41,13 @@ public class GlobalMap {
     journeyPathsMap.put(2, j2);
   }
 
-  BiMap<Integer, Switch> switchMap = HashBiMap.create();
+  private BiMap<Integer, Switch> switchMap = HashBiMap.create();
 
   public BiMap<Integer, Switch> getSwitches() {
     return switchMap;
   }
 
-  void createSwitches() {
+  private void createSwitches() {
     List<Track> switchLeft = new ArrayList<>();
     List<Track> switchRight = new ArrayList<>();
 
@@ -67,22 +63,22 @@ public class GlobalMap {
     switchMap.put(1, s1);
   }
 
-  Switch getSwitch(int switchID) {
+  public Switch getSwitch(int switchID) {
     return switchMap.get(switchID);
   }
 
-  int getSwitchID(Switch t) {
+  public int getSwitchID(Switch t) {
     return switchMap.inverse().get(t);
   }
 
 
-  BiMap<Integer, Track> trackMap = HashBiMap.create();
+  private BiMap<Integer, Track> trackMap = HashBiMap.create();
 
   public BiMap<Integer, Track> getTracks() {
     return trackMap;
   }
 
-  void createTracks() {
+  private void createTracks() {
     Track t1 = new Track(100);
     Track t2 = new Track(100);
     Track t3 = new Track(100);
@@ -94,15 +90,15 @@ public class GlobalMap {
     trackMap.put(4, t4);
   }
 
-  Track getTrack(int trackID) {
+  public Track getTrack(int trackID) {
     return trackMap.get(trackID);
   }
 
-  int getTrackID(Track t) {
+  public int getTrackID(Track t) {
     return trackMap.inverse().get(t);
   }
 
-  BiMap<Integer, Train> trainMap = HashBiMap.create();
+  private BiMap<Integer, Train> trainMap = HashBiMap.create();
 
   public BiMap<Integer, Train> getTrains() {
     return trainMap;
@@ -111,7 +107,7 @@ public class GlobalMap {
   /*
      * Create all trains available in this world
      */
-  void createTrains() {
+  private void createTrains() {
     Train train1 = new Train(2);
     Train train2 = new Train(3);
 
@@ -119,14 +115,14 @@ public class GlobalMap {
     trainMap.put(2, train2);
   }
 
-  Train getTrain(int trainID) {
+  public Train getTrain(int trainID) {
     return trainMap.get(trainID);
   }
 
   /*
    * Get the global ID of an unknown train
    */
-  int getTrainID(Train t) {
+  public int getTrainID(Train t) {
     return trainMap.inverse().get(t);
   }
 

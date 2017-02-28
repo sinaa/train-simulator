@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" layout:decorator="base">
+<head>
+  <title>Welcome to Ferromonte Trails Simulation</title>
+</head>
+<body>
+
+<div class="container">
+  <div layout:fragment="content">
+  <div class="hero-unit">
+
+    <div class="jumbotron">
+      <h1>Welcome to Ferromonte Trails Simulation</h1>
+      <p>You can start by visiting the Simulation Manager and start a new simulation.</p>
+      <p><a class="btn btn-primary btn-lg" href="#" th:href="@{/simulation}" role="button">Simulation Manager</a></p>
+    </div>
+  </div>
+  </div>
+</div>
+
+</body>
+</html>

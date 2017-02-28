@@ -3,6 +3,7 @@ package ft.sim.web;
 /**
  * Created by Sina on 27/02/2017.
  */
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -23,7 +24,8 @@ public class WebSocketConfig extends SpringBootServletInitializer
 
   @Override
   public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-    registry.addHandler(new WSHandler(), "/ws").withSockJS().setClientLibraryUrl("https://cdn.jsdelivr.net/sockjs/1.1.2/sockjs.min.js");
+    registry.addHandler(new WSHandler(), "/ws").withSockJS()
+        .setClientLibraryUrl("https://cdn.jsdelivr.net/sockjs/1.1.2/sockjs.min.js");
   }
 
   @Override
