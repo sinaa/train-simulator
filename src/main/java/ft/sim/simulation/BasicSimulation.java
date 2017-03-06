@@ -51,6 +51,7 @@ public class BasicSimulation {
         for (Map.Entry<Integer, Journey> entry : journeysMap.entrySet()) {
           Journey j = entry.getValue();
           j.tick(secondsPerTick);
+          j.getJourneyInformation().update(j);
         }
         ticksElapsed++;
         long elapsed = System.nanoTime() - startTime;
@@ -61,7 +62,8 @@ public class BasicSimulation {
           try {
             Thread.sleep(waitTime);
           } catch (InterruptedException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
+            logger.info("Simulation Stopped");
             Thread.currentThread().interrupt();
           }
         }

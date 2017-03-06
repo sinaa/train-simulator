@@ -49,6 +49,7 @@ public class SocketSession {
             BaseController.simulation.startTrains();
             return "OK";
           case "stop simulation":
+            BaseController.simulation.setSocketSession(null);
             BaseController.simulation.kill();
             return "OK";
           case "get push data":
@@ -62,6 +63,7 @@ public class SocketSession {
                 BaseController.simulation = null;
               }
               BaseController.simulation = new BasicSimulation();
+              BaseController.simulation.setSocketSession(this);
             } catch (Throwable t) {
               t.printStackTrace();
             }
@@ -74,7 +76,8 @@ public class SocketSession {
           case "trainTargetSpeed":
             int trainID = Integer.valueOf(map.get("targetID"));
             double targetSpeed = Double.valueOf(map.get("data"));
-            BaseController.simulation.world.getTrain(trainID).getEngine().setTargetSpeed(targetSpeed);
+            BaseController.simulation.world.getTrain(trainID).getEngine()
+                .setTargetSpeed(targetSpeed);
             return "OK";
         }
       }

@@ -9,7 +9,7 @@ public class Station implements Connectable {
   private int length = 400;
 
   @Override
-  public int getLength() {
+  public double getLength() {
     return length;
   }
 }

@@ -9,6 +9,8 @@ import java.util.List;
  */
 public class Switch implements Connectable {
 
+  private final ConnectableType type = ConnectableType.SWITCH;
+
   private List<Track> from;
   private List<Track> to;
 
@@ -39,7 +41,7 @@ public class Switch implements Connectable {
   }
 
   @Override
-  public int getLength() {
+  public double getLength() {
     return length;
   }
 }

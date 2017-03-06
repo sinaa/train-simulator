@@ -33,9 +33,6 @@ public class Engine {
 
   // temporary variable to store the last distance travelled
   double lastDistanceTravelled = 0;
-
-  double totalTravelled = 0;
-
   /*
    * Construct an engine, along with the train this engine belongs to
    */
@@ -130,7 +127,7 @@ public class Engine {
 
   public double getLastDistanceTravelled() {
     double dist = lastDistanceTravelled;
-    totalTravelled += dist;
+    //totalTravelled += dist;
     lastDistanceTravelled = 0;
     return dist;
   }

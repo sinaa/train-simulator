@@ -7,7 +7,7 @@ public class Car {
 
   private boolean isFirst = false;
   private boolean isLast = false;
-  private int length = Car.DEFAULT_LENGTH;
+  private double length = Car.DEFAULT_LENGTH;
 
   // length of railway cars
   public final static transient int DEFAULT_LENGTH = 20;
@@ -35,7 +35,7 @@ public class Car {
     return isLast;
   }
 
-  int getLength() {
+  double getLength() {
     return length;
   }
 }

@@ -1,5 +1,6 @@
 package ft.sim.world;
 
+import com.google.gson.annotations.Expose;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,10 +9,12 @@ import java.util.List;
  */
 public class Track implements Connectable {
 
-  List<Section> sections;
+  private final ConnectableType type = ConnectableType.TRACK;
 
-  int length = DEFAULT_LENGTH;
-  public static final transient int DEFAULT_LENGTH = 20;
+  private transient List<Section> sections;
+
+  private double length = DEFAULT_LENGTH;
+  private static final transient double DEFAULT_LENGTH = 20;
 
   public Track() {
     sections = new ArrayList<Section>(20);
@@ -19,19 +22,35 @@ public class Track implements Connectable {
 
   public Track(int numSections) {
     sections = new ArrayList<Section>(numSections);
+    length = 0;
     for (int i = 0; i < numSections; i++) {
       Section trainSection = new Section();
       sections.add(trainSection);
-      length += trainSection.length;
+      length += trainSection.getLength();
     }
+  }
+
+  public void placePlaceableOnSectionIndex(Placeable placeable, int sectionIndex) {
+    if (sectionIndex >= sections.size()) {
+      throw new ArrayIndexOutOfBoundsException(
+          "The section index " + sectionIndex + " does not exist. Number of sections: " +
+              sections.size());
+    }
+
+    Section section = sections.get(sectionIndex);
+    section.addPlaceable(placeable);
   }
 
   public Track(List<Section> sections) {
     this.sections = sections;
   }
 
+  public List<Section> getSections() {
+    return sections;
+  }
+
   @Override
-  public int getLength() {
+  public double getLength() {
     return length;
   }
 }

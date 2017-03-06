@@ -8,7 +8,7 @@ import java.util.ArrayList;
 public class Train {
 
   ArrayList<Car> cars = null;
-  int length;
+  double length;
 
   Engine engine;
 
@@ -24,7 +24,6 @@ public class Train {
 
   private void buildCars(int numCars){
     cars = new ArrayList<Car>(numCars);
-    int length = 0;
     for (int i = 0; i < numCars; i++) {
       boolean isFirst = (i == 0);
       boolean isLast = (i == numCars - 1);
@@ -42,7 +41,7 @@ public class Train {
     return engine;
   }
 
-  public int getLength(){
+  public double getLength(){
     return length;
   }
 

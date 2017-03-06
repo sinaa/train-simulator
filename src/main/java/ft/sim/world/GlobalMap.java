@@ -79,10 +79,10 @@ public class GlobalMap {
   }
 
   private void createTracks() {
-    Track t1 = new Track(100);
-    Track t2 = new Track(100);
-    Track t3 = new Track(100);
-    Track t4 = new Track(100);
+    Track t1 = new Track(1000);
+    Track t2 = new Track(1000);
+    Track t3 = new Track(1000);
+    Track t4 = new Track(1000);
 
     trackMap.put(1, t1);
     trackMap.put(2, t2);
