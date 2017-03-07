@@ -99,7 +99,7 @@ public class Engine {
   /*
    * Update status given time (in seconds)
    */
-  public void tick(double time) {
+  void tick(double time) {
     // distance = v1 x t + 1/2 * a * t^2
     lastDistanceTravelled += speed * time + (acceleration * Math.pow(time, 2) / 2.0);
 

@@ -1,5 +1,6 @@
 package ft.sim.simulation;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 import com.google.common.collect.BiMap;
@@ -9,8 +10,8 @@ import com.google.gson.JsonObject;
 import ft.sim.train.Train;
 import ft.sim.web.SocketSession;
 import ft.sim.world.GlobalMap;
+import ft.sim.world.Journey;
 import ft.sim.world.JourneyPath;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -43,12 +44,11 @@ public class BasicSimulation {
 
   public BasicSimulation() {
     world = new GlobalMap();
-    createJourneys();
 
     simThread = new Thread(() -> {
       while (!Thread.currentThread().isInterrupted()) {
         long startTime = System.nanoTime();
-        for (Map.Entry<Integer, Journey> entry : journeysMap.entrySet()) {
+        for (Map.Entry<Integer, Journey> entry : world.getJourneys().entrySet()) {
           Journey j = entry.getValue();
           j.tick(secondsPerTick);
           j.getJourneyInformation().update(j);
@@ -63,7 +63,7 @@ public class BasicSimulation {
             Thread.sleep(waitTime);
           } catch (InterruptedException e) {
             //e.printStackTrace();
-            logger.info("Simulation Stopped");
+            logger.warn("Simulation Stopped");
             Thread.currentThread().interrupt();
           }
         }
@@ -75,12 +75,16 @@ public class BasicSimulation {
 
             Gson gson = new Gson();
             jsonObject.addProperty("type", "journeyMap");
-            jsonObject.add("journeys", gson.toJsonTree(journeysMap));
+            //jsonObject.add("journeys", gson.toJsonTree(journeysMap));
             jsonObject.add("world", gson.toJsonTree(world));
+            jsonObject.addProperty("timeElapsedCalculating", timeElapsed);
+            jsonObject.addProperty("ticksElapsed", ticksElapsed);
+            jsonObject.addProperty("simulationTimeElapsed", ticksElapsed * secondsPerTick);
+
 
             //String json = gson.toJson(journeysMap);
             String json = gson.toJson(jsonObject);
-            logger.info("JSON: {}", json);
+            //logger.info("JSON: {}", json);
             try {
               socketSession.getSession().sendMessage(new TextMessage(json));
             } catch (Exception e) {
@@ -88,10 +92,9 @@ public class BasicSimulation {
               e.printStackTrace();
             }
           }
-          displayStatistics();
+          //displayStatistics();
           //logger.info("tick: {}", ticksElapsed);
         }
-
       }
     });
     simThread.start();
@@ -106,42 +109,21 @@ public class BasicSimulation {
     this.socketSession = socketSession;
   }
 
-  BiMap<Integer, Journey> journeysMap = HashBiMap.create();
-
-  private void createJourneys() {
-    JourneyPath jp1 = world.getJourneyPaths().get(1);
-    Train t1 = world.getTrains().get(1);
-    Journey j1 = new Journey(jp1, t1, true);
-
-    JourneyPath jp2 = world.getJourneyPaths().get(2);
-    Train t2 = world.getTrains().get(2);
-    Journey j2 = new Journey(jp2, t2, true);
-
-    journeysMap.put(1, j1);
-    journeysMap.put(2, j2);
-  }
-
   public void startTrains() {
-    List<Journey> journeys = new ArrayList<Journey>(journeysMap.values());
+    List<Journey> journeys = new ArrayList<Journey>(world.getJourneys().values());
     int i = 0;
     for (Journey j : journeys) {
       i++;
-      j.getTrain().getEngine().setTargetSpeed(60 + (i*30));
+      j.getTrain().getEngine().setTargetSpeed(60 + (i * 30));
     }
-  }
-
-
-
-  public int getJourneyID(Journey j) {
-    return journeysMap.inverse().get(j);
   }
 
   void displayStatistics() {
     List<Train> trains = new ArrayList<Train>(world.getTrains().values());
-    List<Journey> journeys = new ArrayList<Journey>(journeysMap.values());
+    List<Journey> journeys = new ArrayList<Journey>(world.getJourneys().values());
 
     for (Journey j : journeys) {
-      int jouneyID = getJourneyID(j);
+      int jouneyID = world.getJourneyID(j);
       logger.info("Journey {}: {}", String.valueOf(jouneyID), j.toString());
     }
   }

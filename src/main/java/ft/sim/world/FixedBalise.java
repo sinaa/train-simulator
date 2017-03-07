@@ -5,17 +5,29 @@ package ft.sim.world;
  */
 public class FixedBalise implements Balise {
 
-  private int advisorySpeed = 0;
+  private double advisorySpeed = 0;
 
-  public FixedBalise(int advisorySpeed) {
+  private int baliseID = 0;
+
+  public FixedBalise(double advisorySpeed, int baliseID) {
     this.advisorySpeed = advisorySpeed;
+    this.baliseID = baliseID;
   }
 
   public void setAdvisorySpeed(int advisorySpeed) {
     this.advisorySpeed = advisorySpeed;
   }
 
-  public int getAdvisorySpeed() {
+  public double getAdvisorySpeed() {
     return advisorySpeed;
   }
+
+  public void setBaliseID(int baliseID) {
+    this.baliseID = baliseID;
+  }
+
+  public int getBaliseID() {
+    return baliseID;
+  }
+
 }

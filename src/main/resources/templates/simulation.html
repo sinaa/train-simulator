@@ -86,7 +86,7 @@
           <ul class="list-group">
             <li class="list-group-item">Head Position: <span class="head_position"></span></li>
             <li class="list-group-item">Tail Position: <span class="tail_position"></span></li>
-            <li class="list-group-item">Is Finished: <span class="is_finished"></span></li>
+            <li class="list-group-item">Path Length: <span class="path_length"></span>m</li>
             <li class="list-group-item">Path: <span class="path"></span></li>
             <li class="list-group-item">Currently On: <span class="current_path"></span></li>
           </ul>
@@ -213,7 +213,7 @@
     }
 
     function updateJourneys() {
-      var journeys = data.journeys;
+      var journeys = data.world.journeysMap;
       for (var journeyID in journeys) {
         var journey = journeys[journeyID];
         var journeyKey = '#journey-' + journeyID;
@@ -223,7 +223,12 @@
             percent_completed + '%').html(percent_completed + '%');
         $(journeyKey).find('.head_position').html(Math.round(journey.headPosition * 100.0) / 100.0);
         $(journeyKey).find('.tail_position').html(Math.round(journey.tailPosition * 100.0) / 100.0);
-        $(journeyKey).find('.is_finished').html(journey.journeyFinished ? "Yes" : "No");
+        $(journeyKey).find('.path_length').html(journey.path.length);
+        //$(journeyKey).find('.is_finished').html(journey.journeyFinished ? "Yes" : "No");
+        if(journey.journeyFinished)
+          $(journeyKey).find('.progress-bar').removeClass('active');
+        else
+          $(journeyKey).find('.progress-bar').addClass('active');
         var paths = journey.journeyInformation.path;
         var pathArray = [];
         for (var pathIndex in paths) {
@@ -243,7 +248,7 @@
     }
 
     function buildJourneys() {
-      var journeys = data.journeys;
+      var journeys = data.world.journeysMap;
       $('#journeys_block').slideDown('fast');
       for (var journeyID in journeys) {
         var journey = journeys[journeyID];

@@ -11,15 +11,15 @@ import java.util.Set;
  */
 public class Section {
 
-  private static final transient double length = Section.DEFAULT_LENGTH;
+  private static final transient int length = Section.DEFAULT_LENGTH;
 
   // By default, each section is 1 metres
-  public static final transient double DEFAULT_LENGTH = 1;
+  public static final transient int DEFAULT_LENGTH = 1;
 
   Set<Placeable> placeables = new HashSet<>();
 
 
-  public double getLength(){
+  public int getLength(){
     return length;
   }
 

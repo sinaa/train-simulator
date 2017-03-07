@@ -1,10 +1,11 @@
 package ft.sim.world;
 
-import ft.sim.simulation.Journey;
 import ft.sim.train.Train;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +26,7 @@ public class JourneyPosition {
   private boolean isEnded = false;
 
   public JourneyPosition(JourneyPath path, Train train) {
-    new JourneyPosition(path, train, 0);
+    this(path, train, 0);
   }
 
   public JourneyPosition(JourneyPath path, Train train, double initialPosition) {
@@ -56,24 +57,32 @@ public class JourneyPosition {
 
   public List<Section> getSectionsOccupied() {
     List<Section> sections = new ArrayList<>();
-    double toSkip = getPositionFromFirstSection();
-    double trainLength = train.getLength();
+    double toSkip = getPositionFromFirstConnectable();
+    int trainLength = train.getLength();
     double skipped = 0;
     double sectionsLength = 0;
     for (Connectable c : position) {
       if (c instanceof Track) {
         Track t = (Track) c;
         List<Section> trackSections = t.getSections();
+        int sec = 0;
         for (Section s : trackSections) {
-          if (skipped < toSkip) {
-            if (s.getLength() > toSkip - skipped) {
-              positionFromFirstSection = toSkip - skipped;
-              sectionsLength += s.getLength() - positionFromFirstSection;
+          sec++;
+          // If there is still space to skip
+          if (toSkip > skipped) {
+            double deltaSkip = toSkip - skipped;
+            // If the section is longer than the amount we need to skip
+            if (s.getLength() > deltaSkip) {
+              skipped += deltaSkip;
+              positionFromFirstSection = deltaSkip;
+              // Start the calculation of the sections length that's fitting the train
+              sectionsLength += s.getLength() - deltaSkip;
               sections.add(s);
             } else {
               skipped += s.getLength();
             }
           } else {
+
             if (sectionsLength < trainLength) {
               sections.add(s);
 
@@ -130,17 +139,26 @@ public class JourneyPosition {
     return length - distanceAlreadyPassed;
   }
 
-  public void updatePosition(Journey journey, double lastDistanceTravelled) {
-    if (isEnded) {
+  private Set<Section> coveredSections = new HashSet<>();
+  private Set<Section> previousSections = new HashSet<>();
+
+  public void update(Journey journey, double lastDistanceTravelled){
+    updatePosition(journey, lastDistanceTravelled);
+    List<Section> sectionsOccupied = getSectionsOccupied();
+    // get the diff
+    sectionsOccupied.removeAll(previousSections);
+    // remove the old ones
+    sectionsOccupied.removeAll(coveredSections);
+
+    train.reachedSections(sectionsOccupied);
+    coveredSections.addAll(sectionsOccupied);
+  }
+
+  private void updatePosition(Journey journey, double lastDistanceTravelled) {
+    if (isEnded || lastDistanceTravelled == 0) {
       return;
     }
-
-    if (lastDistanceTravelled == 0) {
-      return;
-    }
-
     Connectable firstConnectable = position.peekFirst();
-    double connectableStartingPosition = path.getConnectableStartingPosition(firstConnectable);
     double connectableLength = firstConnectable.getLength();
     double overflow = positionFromFirstConnectable + lastDistanceTravelled - connectableLength;
 
@@ -172,7 +190,6 @@ public class JourneyPosition {
 
       firstConnectable = position.peekFirst();
       positionFromFirstConnectable = overflow;
-
 
     } else {
       positionFromFirstConnectable += lastDistanceTravelled;
@@ -206,7 +223,6 @@ public class JourneyPosition {
           getAvailableLength(positionFromFirstConnectable) - train.getLength(),
           positionFromFirstConnectable, position);*/
     }
-
 
   }
 

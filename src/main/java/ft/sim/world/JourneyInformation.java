@@ -1,7 +1,6 @@
 package ft.sim.world;
 
 import ft.sim.simulation.BasicSimulation;
-import ft.sim.simulation.Journey;
 import java.util.ArrayList;
 import java.util.List;
 

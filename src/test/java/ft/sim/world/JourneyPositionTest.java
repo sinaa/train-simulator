@@ -2,7 +2,6 @@ package ft.sim.world;
 
 import static org.junit.Assert.*;
 
-import ft.sim.simulation.Journey;
 import ft.sim.train.Train;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +12,8 @@ import org.junit.Test;
  * Created by Sina on 07/03/2017.
  */
 public class JourneyPositionTest {
+
+
 
   private static Journey j;
 
@@ -45,10 +46,39 @@ public class JourneyPositionTest {
   }
 
   @Test
+  public void getSectionsOccupied() throws Exception {
+    JourneyPosition jp = j.getJourneyPosition();
+    double travelled = 0.01;
+    jp.update(j, travelled);
+
+    List<Connectable> journeyPath = j.getJourneyPath().getPath();
+    List<Section> firstTrackSections = ((Track)journeyPath.get(0)).getSections();
+
+    List<Section> sections = jp.getSectionsOccupied();
+    System.out.println("sections: " + sections);
+    System.out.println("sections: " + firstTrackSections);
+
+    assertEquals(sections.get(0), firstTrackSections.get(0));
+    assertEquals(sections.get(39), firstTrackSections.get(39));
+    assertEquals(41, sections.size());
+    assertEquals(100, firstTrackSections.size());
+
+    jp.update(j, 1);
+
+    assertEquals(1.01, jp.getPositionFromFirstConnectable(), 0.0000001);
+
+    sections = jp.getSectionsOccupied();
+    System.out.println("sections: " + sections);
+    assertEquals(sections.get(0), firstTrackSections.get(1));
+    assertEquals(sections.get(39), firstTrackSections.get(40));
+    assertEquals(41, sections.size());
+  }
+
+  @Test
   public void updatePositionSameConnectable() throws Exception {
     JourneyPosition jp = j.getJourneyPosition();
     double travelled = 8;
-    jp.updatePosition(j, travelled);
+    jp.update(j, travelled);
 
     assertEquals(8, jp.getPositionFromFirstConnectable(), 0.00001);
     assertEquals(48, jp.getPositionFromLastConnectable(), 0.00001);
@@ -62,7 +92,7 @@ public class JourneyPositionTest {
   @Test
   public void updatePositionOverflowToSwitch() throws Exception {
     JourneyPosition jp = j.getJourneyPosition();
-    jp.updatePosition(j, 64);
+    jp.update(j, 64);
 
     assertEquals(64, jp.getPositionFromFirstConnectable(), 0.00001);
 
@@ -75,8 +105,8 @@ public class JourneyPositionTest {
   @Test
   public void updatePositionOverflowToBoth() throws Exception {
     JourneyPosition jp = j.getJourneyPosition();
-    jp.updatePosition(j, 64);
-    jp.updatePosition(j, 5);
+    jp.update(j, 64);
+    jp.update(j, 5);
 
     assertEquals(69, jp.getPositionFromFirstConnectable(), 0.00001);
 
@@ -90,8 +120,8 @@ public class JourneyPositionTest {
   @Test
   public void updatePositionGoPastFirst() throws Exception {
     JourneyPosition jp = j.getJourneyPosition();
-    jp.updatePosition(j, 80);
-    jp.updatePosition(j, 21);
+    jp.update(j, 80);
+    jp.update(j, 21);
 
     assertEquals(1, jp.getPositionFromFirstConnectable(), 0.00001);
 
@@ -104,9 +134,9 @@ public class JourneyPositionTest {
   @Test
   public void updatePositionGoPastBoth() throws Exception {
     JourneyPosition jp = j.getJourneyPosition();
-    jp.updatePosition(j, 80);
-    jp.updatePosition(j, 21);
-    jp.updatePosition(j, 10);
+    jp.update(j, 80);
+    jp.update(j, 21);
+    jp.update(j, 10);
 
     assertEquals(6, jp.getPositionFromFirstConnectable(), 0.00001);
 

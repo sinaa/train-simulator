@@ -1,20 +1,35 @@
 package ft.sim.train;
 
+import ft.sim.world.Balise;
+import ft.sim.world.FixedBalise;
+import ft.sim.world.Journey;
+import ft.sim.world.Placeable;
+import ft.sim.world.Section;
 import java.util.ArrayList;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by Sina on 21/02/2017.
  */
 public class Train {
 
+  protected Logger logger = LoggerFactory.getLogger(Train.class);
+
   ArrayList<Car> cars = null;
-  double length;
+  int length;
 
   Engine engine;
+  ECU ecu;
 
-  public Train(int numCars){
+  public Train(int numCars) {
     buildCars(numCars);
     engine = new Engine(this);
+  }
+
+  public void initECU(Journey journey){
+    ecu = new ECU(journey);
   }
 
   public Train(ArrayList<Car> cars) {
@@ -22,7 +37,7 @@ public class Train {
     engine = new Engine(this);
   }
 
-  private void buildCars(int numCars){
+  private void buildCars(int numCars) {
     cars = new ArrayList<Car>(numCars);
     for (int i = 0; i < numCars; i++) {
       boolean isFirst = (i == 0);
@@ -33,7 +48,23 @@ public class Train {
     }
   }
 
-  public void setEngine(Engine engine){
+  public void reachedSections(List<Section> sections) {
+    for (Section s : sections) {
+      List<Placeable> sectionPlaceables = s.getPlaceables();
+      for (Placeable p : sectionPlaceables) {
+        if (p instanceof Balise) {
+          if (p instanceof FixedBalise) {
+            FixedBalise balise = (FixedBalise) p;
+            double advisorySpeed = balise.getAdvisorySpeed();
+            engine.setTargetSpeed(advisorySpeed);
+            logger.info("Reached Balise, target: {}", advisorySpeed);
+          }
+        }
+      }
+    }
+  }
+
+  public void setEngine(Engine engine) {
     this.engine = engine;
   }
 
@@ -41,8 +72,12 @@ public class Train {
     return engine;
   }
 
-  public double getLength(){
+  public int getLength() {
     return length;
+  }
+
+  public void tick(double time){
+    engine.tick(time);
   }
 
 }

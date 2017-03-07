@@ -1,9 +1,6 @@
-package ft.sim.simulation;
+package ft.sim.world;
 
 import ft.sim.train.Train;
-import ft.sim.world.JourneyInformation;
-import ft.sim.world.JourneyPath;
-import ft.sim.world.JourneyPosition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,26 +11,16 @@ public class Journey {
 
   protected Logger logger = LoggerFactory.getLogger(Journey.class);
 
-  double headPosition = 0;
-  double tailPosition = 0;
-  boolean directionForward = true;
+  private double headPosition = 0;
+  private double tailPosition = 0;
+  private boolean directionForward = true;
 
-  boolean journeyFinished = false;
+  private boolean journeyFinished = false;
 
   private Train train;
   private JourneyPath path;
   private JourneyPosition journeyPosition;
   private JourneyInformation journeyInformation;
-
-  public JourneyInformation getJourneyInformation() {
-    return journeyInformation;
-  }
-
-  public JourneyPath getJourneyPath() {
-    return path;
-  }
-
-  double trainSpeed = 0;
 
   private double totalDistanceTravelled = 0;
 
@@ -44,6 +31,8 @@ public class Journey {
     journeyPosition = new JourneyPosition(jp, train, 0);
     journeyInformation = new JourneyInformation();
     calculateInitialPosition();
+
+    train.initECU(this);
   }
 
   private void calculateInitialPosition() {
@@ -65,13 +54,14 @@ public class Journey {
   }
 
   public void tick(double time) {
-    if(journeyFinished)
+    if (journeyFinished) {
       return;
+    }
 
-    train.getEngine().tick(time);
+    train.tick(time);
     double distanceTravelled = train.getEngine().getLastDistanceTravelled();
 
-    journeyPosition.updatePosition(this, distanceTravelled);
+    journeyPosition.update(this, distanceTravelled);
 
     totalDistanceTravelled += distanceTravelled;
 
@@ -86,19 +76,31 @@ public class Journey {
     double altHeadPosition = journeyPosition.getHeadPosition();
     double altTailPosition = journeyPosition.getTailPosition();
 
-    if (altHeadPosition != headPosition && Math.abs(altHeadPosition- headPosition) > 0.0000001) {
+    if (altHeadPosition != headPosition && Math.abs(altHeadPosition - headPosition) > 0.0000001) {
       logger.warn("Alt head not the same | head: {}, altHead: {}", headPosition, altHeadPosition);
     }
-    if (altTailPosition != tailPosition && Math.abs(altTailPosition- tailPosition) > 0.0000001) {
+    if (altTailPosition != tailPosition && Math.abs(altTailPosition - tailPosition) > 0.0000001) {
       logger.warn("Alt tail not the same | head: {}, altHead: {}", tailPosition, altTailPosition);
     }
 
     headPosition = altHeadPosition;
     tailPosition = altTailPosition;
 
-    if(journeyPosition.isEnded()){
+    if (journeyPosition.isEnded()) {
       journeyFinished = true;
     }
+  }
+
+  public JourneyInformation getJourneyInformation() {
+    return journeyInformation;
+  }
+
+  public JourneyPath getJourneyPath() {
+    return path;
+  }
+
+  public boolean isJourneyFinished() {
+    return journeyFinished;
   }
 
   public double getTotalDistanceTravelled() {
@@ -111,6 +113,10 @@ public class Journey {
 
   public JourneyPosition getJourneyPosition() {
     return journeyPosition;
+  }
+
+  public double getLength() {
+    return path.getLength();
   }
 
   @Override

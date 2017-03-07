@@ -16,6 +16,10 @@ public class Track implements Connectable {
   private double length = DEFAULT_LENGTH;
   private static final transient double DEFAULT_LENGTH = 20;
 
+  public Track(List<Section> sections) {
+    this.sections = sections;
+  }
+
   public Track() {
     sections = new ArrayList<Section>(20);
   }
@@ -41,9 +45,7 @@ public class Track implements Connectable {
     section.addPlaceable(placeable);
   }
 
-  public Track(List<Section> sections) {
-    this.sections = sections;
-  }
+
 
   public List<Section> getSections() {
     return sections;

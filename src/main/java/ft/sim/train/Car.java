@@ -1,9 +1,14 @@
 package ft.sim.train;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Created by Sina on 21/02/2017.
  */
 public class Car {
+
+  protected Logger logger = LoggerFactory.getLogger(Car.class);
 
   private boolean isFirst = false;
   private boolean isLast = false;
@@ -13,16 +18,15 @@ public class Car {
   public final static transient int DEFAULT_LENGTH = 20;
 
   public Car() {
-
+    this(false, false);
   }
 
   public Car(boolean first, boolean last) {
-    new Car(Car.DEFAULT_LENGTH, first, last);
+    this(Car.DEFAULT_LENGTH, first, last);
   }
 
   public Car(int length, boolean first, boolean last) {
     this.length = length;
-
     this.isFirst = first;
     this.isLast = last;
   }
