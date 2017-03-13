@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
  */
 public class JourneyPosition {
 
-  protected Logger logger = LoggerFactory.getLogger(JourneyPosition.class);
+  protected transient final Logger logger = LoggerFactory.getLogger(JourneyPosition.class);
 
   private JourneyPath path = null;
   private Train train = null;

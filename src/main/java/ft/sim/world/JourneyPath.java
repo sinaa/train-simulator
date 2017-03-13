@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
  */
 public class JourneyPath {
 
-  protected Logger logger = LoggerFactory.getLogger(JourneyPath.class);
+  protected transient final Logger logger = LoggerFactory.getLogger(JourneyPath.class);
 
   private List<Connectable> path = new ArrayList<>();
   private Map<Connectable, Double> connectablePositions = new HashMap<>();

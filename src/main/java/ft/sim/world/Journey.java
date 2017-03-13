@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
  */
 public class Journey {
 
-  protected Logger logger = LoggerFactory.getLogger(Journey.class);
+  protected transient final Logger logger = LoggerFactory.getLogger(Journey.class);
 
   private double headPosition = 0;
   private double tailPosition = 0;

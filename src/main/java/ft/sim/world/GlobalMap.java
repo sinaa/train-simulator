@@ -3,13 +3,24 @@ package ft.sim.world;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import ft.sim.train.Train;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.yaml.snakeyaml.Yaml;
 
 /**
  * Created by Sina on 21/02/2017.
  */
 public class GlobalMap {
+
+  protected transient final Logger logger = LoggerFactory.getLogger(GlobalMap.class);
 
   private BiMap<Integer, Journey> journeysMap = HashBiMap.create();
   private BiMap<Integer, JourneyPath> journeyPathsMap = HashBiMap.create();
@@ -19,98 +30,156 @@ public class GlobalMap {
   private BiMap<Integer, Train> trainMap = HashBiMap.create();
 
   public GlobalMap() {
-    createTracks();
-    createPlaceables();
-    createSwitches();
-    createJourneyPaths();
-    createTrains();
-    createJourneys();
+    try {
+      importBasicMap("maps/basic.yaml");
+    } catch (IOException e) {
+      e.printStackTrace();
+      assert false: "Failed to import map!";
+    }
   }
 
-  private void createJourneys() {
-    JourneyPath jp1 = getJourneyPath(1);
-    Train t1 = getTrain(1);
-    Journey j1 = new Journey(jp1, t1, true);
+  private void importBasicMap(String mapYaml) throws IOException {
+    Resource resource = new ClassPathResource(mapYaml);
+    Yaml yaml = new Yaml();
+    Map<String, Object> map = (Map<String, Object>) yaml.load(resource.getInputStream());
 
-    JourneyPath jp2 = getJourneyPath(2);
-    Train t2 = getTrain(2);
-    Journey j2 = new Journey(jp2, t2, true);
+    createTracks((Map<String, Object>) map.get("tracks"));
 
-    journeysMap.put(1, j1);
-    journeysMap.put(2, j2);
+    createPlaceables((Map<String, Object>) map.get("placeables"));
+
+    createSwitches((Map<String, Object>) map.get("switches"));
+
+    createJourneyPaths((Map<String, Object>) map.get("journeyPaths"));
+
+    createTrains((Map<String, Object>) map.get("trains"));
+
+    createJourneys((Map<String, Object>) map.get("journeys"));
   }
 
-  private void createJourneyPaths() {
-    List<Connectable> journeyPath1 = new ArrayList<>();
-    journeyPath1.add(getTrack(1));
-    journeyPath1.add(getSwitch(1));
-    journeyPath1.add(getTrack(2));
-    JourneyPath j1 = new JourneyPath(journeyPath1);
 
-    List<Connectable> journeyPath2 = new ArrayList<>();
-    journeyPath2.add(getTrack(3));
-    journeyPath2.add(getSwitch(1));
-    journeyPath2.add(getTrack(4));
-    JourneyPath j2 = new JourneyPath(journeyPath2);
+  private void createJourneys(Map<String, Object> journeys) {
+    for (Entry<String, Object> j : journeys.entrySet()) {
+      int journeyID = Integer.parseInt(j.getKey());
+      Map<String, Object> journeyData = (Map<String, Object>) j.getValue();
+      int trainID = (int) journeyData.get("train");
+      int jpID = (int) journeyData.get("path");
+      boolean isForward = (boolean) journeyData.get("isForward");
 
-    journeyPathsMap.put(1, j1);
-    journeyPathsMap.put(2, j2);
+      addJourney(journeyID, jpID,trainID, isForward);
+    }
   }
 
-  private void createSwitches() {
+  private void createJourneyPaths(Map<String, Object> journeyPaths) {
+    for (Entry<String, Object> journeyPath : journeyPaths.entrySet()) {
+      int journeyPathID = Integer.parseInt(journeyPath.getKey());
+      Map<String, Object> jData = (Map<String, Object>) journeyPath.getValue();
+      List<Map<String, Object>> path = (List<Map<String, Object>>) jData.get("path");
+      List<Connectable> connectables = new ArrayList<>();
+      for (Map<String, Object> connectable : path) {
+        int connectableID = (int) connectable.get("id");
+        if (connectable.get("type").equals("track")) {
+          connectables.add(getTrack(connectableID));
+        } else if (connectable.get("type").equals("switch")) {
+          connectables.add(getSwitch(connectableID));
+        }
+      }
+      addJourneyPath(journeyPathID, connectables);
+    }
+  }
+
+  private void createSwitches(Map<String, Object> switches) {
+    for (Entry<String, Object> s : switches.entrySet()) {
+      int switchID = Integer.parseInt(s.getKey());
+      Map<String, Object> sData = (Map<String, Object>) s.getValue();
+      List<Integer> left = (List<Integer>) sData.get("left");
+      List<Integer> right = (List<Integer>) sData.get("right");
+      int statusLeft = (int) sData.get("statusLeft");
+      int statusRight = (int) sData.get("statusRight");
+
+      addSwitch(switchID, left, right, statusLeft, statusRight);
+    }
+  }
+
+  private void createTracks(Map<String, Object> trackMap) {
+    for (Entry<String, Object> track : trackMap.entrySet()) {
+      int trackID = Integer.parseInt(track.getKey());
+      Map<String, Integer> trackData = (Map<String, Integer>) track.getValue();
+      Track t = new Track(trackData.get("numSections"));
+
+      addTrack(trackID, t);
+    }
+  }
+
+  private void createPlaceables(Map<String, Object> placeablesMap) {
+    for (Entry<String, Object> placeable : placeablesMap.entrySet()) {
+      int placeableID = Integer.parseInt(placeable.getKey());
+      Map<String, Object> placeableData = (Map<String, Object>) placeable.getValue();
+      Placeable p = null;
+      if (placeableData.get("type").equals("fixedBalise")) {
+        p = new FixedBalise(Double.valueOf((int) placeableData.get("advisorySpeed")), placeableID);
+      }
+      Map<String, Integer> placeOnMap = ((Map<String, Integer>) placeableData.get("placeOn"));
+      int trackID = placeOnMap.get("track");
+      int section = placeOnMap.get("section");
+
+      addPlaceable(placeableID, p, trackID, section);
+      assert (p != null) : "Placeable should not be null";
+    }
+  }
+
+
+  private void createTrains(Map<String, Object> trains) {
+    for (Entry<String, Object> train : trains.entrySet()) {
+      int trainID = Integer.parseInt(train.getKey());
+      Map<String, Object> trainData = (Map<String, Object>) train.getValue();
+      Train t = new Train((int)trainData.get("numCars"));
+
+      addTrain(trainID, t);
+    }
+  }
+
+  public void addTrack(int id, Track track) {
+    trackMap.put(id, track);
+  }
+
+  public void addTrain(int id, Train train) {
+    trainMap.put(id, train);
+  }
+
+  public void addSwitch(int id, List<Integer> left, List<Integer> right, int trackLeft,
+      int trackRight) {
     List<Track> switchLeft = new ArrayList<>();
     List<Track> switchRight = new ArrayList<>();
 
-    switchLeft.add(getTrack(1));
-    switchLeft.add(getTrack(3));
+    switchLeft.addAll(right.stream().map(t -> getTrack(t)).collect(Collectors.toList()));
 
-    switchRight.add(getTrack(2));
-    switchRight.add(getTrack(4));
+    switchRight.addAll(left.stream().map(t -> getTrack(t)).collect(Collectors.toList()));
 
-    Switch s1 = new Switch(switchLeft, switchRight);
-    s1.setStatus(getTrack(1), getTrack(2));
+    Switch s = new Switch(switchLeft, switchRight);
+    s.setStatus(getTrack(trackLeft), getTrack(trackRight));
 
-    switchMap.put(1, s1);
+    switchMap.put(id, s);
   }
 
-  private void createTracks() {
-    Track t1 = new Track(1000);
-    Track t2 = new Track(1000);
-    Track t3 = new Track(1000);
-    Track t4 = new Track(1000);
+  public void addJourney(int id, int journeyPathID, int trainID, boolean direction) {
+    JourneyPath jp = getJourneyPath(journeyPathID);
+    Train t = getTrain(trainID);
+    Journey j = new Journey(jp, t, direction);
 
-    trackMap.put(1, t1);
-    trackMap.put(2, t2);
-    trackMap.put(3, t3);
-    trackMap.put(4, t4);
+    journeysMap.put(id, j);
   }
 
-  private void createPlaceables(){
-    FixedBalise fb1 = new FixedBalise(50 ,1);
-    FixedBalise fb2 = new FixedBalise(30 ,2);
-    FixedBalise fb3 = new FixedBalise(10 ,3);
-    FixedBalise fb4 = new FixedBalise(60 ,4);
+  public void addJourneyPath(int id, List<Connectable> connectables) {
+    JourneyPath jp = new JourneyPath(connectables);
 
-    placeablesMap.put(1,fb1);
-    placeablesMap.put(2,fb2);
-    placeablesMap.put(3,fb3);
-    placeablesMap.put(4,fb4);
-
-    getTrack(1).placePlaceableOnSectionIndex(fb1, 200);
-    getTrack(1).placePlaceableOnSectionIndex(fb2, 700);
-    getTrack(2).placePlaceableOnSectionIndex(fb3, 0);
-    getTrack(2).placePlaceableOnSectionIndex(fb4, 500);
+    journeyPathsMap.put(id, jp);
   }
 
-  /*
-     * Create all trains available in this world
-     */
-  private void createTrains() {
-    Train train1 = new Train(2);
-    Train train2 = new Train(3);
+  private void addPlaceable(int id, Placeable p, int trackID, int sectionIndex) {
+    placeablesMap.put(id, p);
 
-    trainMap.put(1, train1);
-    trainMap.put(2, train2);
+    logger.info("id {}, p {}, track {}, section {}", id, p, trackID, sectionIndex);
+    getTrack(trackID).placePlaceableOnSectionIndex(p, sectionIndex);
   }
 
 
