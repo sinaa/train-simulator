@@ -33,6 +33,7 @@ public class Engine {
 
   // temporary variable to store the last distance travelled
   double lastDistanceTravelled = 0;
+
   /*
    * Construct an engine, along with the train this engine belongs to
    */
@@ -130,6 +131,22 @@ public class Engine {
     //totalTravelled += dist;
     lastDistanceTravelled = 0;
     return dist;
+  }
+
+  public boolean isBreaking() {
+    return (acceleration > 0);
+  }
+
+  public boolean isAccelerating() {
+    return (acceleration < 0);
+  }
+
+  public boolean isStill() {
+    return acceleration == 0;
+  }
+
+  public boolean isStopped() {
+    return isStill() && speed == 0;
   }
 
   /*public int belongsToTrainID() {

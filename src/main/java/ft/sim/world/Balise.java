@@ -5,6 +5,7 @@ package ft.sim.world;
  */
 public interface Balise extends Placeable {
 
+  public void setPosition(double position);
 
-
+  public double getPosition();
 }

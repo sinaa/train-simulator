@@ -5,4 +5,13 @@ package ft.sim.world;
  */
 public class TransparentBalise implements Balise {
 
+  @Override
+  public void setPosition(double position) {
+
+  }
+
+  @Override
+  public double getPosition() {
+    return 0;
+  }
 }

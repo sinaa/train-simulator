@@ -28,7 +28,7 @@ public class Journey {
     path = jp;
     train = t;
     directionForward = isForward;
-    journeyPosition = new JourneyPosition(jp, train, 0);
+    journeyPosition = new JourneyPosition(jp, train, isForward);
     journeyInformation = new JourneyInformation();
     calculateInitialPosition();
 

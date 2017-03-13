@@ -9,6 +9,8 @@ public class FixedBalise implements Balise {
 
   private int baliseID = 0;
 
+  private double position = 0;
+
   public FixedBalise(double advisorySpeed, int baliseID) {
     this.advisorySpeed = advisorySpeed;
     this.baliseID = baliseID;
@@ -30,4 +32,13 @@ public class FixedBalise implements Balise {
     return baliseID;
   }
 
+  @Override
+  public void setPosition(double miles){
+    position = miles;
+  }
+
+  @Override
+  public double getPosition() {
+    return position;
+  }
 }

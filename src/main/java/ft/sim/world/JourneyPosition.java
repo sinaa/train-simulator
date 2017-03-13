@@ -25,15 +25,26 @@ public class JourneyPosition {
 
   private boolean isEnded = false;
 
+  private final boolean isForward;
+
+  public JourneyPosition(JourneyPath path, Train train, boolean isForward) {
+    this(path, train, isForward, path.getLength());
+  }
+
+  public JourneyPosition(JourneyPath path, Train train, boolean isForward, double initialPosition) {
+    this.path = path;
+    this.train = train;
+    this.isForward = isForward;
+
+    setInitialPosition(initialPosition);
+  }
+
   public JourneyPosition(JourneyPath path, Train train) {
     this(path, train, 0);
   }
 
   public JourneyPosition(JourneyPath path, Train train, double initialPosition) {
-    this.path = path;
-    this.train = train;
-
-    setInitialPosition(initialPosition);
+    this(path, train, true, initialPosition);
   }
 
   private void setInitialPosition(double initialPosition) {
@@ -44,11 +55,27 @@ public class JourneyPosition {
       throw new IllegalArgumentException("train cannot be longer than the path.");
     }
 
-    position.addAll(path.getConnectablesBetween(initialPosition, trainLength));
+    if (isForward) {
+      position.addAll(path.getConnectablesBetween(initialPosition, trainLength));
 
-    Connectable firstConnectable = position.peekFirst();
-    double connectableStartingPosition = path.getConnectableStartingPosition(firstConnectable);
-    positionFromFirstConnectable = initialPosition - connectableStartingPosition;
+      Connectable firstConnectable = position.peekFirst();
+      double connectableStartingPosition = path.getConnectableStartingPosition(firstConnectable);
+      positionFromFirstConnectable = initialPosition - connectableStartingPosition;
+    } else {
+      position.addAll(path.getConnectablesBetween(initialPosition, initialPosition - trainLength));
+
+      Connectable lastConnectable = position.peekLast();
+      double lastConnectableStartingPosition = path.getConnectableStartingPosition(lastConnectable);
+      double lastconnectableEndingPosition = lastConnectableStartingPosition + lastConnectable.getLength();
+      double tailPositionFromEnd = lastconnectableEndingPosition - initialPosition;
+
+      Connectable firstConnectable = position.peekFirst();
+      double firstConnectableStartingPosition = path.getConnectableStartingPosition(firstConnectable);
+
+      positionFromFirstConnectable = lastconnectableEndingPosition - tailPositionFromEnd - trainLength - firstConnectableStartingPosition;
+
+      //positionFromFirstConnectable = initialPosition - connectableStartingPosition - trainLength;
+    }
   }
 
   public List<Connectable> getConnectablesOccupied() {
@@ -142,7 +169,7 @@ public class JourneyPosition {
   private Set<Section> coveredSections = new HashSet<>();
   private Set<Section> previousSections = new HashSet<>();
 
-  public void update(Journey journey, double lastDistanceTravelled){
+  public void update(Journey journey, double lastDistanceTravelled) {
     updatePosition(journey, lastDistanceTravelled);
     List<Section> sectionsOccupied = getSectionsOccupied();
     // get the diff
@@ -158,6 +185,14 @@ public class JourneyPosition {
     if (isEnded || lastDistanceTravelled == 0) {
       return;
     }
+    if(isForward)
+      updatePositionForward(lastDistanceTravelled);
+    else
+      updatePositionBackward(lastDistanceTravelled);
+
+  }
+
+  private void updatePositionForward(double lastDistanceTravelled) {
     Connectable firstConnectable = position.peekFirst();
     double connectableLength = firstConnectable.getLength();
     double overflow = positionFromFirstConnectable + lastDistanceTravelled - connectableLength;
@@ -223,17 +258,67 @@ public class JourneyPosition {
           getAvailableLength(positionFromFirstConnectable) - train.getLength(),
           positionFromFirstConnectable, position);*/
     }
+  }
 
+  private void updatePositionBackward(double lastDistanceTravelled) {
+
+    Connectable firstConnectable = position.peekFirst();
+    double underflow = positionFromFirstConnectable - lastDistanceTravelled;
+
+    // If we have passed the end of the first connector, remove it
+    if (underflow <= 0) {
+      Connectable previousConnectable = path.getPrevious(firstConnectable);
+
+      // We removed one connectable, now we try to add new connectable at the end
+      if (previousConnectable != null) {
+        position.addFirst(previousConnectable);
+        logger.info("Added connectable to beginning (going backwards)");
+      } else {
+        logger.warn("On the first connectable (going backwards)");
+        isEnded = true;
+        return;
+      }
+
+      if (position.isEmpty()) {
+        //for some odd reason, there aren't any connectables left!
+        logger.error("Position array was empty!!!");
+        isEnded = true;
+        return;
+      }
+
+      firstConnectable = position.peekFirst();
+      // The end position minus the overflow value ( underflow is negative)
+      positionFromFirstConnectable = firstConnectable.getLength() + underflow;
+
+    } else {
+      positionFromFirstConnectable -= lastDistanceTravelled;
+    }
+
+
+    double overflow = getPositionFromLastConnectable();
+    if(overflow<=0) {
+      position.removeLast();
+      logger.info("Removed connectable from tail (going backwards)");
+    }
   }
 
   public double getTailPosition() {
+    return (isForward) ? getRelativeTailPosition() : getRelativeHeadPosition();
+  }
+
+  public double getHeadPosition() {
+    return (isForward) ? getRelativeHeadPosition() : getRelativeTailPosition();
+  }
+
+  private double getRelativeTailPosition() {
     Connectable firstConnectable = position.peekFirst();
     return path.getConnectableStartingPosition(firstConnectable) + positionFromFirstConnectable;
   }
 
-  public double getHeadPosition() {
+  private double getRelativeHeadPosition() {
     Connectable lastConnectable = position.peekLast();
     return path.getConnectableStartingPosition(lastConnectable) + getPositionFromLastConnectable();
   }
+
 
 }

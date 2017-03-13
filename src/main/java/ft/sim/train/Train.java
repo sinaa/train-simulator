@@ -29,7 +29,7 @@ public class Train {
   }
 
   public void initECU(Journey journey){
-    ecu = new ECU(journey);
+    ecu = new ECU(journey, engine);
   }
 
   public Train(ArrayList<Car> cars) {

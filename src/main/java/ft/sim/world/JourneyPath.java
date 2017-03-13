@@ -31,22 +31,59 @@ public class JourneyPath {
   }
 
   public double getConnectableStartingPosition(Connectable connectable) {
-    if(connectable == null)
+    if (connectable == null) {
       throw new NullPointerException("cannot get position of null connectable!!");
+    }
     return connectablePositions.get(connectable);
+  }
+
+  public double getConnectableEndingPosition(Connectable connectable) {
+    if (connectable == null) {
+      throw new NullPointerException("cannot get position of null connectable!!");
+    }
+    Connectable nextConnectable = getNext(connectable);
+    if (nextConnectable == null) {
+      return length;
+    }
+    return connectablePositions.get(nextConnectable);
   }
 
   private void init() {
     // already initialised
-    if(length != 0)
+    if (length != 0) {
       return;
+    }
 
     for (Connectable c : path) {
       connectablePositions.put(c, length);
       connectableIndexes.put(c, connectableIndexes.size());
+
+      if (c instanceof Track) {
+        List<Balise> balises = ((Track) c).getBalises();
+        for (Balise b : balises) {
+          int relativePosition = ((Track) c).getPlaceablePosition(b);
+          b.setPosition(length + relativePosition);
+        }
+      }
       length += c.getLength();
       //logger.debug("Connectable length: {}", c.getLength());
     }
+  }
+
+  public double getPlaceablePosition(Placeable placeable) {
+    double position = -1;
+    for (Connectable c : path) {
+      if (!(c instanceof Track)) {
+        continue;
+      }
+      Track t = (Track) c;
+      if (!t.hasPlaceable(placeable)) {
+        continue;
+      }
+      return getConnectableStartingPosition(c) + t.getPlaceablePosition(placeable);
+    }
+
+    throw new IllegalArgumentException("The placeable did not exist on the given journey path");
   }
 
   public double getLength() {
@@ -56,9 +93,19 @@ public class JourneyPath {
   public Connectable getNext(Connectable c) {
     int index = connectableIndexes.get(c);
     int nextIndex = index + 1;
-    if(nextIndex >= connectableIndexes.size())
+    if (nextIndex >= connectableIndexes.size()) {
       return null;
+    }
     return path.get(nextIndex);
+  }
+
+  public Connectable getPrevious(Connectable c) {
+    int index = connectableIndexes.get(c);
+    int previousIndex = index - 1;
+    if (previousIndex < 0) {
+      return null;
+    }
+    return path.get(previousIndex);
   }
 
   public List<Connectable> getPath() {
@@ -71,6 +118,12 @@ public class JourneyPath {
 
     if (from < 0 || to > getLength()) {
       throw new IllegalArgumentException("Invalid From/To arguments");
+    }
+
+    if (from > to) {
+      double tmp = from;
+      from = to;
+      to = tmp;
     }
 
     double calculated = 0;
@@ -93,6 +146,20 @@ public class JourneyPath {
     }
 
     return connectables;
+  }
+
+  public Connectable getFirst() {
+    if (path.size() == 0) {
+      return null;
+    }
+    return path.get(0);
+  }
+
+  public Connectable getLast() {
+    if (path.size() == 0) {
+      return null;
+    }
+    return path.get(path.size() - 1);
   }
 
 }
