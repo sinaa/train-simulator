@@ -9,11 +9,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by Sina on 21/02/2017.
  */
 public class Track implements Connectable {
+
+  protected transient final Logger logger = LoggerFactory.getLogger(Track.class);
 
   private final ConnectableType type = ConnectableType.TRACK;
 
@@ -48,7 +52,6 @@ public class Track implements Connectable {
           "The section index " + sectionIndex + " does not exist. Number of sections: " +
               sections.size());
     }
-
     Section section = sections.get(sectionIndex);
     section.addPlaceable(placeable);
 

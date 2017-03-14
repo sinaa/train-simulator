@@ -3,11 +3,15 @@ package ft.sim.world;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by Sina on 21/02/2017.
  */
 public class Switch implements Connectable {
+
+  protected transient final Logger logger = LoggerFactory.getLogger(Switch.class);
 
   private final ConnectableType type = ConnectableType.SWITCH;
 

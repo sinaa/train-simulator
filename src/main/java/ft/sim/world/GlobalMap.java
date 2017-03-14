@@ -93,6 +93,7 @@ public class GlobalMap {
       Map<String, Object> sData = (Map<String, Object>) s.getValue();
       List<Integer> left = (List<Integer>) sData.get("left");
       List<Integer> right = (List<Integer>) sData.get("right");
+
       int statusLeft = (int) sData.get("statusLeft");
       int statusRight = (int) sData.get("statusRight");
 
@@ -151,9 +152,9 @@ public class GlobalMap {
     List<Track> switchLeft = new ArrayList<>();
     List<Track> switchRight = new ArrayList<>();
 
-    switchLeft.addAll(right.stream().map(t -> getTrack(t)).collect(Collectors.toList()));
+    switchLeft.addAll(left.stream().map(t -> getTrack(t)).collect(Collectors.toList()));
 
-    switchRight.addAll(left.stream().map(t -> getTrack(t)).collect(Collectors.toList()));
+    switchRight.addAll(right.stream().map(t -> getTrack(t)).collect(Collectors.toList()));
 
     Switch s = new Switch(switchLeft, switchRight);
     s.setStatus(getTrack(trackLeft), getTrack(trackRight));
@@ -178,7 +179,6 @@ public class GlobalMap {
   private void addPlaceable(int id, Placeable p, int trackID, int sectionIndex) {
     placeablesMap.put(id, p);
 
-    logger.info("id {}, p {}, track {}, section {}", id, p, trackID, sectionIndex);
     getTrack(trackID).placePlaceableOnSectionIndex(p, sectionIndex);
   }
 
