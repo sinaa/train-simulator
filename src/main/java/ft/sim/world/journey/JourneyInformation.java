@@ -34,11 +34,11 @@ public class JourneyInformation {
       int id = 0;
       String type = "N/A";
       if(c instanceof Track) {
-        id = BasicSimulation.world.getTrackID((Track) c);
+        id = BasicSimulation.getInstance().getWorld().getTrackID((Track) c);
         type = "Track";
       }
       if(c instanceof Switch) {
-        id = BasicSimulation.world.getSwitchID((Switch) c);
+        id = BasicSimulation.getInstance().getWorld().getSwitchID((Switch) c);
         type = "Switch";
       }
       p.add(type + "-" + id);

@@ -33,27 +33,37 @@ public class BasicSimulation {
 
   private long ticksElapsed = 0;
   private long timeElapsed = 0;
+  private int simulationTimeElapsed = 0;
 
   private Thread simThread;
 
   private SocketSession socketSession = null;
+  private boolean isRunning = false;
 
   private static BasicSimulation instance = null;
 
   public static BasicSimulation getInstance() {
-    if(instance == null) {
+    if (instance == null) {
       instance = new BasicSimulation();
     }
     return instance;
   }
 
+  public boolean isRunning() {
+    return isRunning;
+  }
+
+  public static BasicSimulation newInstance() {
+    if (instance != null) {
+      instance.kill();
+      instance = null;
+    }
+    return getInstance();
+  }
+
   private BasicSimulation() {
     world = new GlobalMap();
 
-    startSimulation();
-  }
-
-  private void startSimulation() {
     simThread = new Thread(() -> {
       while (!Thread.currentThread().isInterrupted()) {
         long startTime = System.nanoTime();
@@ -66,6 +76,7 @@ public class BasicSimulation {
         long elapsed = System.nanoTime() - startTime;
         double ms = NANOSECONDS.toMillis(elapsed);
         timeElapsed += ms;
+        // wait for
         int waitTime = (int) Math.floor((userRefreshRate / ticksPerSecond) - ms);
         if (waitTime > 0) {
           try {
@@ -90,7 +101,6 @@ public class BasicSimulation {
             jsonObject.addProperty("ticksElapsed", ticksElapsed);
             jsonObject.addProperty("simulationTimeElapsed", ticksElapsed * secondsPerTick);
 
-
             //String json = gson.toJson(journeysMap);
             String json = gson.toJson(jsonObject);
             //logger.info("JSON: {}", json);
@@ -101,17 +111,25 @@ public class BasicSimulation {
               e.printStackTrace();
             }
           }
+          simulationTimeElapsed = (int) Math.floor(ticksElapsed * 1.0 / ticksPerSecond);
           //displayStatistics();
           //logger.info("tick: {}", ticksElapsed);
         }
       }
     });
+
+    startSimulation();
+  }
+
+  private void startSimulation() {
     simThread.start();
+    isRunning = true;
   }
 
   public void kill() {
     simThread.interrupt();
     world = null;
+    isRunning = false;
   }
 
   public void setSocketSession(SocketSession socketSession) {
