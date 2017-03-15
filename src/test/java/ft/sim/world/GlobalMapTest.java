@@ -1,9 +1,8 @@
 package ft.sim.world;
 
-import static org.junit.Assert.*;
-
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import ft.sim.world.map.GlobalMap;
+import ft.sim.world.map.OriginalMapBuilder;
 import org.junit.Test;
 
 /**

@@ -2,6 +2,10 @@ package ft.sim.world;
 
 import static org.junit.Assert.*;
 
+import ft.sim.world.connectables.Connectable;
+import ft.sim.world.connectables.Switch;
+import ft.sim.world.connectables.Track;
+import ft.sim.world.journey.JourneyPath;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Test;

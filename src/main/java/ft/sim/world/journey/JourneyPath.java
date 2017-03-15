@@ -1,12 +1,13 @@
-package ft.sim.world;
+package ft.sim.world.journey;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import ft.sim.world.Connectable;
-import ft.sim.world.Track;
+import ft.sim.world.connectables.Connectable;
+import ft.sim.world.connectables.Track;
+import ft.sim.world.placeables.Balise;
+import ft.sim.world.placeables.Placeable;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;

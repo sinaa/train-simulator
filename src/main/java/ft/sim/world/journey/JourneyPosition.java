@@ -1,6 +1,9 @@
-package ft.sim.world;
+package ft.sim.world.journey;
 
 import ft.sim.train.Train;
+import ft.sim.world.connectables.Connectable;
+import ft.sim.world.connectables.Section;
+import ft.sim.world.connectables.Track;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;

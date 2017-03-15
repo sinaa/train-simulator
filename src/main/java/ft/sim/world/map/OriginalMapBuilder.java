@@ -1,8 +1,15 @@
-package ft.sim.world;
+package ft.sim.world.map;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import ft.sim.train.Train;
+import ft.sim.world.connectables.Connectable;
+import ft.sim.world.connectables.Switch;
+import ft.sim.world.connectables.Track;
+import ft.sim.world.journey.Journey;
+import ft.sim.world.journey.JourneyPath;
+import ft.sim.world.placeables.FixedBalise;
+import ft.sim.world.placeables.Placeable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +20,9 @@ import org.yaml.snakeyaml.Yaml;
 
 /**
  * Created by Sina on 21/02/2017.
+ *
+ * @deprecated This is the original map builder that is now replaced with GlobalMap which is able
+ * to import a world from a YAML file.
  */
 public class OriginalMapBuilder {
 

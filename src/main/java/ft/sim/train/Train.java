@@ -1,10 +1,10 @@
 package ft.sim.train;
 
-import ft.sim.world.Balise;
-import ft.sim.world.FixedBalise;
-import ft.sim.world.Journey;
-import ft.sim.world.Placeable;
-import ft.sim.world.Section;
+import ft.sim.world.placeables.Balise;
+import ft.sim.world.placeables.FixedBalise;
+import ft.sim.world.journey.Journey;
+import ft.sim.world.placeables.Placeable;
+import ft.sim.world.connectables.Section;
 import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;

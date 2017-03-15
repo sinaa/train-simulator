@@ -1,8 +1,16 @@
-package ft.sim.world;
+package ft.sim.world.map;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import ft.sim.train.Train;
+import ft.sim.world.connectables.Connectable;
+import ft.sim.world.connectables.Station;
+import ft.sim.world.connectables.Switch;
+import ft.sim.world.connectables.Track;
+import ft.sim.world.journey.Journey;
+import ft.sim.world.journey.JourneyPath;
+import ft.sim.world.placeables.FixedBalise;
+import ft.sim.world.placeables.Placeable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,13 +36,18 @@ public class GlobalMap {
   private BiMap<Integer, Placeable> placeablesMap = HashBiMap.create();
   private BiMap<Integer, Switch> switchMap = HashBiMap.create();
   private BiMap<Integer, Train> trainMap = HashBiMap.create();
+  private BiMap<Integer, Station> stationMap = HashBiMap.create();
 
   public GlobalMap() {
+    this("basic");
+  }
+
+  public GlobalMap(String mapName) {
     try {
-      importBasicMap("maps/basic.yaml");
+      importBasicMap("maps/" + mapName + ".yaml");
     } catch (IOException e) {
       e.printStackTrace();
-      assert false: "Failed to import map!";
+      assert false : "Failed to import map!";
     }
   }
 
@@ -44,6 +57,8 @@ public class GlobalMap {
     Map<String, Object> map = (Map<String, Object>) yaml.load(resource.getInputStream());
 
     createTracks((Map<String, Object>) map.get("tracks"));
+
+    createStations((Map<String, Object>) map.get("stations"));
 
     createPlaceables((Map<String, Object>) map.get("placeables"));
 
@@ -56,6 +71,16 @@ public class GlobalMap {
     createJourneys((Map<String, Object>) map.get("journeys"));
   }
 
+  private void createStations(Map<String, Object> stations) {
+   /* for (Entry<String, Object> station : stations.entrySet()) {
+      int stationID = Integer.parseInt(station.getKey());
+      Map<String, Object> stationData = (Map<String, Object>) station.getValue();
+      Station s = new Station((int) stationData.get("capacity"));
+
+      addStation(stationID, s);
+    }*/
+  }
+
 
   private void createJourneys(Map<String, Object> journeys) {
     for (Entry<String, Object> j : journeys.entrySet()) {
@@ -65,7 +90,7 @@ public class GlobalMap {
       int jpID = (int) journeyData.get("path");
       boolean isForward = (boolean) journeyData.get("isForward");
 
-      addJourney(journeyID, jpID,trainID, isForward);
+      addJourney(journeyID, jpID, trainID, isForward);
     }
   }
 
@@ -133,7 +158,7 @@ public class GlobalMap {
     for (Entry<String, Object> train : trains.entrySet()) {
       int trainID = Integer.parseInt(train.getKey());
       Map<String, Object> trainData = (Map<String, Object>) train.getValue();
-      Train t = new Train((int)trainData.get("numCars"));
+      Train t = new Train((int) trainData.get("numCars"));
 
       addTrain(trainID, t);
     }
@@ -145,6 +170,10 @@ public class GlobalMap {
 
   public void addTrain(int id, Train train) {
     trainMap.put(id, train);
+  }
+
+  public void addStation(int id, Station station) {
+    stationMap.put(id, station);
   }
 
   public void addSwitch(int id, List<Integer> left, List<Integer> right, int trackLeft,

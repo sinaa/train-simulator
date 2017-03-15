@@ -1,4 +1,4 @@
-package ft.sim.world;
+package ft.sim.world.placeables;
 
 /**
  * Created by Sina on 21/02/2017.

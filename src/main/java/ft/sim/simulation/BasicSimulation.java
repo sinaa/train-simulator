@@ -1,17 +1,13 @@
 package ft.sim.simulation;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import ft.sim.train.Train;
 import ft.sim.web.SocketSession;
-import ft.sim.world.GlobalMap;
-import ft.sim.world.Journey;
-import ft.sim.world.JourneyPath;
+import ft.sim.world.map.GlobalMap;
+import ft.sim.world.journey.Journey;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

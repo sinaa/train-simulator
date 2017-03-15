@@ -3,6 +3,13 @@ package ft.sim.world;
 import static org.junit.Assert.*;
 
 import ft.sim.train.Train;
+import ft.sim.world.connectables.Connectable;
+import ft.sim.world.connectables.Section;
+import ft.sim.world.connectables.Switch;
+import ft.sim.world.connectables.Track;
+import ft.sim.world.journey.Journey;
+import ft.sim.world.journey.JourneyPath;
+import ft.sim.world.journey.JourneyPosition;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Before;

@@ -1,16 +1,14 @@
 package ft.sim.world;
 
-import java.io.File;
-import java.io.FileInputStream;
+import ft.sim.world.connectables.Track;
+import ft.sim.world.placeables.FixedBalise;
+import ft.sim.world.placeables.Placeable;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import org.junit.Before;
 import org.junit.Test;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.yaml.snakeyaml.Yaml;
 

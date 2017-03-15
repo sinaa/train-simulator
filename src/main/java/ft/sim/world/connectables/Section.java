@@ -1,7 +1,7 @@
-package ft.sim.world;
+package ft.sim.world.connectables;
 
+import ft.sim.world.placeables.Placeable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;

@@ -1,14 +1,13 @@
-package ft.sim.world;
+package ft.sim.world.connectables;
 
 import static java.util.stream.Collectors.toList;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import com.google.gson.annotations.Expose;
+import ft.sim.world.placeables.Balise;
+import ft.sim.world.placeables.Placeable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +45,7 @@ public class Track implements Connectable {
 
   private BiMap<Integer, Placeable> placeables = HashBiMap.create();
 
-  protected void placePlaceableOnSectionIndex(Placeable placeable, int sectionIndex) {
+  public void placePlaceableOnSectionIndex(Placeable placeable, int sectionIndex) {
     if (sectionIndex >= sections.size()) {
       throw new ArrayIndexOutOfBoundsException(
           "The section index " + sectionIndex + " does not exist. Number of sections: " +
@@ -63,11 +62,11 @@ public class Track implements Connectable {
         .collect(toList());
   }
 
-  public int getPlaceablePosition(Placeable placeable){
+  public int getPlaceablePosition(Placeable placeable) {
     return placeables.inverse().get(placeable);
   }
 
-  public boolean hasPlaceable(Placeable placeable){
+  public boolean hasPlaceable(Placeable placeable) {
     return placeables.containsValue(placeable);
   }
 

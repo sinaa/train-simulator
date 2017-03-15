@@ -1,7 +1,7 @@
 package ft.sim.train;
 
-import ft.sim.world.Journey;
-import ft.sim.world.JourneyPath;
+import ft.sim.world.journey.Journey;
+import ft.sim.world.journey.JourneyPath;
 
 /**
  * Created by Sina on 07/03/2017.

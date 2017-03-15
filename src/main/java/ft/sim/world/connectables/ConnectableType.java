@@ -1,4 +1,4 @@
-package ft.sim.world;
+package ft.sim.world.connectables;
 
 /**
  * Created by Sina on 06/03/2017.

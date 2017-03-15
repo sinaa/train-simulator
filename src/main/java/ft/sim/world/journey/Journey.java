@@ -1,4 +1,4 @@
-package ft.sim.world;
+package ft.sim.world.journey;
 
 import ft.sim.train.Train;
 import org.slf4j.Logger;

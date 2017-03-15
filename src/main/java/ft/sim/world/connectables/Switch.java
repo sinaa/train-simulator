@@ -1,4 +1,4 @@
-package ft.sim.world;
+package ft.sim.world.connectables;
 
 import java.util.HashMap;
 import java.util.Map;

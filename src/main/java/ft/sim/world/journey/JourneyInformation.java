@@ -1,6 +1,9 @@
-package ft.sim.world;
+package ft.sim.world.journey;
 
 import ft.sim.simulation.BasicSimulation;
+import ft.sim.world.connectables.Connectable;
+import ft.sim.world.connectables.Switch;
+import ft.sim.world.connectables.Track;
 import java.util.ArrayList;
 import java.util.List;
 
