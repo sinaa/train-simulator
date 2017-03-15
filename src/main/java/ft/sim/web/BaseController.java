@@ -13,8 +13,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Controller
 public class BaseController {
 
-  public static BasicSimulation simulation;
-
   @RequestMapping("/")
   public String index(Model model) {
     return "home";
@@ -35,10 +33,10 @@ public class BaseController {
 
   @RequestMapping("/trains/start")
   public String trainsStart(Model model) {
-    if (simulation != null) {
-      simulation.startTrains();
+
+      BasicSimulation.getInstance().startTrains();
       model.addAttribute("name", "Trains started");
-    }
+
     return "hi";
   }
 

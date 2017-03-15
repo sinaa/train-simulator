@@ -72,17 +72,23 @@ public class GlobalMap {
   }
 
   private void createStations(Map<String, Object> stations) {
-   /* for (Entry<String, Object> station : stations.entrySet()) {
+    if (stations == null) {
+      return;
+    }
+    for (Entry<String, Object> station : stations.entrySet()) {
       int stationID = Integer.parseInt(station.getKey());
       Map<String, Object> stationData = (Map<String, Object>) station.getValue();
       Station s = new Station((int) stationData.get("capacity"));
 
       addStation(stationID, s);
-    }*/
+    }
   }
 
 
   private void createJourneys(Map<String, Object> journeys) {
+    if (journeys == null) {
+      return;
+    }
     for (Entry<String, Object> j : journeys.entrySet()) {
       int journeyID = Integer.parseInt(j.getKey());
       Map<String, Object> journeyData = (Map<String, Object>) j.getValue();
@@ -95,6 +101,9 @@ public class GlobalMap {
   }
 
   private void createJourneyPaths(Map<String, Object> journeyPaths) {
+    if (journeyPaths == null) {
+      return;
+    }
     for (Entry<String, Object> journeyPath : journeyPaths.entrySet()) {
       int journeyPathID = Integer.parseInt(journeyPath.getKey());
       Map<String, Object> jData = (Map<String, Object>) journeyPath.getValue();
@@ -113,6 +122,9 @@ public class GlobalMap {
   }
 
   private void createSwitches(Map<String, Object> switches) {
+    if (switches == null) {
+      return;
+    }
     for (Entry<String, Object> s : switches.entrySet()) {
       int switchID = Integer.parseInt(s.getKey());
       Map<String, Object> sData = (Map<String, Object>) s.getValue();
@@ -127,6 +139,9 @@ public class GlobalMap {
   }
 
   private void createTracks(Map<String, Object> trackMap) {
+    if (trackMap == null) {
+      return;
+    }
     for (Entry<String, Object> track : trackMap.entrySet()) {
       int trackID = Integer.parseInt(track.getKey());
       Map<String, Integer> trackData = (Map<String, Integer>) track.getValue();
@@ -137,6 +152,9 @@ public class GlobalMap {
   }
 
   private void createPlaceables(Map<String, Object> placeablesMap) {
+    if (placeablesMap == null) {
+      return;
+    }
     for (Entry<String, Object> placeable : placeablesMap.entrySet()) {
       int placeableID = Integer.parseInt(placeable.getKey());
       Map<String, Object> placeableData = (Map<String, Object>) placeable.getValue();
@@ -155,6 +173,9 @@ public class GlobalMap {
 
 
   private void createTrains(Map<String, Object> trains) {
+    if (trains == null) {
+      return;
+    }
     for (Entry<String, Object> train : trains.entrySet()) {
       int trainID = Integer.parseInt(train.getKey());
       Map<String, Object> trainData = (Map<String, Object>) train.getValue();
@@ -211,7 +232,9 @@ public class GlobalMap {
     getTrack(trackID).placePlaceableOnSectionIndex(p, sectionIndex);
   }
 
-
+  /*
+   * Journey getters
+   */
   public int getJourneyID(Journey j) {
     return journeysMap.inverse().get(j);
   }
@@ -220,11 +243,14 @@ public class GlobalMap {
     return journeysMap;
   }
 
+
   public Journey getJourney(int journeyID) {
     return journeysMap.get(journeyID);
   }
 
-
+  /*
+   * JourneyPath getters
+   */
   public BiMap<Integer, JourneyPath> getJourneyPaths() {
     return journeyPathsMap;
   }
@@ -233,6 +259,13 @@ public class GlobalMap {
     return journeyPathsMap.get(journeyPathID);
   }
 
+  public int getJourneyPathID(JourneyPath jp) {
+    return journeyPathsMap.inverse().get(jp);
+  }
+
+  /*
+   * Switch getters
+   */
   public BiMap<Integer, Switch> getSwitches() {
     return switchMap;
   }
@@ -247,10 +280,12 @@ public class GlobalMap {
   }
 
 
+  /*
+   * Track getters
+   */
   public BiMap<Integer, Track> getTracks() {
     return trackMap;
   }
-
 
   public Track getTrack(int trackID) {
     return trackMap.get(trackID);
@@ -261,10 +296,12 @@ public class GlobalMap {
   }
 
 
+  /*
+   * Train getters
+   */
   public BiMap<Integer, Train> getTrains() {
     return trainMap;
   }
-
 
   public Train getTrain(int trainID) {
     return trainMap.get(trainID);
@@ -277,4 +314,19 @@ public class GlobalMap {
     return trainMap.inverse().get(t);
   }
 
+
+  /*
+   * Station getters
+   */
+  public BiMap<Integer, Station> getStations() {
+    return stationMap;
+  }
+
+  public Station getStation(int stationID) {
+    return stationMap.get(stationID);
+  }
+
+  public int getStationID(Station s) {
+    return stationMap.inverse().get(s);
+  }
 }

@@ -22,25 +22,38 @@ public class BasicSimulation {
 
   protected Logger logger = LoggerFactory.getLogger(BasicSimulation.class);
 
-  public static GlobalMap world = null;
+  private GlobalMap world = null;
   // From the point of view of a user, how many ticks we should do per second
   int ticksPerSecond = 300;
   // From the view of the simulation, how much time passed since last tick (in seconds)
-  double secondsPerTick = 1.0 / 100.0;
+  private double secondsPerTick = 1.0 / 100.0;
 
   // How often to send request to user
-  int userRefreshRate = 500;
+  private int userRefreshRate = 500;
 
-  long ticksElapsed = 0;
-  long timeElapsed = 0;
+  private long ticksElapsed = 0;
+  private long timeElapsed = 0;
 
-  Thread simThread;
+  private Thread simThread;
 
-  SocketSession socketSession = null;
+  private SocketSession socketSession = null;
 
-  public BasicSimulation() {
+  private static BasicSimulation instance = null;
+
+  public static BasicSimulation getInstance() {
+    if(instance == null) {
+      instance = new BasicSimulation();
+    }
+    return instance;
+  }
+
+  private BasicSimulation() {
     world = new GlobalMap();
 
+    startSimulation();
+  }
+
+  private void startSimulation() {
     simThread = new Thread(() -> {
       while (!Thread.currentThread().isInterrupted()) {
         long startTime = System.nanoTime();
@@ -124,5 +137,7 @@ public class BasicSimulation {
     }
   }
 
-
+  public GlobalMap getWorld() {
+    return world;
+  }
 }
