@@ -31,7 +31,7 @@ public class JourneyPosition {
   private final boolean isForward;
 
   public JourneyPosition(JourneyPath path, Train train, boolean isForward) {
-    this(path, train, isForward, path.getLength());
+    this(path, train, isForward, isForward ? 0 : path.getLength());
   }
 
   public JourneyPosition(JourneyPath path, Train train, boolean isForward, double initialPosition) {
@@ -69,13 +69,17 @@ public class JourneyPosition {
 
       Connectable lastConnectable = position.peekLast();
       double lastConnectableStartingPosition = path.getConnectableStartingPosition(lastConnectable);
-      double lastconnectableEndingPosition = lastConnectableStartingPosition + lastConnectable.getLength();
+      double lastconnectableEndingPosition =
+          lastConnectableStartingPosition + lastConnectable.getLength();
       double tailPositionFromEnd = lastconnectableEndingPosition - initialPosition;
 
       Connectable firstConnectable = position.peekFirst();
-      double firstConnectableStartingPosition = path.getConnectableStartingPosition(firstConnectable);
+      double firstConnectableStartingPosition = path
+          .getConnectableStartingPosition(firstConnectable);
 
-      positionFromFirstConnectable = lastconnectableEndingPosition - tailPositionFromEnd - trainLength - firstConnectableStartingPosition;
+      positionFromFirstConnectable =
+          lastconnectableEndingPosition - tailPositionFromEnd - trainLength
+              - firstConnectableStartingPosition;
 
       //positionFromFirstConnectable = initialPosition - connectableStartingPosition - trainLength;
     }
@@ -188,10 +192,11 @@ public class JourneyPosition {
     if (isEnded || lastDistanceTravelled == 0) {
       return;
     }
-    if(isForward)
+    if (isForward) {
       updatePositionForward(lastDistanceTravelled);
-    else
+    } else {
       updatePositionBackward(lastDistanceTravelled);
+    }
 
   }
 
@@ -297,9 +302,8 @@ public class JourneyPosition {
       positionFromFirstConnectable -= lastDistanceTravelled;
     }
 
-
     double overflow = getPositionFromLastConnectable();
-    if(overflow<=0) {
+    if (overflow <= 0) {
       position.removeLast();
       logger.info("Removed connectable from tail (going backwards)");
     }
