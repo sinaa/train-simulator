@@ -1,5 +1,7 @@
 package ft.sim.train;
 
+import ft.sim.signal.SignalType;
+import ft.sim.simulation.Tickable;
 import ft.sim.world.placeables.Balise;
 import ft.sim.world.placeables.FixedBalise;
 import ft.sim.world.journey.Journey;
@@ -13,7 +15,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Created by Sina on 21/02/2017.
  */
-public class Train {
+public class Train implements Tickable {
 
   protected Logger logger = LoggerFactory.getLogger(Train.class);
 
@@ -28,7 +30,7 @@ public class Train {
     engine = new Engine(this);
   }
 
-  public void initECU(Journey journey){
+  public void initECU(Journey journey) {
     ecu = new ECU(journey, engine);
   }
 
@@ -76,8 +78,22 @@ public class Train {
     return length;
   }
 
-  public void tick(double time){
+  public void tick(double time) {
     engine.tick(time);
+    ecu.tick(time);
+  }
+
+  public void signal(SignalType signal) {
+    switch (signal) {
+      case GREEN:
+        //TODO: this has to be decided by the ECU
+        logger.warn("TODO, green signal");
+        engine.setTargetSpeed(20);
+      case RED:
+        engine.setTargetSpeed(0);
+      case AMBER:
+        throw new UnsupportedOperationException("received signal: " + signal);
+    }
   }
 
 }

@@ -7,23 +7,31 @@ journeys:
   '2':
     train: 2
     path: 2
-    isForward: true
+    isForward: false
 journeyPaths:
   '1':
     path:
+    - type: station
+      id: 1
     - type: track
       id: 1
     - type: switch
       id: 1
     - type: track
       id: 2
+    - type: station
+      id: 2
   '2':
     path:
+    - type: station
+      id: 3
     - type: track
       id: 3
     - type: switch
       id: 1
     - type: track
+      id: 4
+    - type: station
       id: 4
 switches:
   '1':
@@ -74,3 +82,17 @@ trains:
     numCars: 2
   '2':
     numCars: 3
+stations:
+  '1':
+    capacity: 4
+    wait: 10
+  '2':
+    capacity: 2
+    wait: 60
+  '3':
+    capacity: 2
+    wait: 45
+  '4':
+    capacity: 4
+    wait: 30
+

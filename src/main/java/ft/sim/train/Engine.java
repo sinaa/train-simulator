@@ -1,11 +1,12 @@
 package ft.sim.train;
 
 import ft.sim.simulation.BasicSimulation;
+import ft.sim.simulation.Tickable;
 
 /**
  * Created by Sina on 21/02/2017.
  */
-public class Engine {
+public class Engine implements Tickable {
 
   // Which train does this engine belong to (one-to-one relationship)
   private int belongsToTrainID;
@@ -100,7 +101,7 @@ public class Engine {
   /*
    * Update status given time (in seconds)
    */
-  void tick(double time) {
+  public void tick(double time) {
     // distance = v1 x t + 1/2 * a * t^2
     lastDistanceTravelled += speed * time + (acceleration * Math.pow(time, 2) / 2.0);
 

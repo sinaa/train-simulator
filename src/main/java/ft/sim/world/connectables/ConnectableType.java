@@ -5,5 +5,6 @@ package ft.sim.world.connectables;
  */
 public enum ConnectableType {
   TRACK,
-  SWITCH
+  SWITCH,
+  STATION
 }

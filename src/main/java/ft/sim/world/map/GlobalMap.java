@@ -45,9 +45,11 @@ public class GlobalMap {
   public GlobalMap(String mapName) {
     try {
       importBasicMap("maps/" + mapName + ".yaml");
+      logger.warn("imported map");
     } catch (IOException e) {
+      logger.error("failed to import map");
       e.printStackTrace();
-      assert false : "Failed to import map!";
+      throw new IllegalStateException("Failed to import map!");
     }
   }
 
@@ -78,7 +80,7 @@ public class GlobalMap {
     for (Entry<String, Object> station : stations.entrySet()) {
       int stationID = Integer.parseInt(station.getKey());
       Map<String, Object> stationData = (Map<String, Object>) station.getValue();
-      Station s = new Station((int) stationData.get("capacity"));
+      Station s = new Station((int) stationData.get("capacity"), (int) stationData.get("wait"));
 
       addStation(stationID, s);
     }
@@ -111,10 +113,19 @@ public class GlobalMap {
       List<Connectable> connectables = new ArrayList<>();
       for (Map<String, Object> connectable : path) {
         int connectableID = (int) connectable.get("id");
-        if (connectable.get("type").equals("track")) {
-          connectables.add(getTrack(connectableID));
-        } else if (connectable.get("type").equals("switch")) {
-          connectables.add(getSwitch(connectableID));
+        String connectableType = (String)connectable.get("type");
+        switch (connectableType){
+          case "track":
+            connectables.add(getTrack(connectableID));
+            break;
+          case "switch":
+            connectables.add(getSwitch(connectableID));
+            break;
+          case "station":
+            connectables.add(getStation(connectableID));
+            break;
+          default:
+            throw new IllegalArgumentException("Invalid journeyPath path-element type: " + connectableType);
         }
       }
       addJourneyPath(journeyPathID, connectables);

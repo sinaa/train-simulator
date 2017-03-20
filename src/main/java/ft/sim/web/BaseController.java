@@ -5,13 +5,18 @@ package ft.sim.web;
  */
 
 import ft.sim.simulation.BasicSimulation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 public class BaseController {
+
+  private Logger logger = LoggerFactory.getLogger(BaseController.class);
 
   @RequestMapping("/")
   public String index(Model model) {
@@ -39,5 +44,6 @@ public class BaseController {
 
     return "hi";
   }
+
 
 }

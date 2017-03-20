@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.socket.TextMessage;
 
 /**
@@ -37,6 +38,8 @@ public class BasicSimulation {
 
   private Thread simThread;
 
+  private boolean killed = false;
+
   private SocketSession socketSession = null;
   private boolean isRunning = false;
 
@@ -47,6 +50,10 @@ public class BasicSimulation {
       instance = new BasicSimulation();
     }
     return instance;
+  }
+
+  public boolean isKilled() {
+    return killed;
   }
 
   public boolean isRunning() {
@@ -62,8 +69,9 @@ public class BasicSimulation {
   }
 
   private BasicSimulation() {
+    logger.info("starting new simulation");
     world = new GlobalMap();
-
+    logger.info("created world");
     simThread = new Thread(() -> {
       while (!Thread.currentThread().isInterrupted()) {
         long startTime = System.nanoTime();
@@ -117,11 +125,10 @@ public class BasicSimulation {
         }
       }
     });
-
-    startSimulation();
   }
 
-  private void startSimulation() {
+  @Async
+  public void startSimulation() {
     simThread.start();
     isRunning = true;
   }
@@ -130,6 +137,7 @@ public class BasicSimulation {
     simThread.interrupt();
     world = null;
     isRunning = false;
+    killed = true;
   }
 
   public void setSocketSession(SocketSession socketSession) {
@@ -137,7 +145,7 @@ public class BasicSimulation {
   }
 
   public void startTrains() {
-    List<Journey> journeys = new ArrayList<Journey>(world.getJourneys().values());
+    List<Journey> journeys = new ArrayList<>(world.getJourneys().values());
     int i = 0;
     for (Journey j : journeys) {
       i++;

@@ -36,6 +36,8 @@ public class SocketSession {
     }*/
 
     BasicSimulation simulation = BasicSimulation.getInstance();
+    if(simulation.isKilled())
+      simulation = BasicSimulation.newInstance();
     logger.info("message: {}", message);
 
     try {
@@ -57,6 +59,7 @@ public class SocketSession {
             simulation.setSocketSession(this);
             return "OK";
           case "start simulation":
+            simulation.startSimulation();
             simulation.setSocketSession(this);
             return "OK";
         }
