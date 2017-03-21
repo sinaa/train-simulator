@@ -1,9 +1,12 @@
-package ft.sim.signal;
+package ft.sim.world.placeables;
+
+import ft.sim.signal.SignalType;
+import ft.sim.signal.SignalUnit;
 
 /**
  * Created by Sina on 20/03/2017.
  */
-public class LCU {
+public class LCU implements Placeable{
 
   SignalUnit distantSignalUnit;
   SignalUnit signal;

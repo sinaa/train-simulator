@@ -92,8 +92,7 @@ public class OriginalMapBuilder {
     switchRight.add(getTrack(2));
     switchRight.add(getTrack(4));
 
-    Switch s1 = new Switch(switchLeft, switchRight);
-    s1.setStatus(getTrack(1), getTrack(2));
+    Switch s1 = new Switch(switchLeft, switchRight, getTrack(1), getTrack(2));
 
     switchMap.put(1, s1);
   }

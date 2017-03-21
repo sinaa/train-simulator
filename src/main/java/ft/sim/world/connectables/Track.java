@@ -34,6 +34,9 @@ public class Track implements Connectable {
   }
 
   public Track(int numSections) {
+    if (numSections == 0) {
+      throw new IllegalArgumentException("Track num sections cannot be Zero.");
+    }
     sections = new ArrayList<Section>(numSections);
     length = 0;
     for (int i = 0; i < numSections; i++) {
@@ -55,6 +58,10 @@ public class Track implements Connectable {
     section.addPlaceable(placeable);
 
     placeables.put(sectionIndex, placeable);
+  }
+
+  public int getLastSectionIndex() {
+    return sections.size() - 1;
   }
 
   public List<Balise> getBalises() {

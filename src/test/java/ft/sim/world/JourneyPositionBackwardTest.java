@@ -38,8 +38,7 @@ public class JourneyPositionBackwardTest {
     switchRight.add(t2);
     //switchRight.add(getTrack(4));
 
-    Switch s1 = new Switch(switchLeft, switchRight);
-    s1.setStatus(t1, t2);
+    Switch s1 = new Switch(switchLeft, switchRight, t1, t2);
 
     journeyPath1.add(t1);
     journeyPath1.add(s1);

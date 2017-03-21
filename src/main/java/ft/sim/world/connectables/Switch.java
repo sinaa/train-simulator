@@ -1,7 +1,6 @@
 package ft.sim.world.connectables;
 
-import ft.sim.signal.LCU;
-import ft.sim.signal.SignalUnit;
+import ft.sim.world.placeables.LCU;
 import ft.sim.simulation.Tickable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,15 +37,16 @@ public class Switch implements Connectable, Tickable {
   boolean isChanging = false;
 
   public Switch(List<Track> a, List<Track> b) {
+    this(a,b, a.get(0), b.get(0));
+  }
+
+  public Switch(List<Track> a, List<Track> b, Track left, Track right) {
     from = a;
     to = b;
 
     if (a.size() == 0 || b.size() == 0) {
       throw new IllegalArgumentException();
     }
-
-    Track left = a.get(0);
-    Track right = b.get(0);
 
     status.put(left, right);
     status.put(right, left);
@@ -83,6 +83,7 @@ public class Switch implements Connectable, Tickable {
 
   private void setSignals(){
     //TODO: set signals based on the status and connected tracks
+
   }
 
   public Map<Track, Track> getStatus() {

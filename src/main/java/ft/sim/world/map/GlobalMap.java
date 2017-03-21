@@ -217,8 +217,7 @@ public class GlobalMap {
 
     switchRight.addAll(right.stream().map(t -> getTrack(t)).collect(Collectors.toList()));
 
-    Switch s = new Switch(switchLeft, switchRight);
-    s.setStatus(getTrack(trackLeft), getTrack(trackRight));
+    Switch s = new Switch(switchLeft, switchRight, getTrack(trackLeft), getTrack(trackRight));
 
     switchMap.put(id, s);
   }

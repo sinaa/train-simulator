@@ -8,6 +8,7 @@ import ft.sim.train.Train;
 import ft.sim.web.SocketSession;
 import ft.sim.world.map.GlobalMap;
 import ft.sim.world.journey.Journey;
+import ft.sim.world.observer.Oracle;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -70,21 +71,22 @@ public class BasicSimulation {
 
   private BasicSimulation() {
     logger.info("starting new simulation");
-    world = new GlobalMap();
-    logger.info("created world");
+    try {
+      world = new GlobalMap();
+    } catch (Throwable t){
+       t.printStackTrace();
+       logger.error("!!!! Exception happened while building map: {} \n", t.getMessage());
+       throw t;
+    }
+
     simThread = new Thread(() -> {
       while (!Thread.currentThread().isInterrupted()) {
         long startTime = System.nanoTime();
-        for (Map.Entry<Integer, Journey> entry : world.getJourneys().entrySet()) {
-          Journey j = entry.getValue();
-          j.tick(secondsPerTick);
-          j.getJourneyInformation().update(j);
-        }
-        ticksElapsed++;
+        tick();
         long elapsed = System.nanoTime() - startTime;
         double ms = NANOSECONDS.toMillis(elapsed);
         timeElapsed += ms;
-        // wait for
+        // wait for the remaining time (to match ticksPerSecond)
         int waitTime = (int) Math.floor((userRefreshRate / ticksPerSecond) - ms);
         if (waitTime > 0) {
           try {
@@ -98,33 +100,44 @@ public class BasicSimulation {
 
         if (ticksElapsed % ticksPerSecond == 0) {
           if (socketSession != null) {
-
-            JsonObject jsonObject = new JsonObject();
-
-            Gson gson = new Gson();
-            jsonObject.addProperty("type", "journeyMap");
-            //jsonObject.add("journeys", gson.toJsonTree(journeysMap));
-            jsonObject.add("world", gson.toJsonTree(world));
-            jsonObject.addProperty("timeElapsedCalculating", timeElapsed);
-            jsonObject.addProperty("ticksElapsed", ticksElapsed);
-            jsonObject.addProperty("simulationTimeElapsed", ticksElapsed * secondsPerTick);
-
-            //String json = gson.toJson(journeysMap);
-            String json = gson.toJson(jsonObject);
-            //logger.info("JSON: {}", json);
-            try {
-              socketSession.getSession().sendMessage(new TextMessage(json));
-            } catch (Exception e) {
-              socketSession = null;
-              e.printStackTrace();
-            }
+            sendStatistics();
           }
           simulationTimeElapsed = (int) Math.floor(ticksElapsed * 1.0 / ticksPerSecond);
-          //displayStatistics();
-          //logger.info("tick: {}", ticksElapsed);
         }
       }
     });
+  }
+
+  private void tick() {
+    for (Map.Entry<Integer, Journey> entry : world.getJourneys().entrySet()) {
+      Journey j = entry.getValue();
+      j.tick(secondsPerTick);
+      j.getJourneyInformation().update(j);
+    }
+    ticksElapsed++;
+    Oracle.instance.checkState(world, ticksElapsed);
+  }
+
+  private void sendStatistics() {
+    JsonObject jsonObject = new JsonObject();
+
+    Gson gson = new Gson();
+    jsonObject.addProperty("type", "journeyMap");
+    //jsonObject.add("journeys", gson.toJsonTree(journeysMap));
+    jsonObject.add("world", gson.toJsonTree(world));
+    jsonObject.addProperty("timeElapsedCalculating", timeElapsed);
+    jsonObject.addProperty("ticksElapsed", ticksElapsed);
+    jsonObject.addProperty("simulationTimeElapsed", ticksElapsed * secondsPerTick);
+
+    //String json = gson.toJson(journeysMap);
+    String json = gson.toJson(jsonObject);
+    //logger.info("JSON: {}", json);
+    try {
+      socketSession.getSession().sendMessage(new TextMessage(json));
+    } catch (Exception e) {
+      socketSession = null;
+      e.printStackTrace();
+    }
   }
 
   @Async
