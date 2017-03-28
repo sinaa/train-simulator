@@ -23,8 +23,11 @@
             <button class="btn btn-success" onclick="sendCommand('start trains')">Start Trains
             </button>
           </div>
-          <div class="col-md-3">
+          <!--<div class="col-md-3">
             <button class="btn btn-info" onclick="sendCommand('get push data')">Get Push</button>
+          </div>-->
+          <div class="col-md-3">
+            <button class="btn btn-info" onclick="sendCommand('toggle interactive')">Toggle Interactive</button>
           </div>
           <div class="col-md-3">
             <button class="btn btn-danger" onclick="sendCommand('stop simulation')">Stop
@@ -120,7 +123,6 @@
       ws.onmessage = function (e) {
         try {
           data = JSON.parse(e.data);
-
         } catch (err) {
           console.log(e.data);
         }
@@ -316,7 +318,9 @@
       sendSet('trainTargetSpeed', trainID, speed);
     }
     $(document).ready(function () {
-      connect();
+      connect(function(){
+        getPush();
+      });
       $(document).on('click', '.set_speed', function () {
         var tid = $(this).parents('.single_train').data('trainID');
         var newSpeed = sliders[tid].slider('getValue');

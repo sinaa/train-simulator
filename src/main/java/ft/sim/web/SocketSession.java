@@ -52,15 +52,18 @@ public class SocketSession {
             simulation.startTrains();
             return "OK";
           case "stop simulation":
-            simulation.setSocketSession(null);
+            simulation.removeSocketSessions(this);
             simulation.kill();
             return "OK";
           case "get push data":
             simulation.setSocketSession(this);
-            return "OK";
+            return "SET OK";
           case "start simulation":
             simulation.startSimulation();
             simulation.setSocketSession(this);
+            return "OK";
+          case "toggle interactive":
+            simulation.toggleInteractive();
             return "OK";
         }
       }

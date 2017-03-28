@@ -9,9 +9,13 @@ import ft.sim.web.SocketSession;
 import ft.sim.world.map.GlobalMap;
 import ft.sim.world.journey.Journey;
 import ft.sim.world.observer.Oracle;
+import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
@@ -41,16 +45,30 @@ public class BasicSimulation {
 
   private boolean killed = false;
 
-  private SocketSession socketSession = null;
+  //private SocketSession socketSession = null;
+  private Set<SocketSession> socketSessions = new HashSet<>();
+
   private boolean isRunning = false;
 
+  private boolean interactiveSimulation = true;
+
   private static BasicSimulation instance = null;
+
+  // how many seconds should the simulation run for (max). Default: 2 days
+  private long simulationDuration = 2 * 24 * 60 * 60;
+
+  private boolean simulationCompleted = false;
 
   public static BasicSimulation getInstance() {
     if (instance == null) {
       instance = new BasicSimulation();
     }
     return instance;
+  }
+
+  public void toggleInteractive() {
+    interactiveSimulation = !interactiveSimulation;
+    logger.info("Interactive Simulation: {}", interactiveSimulation ? "On" : "Off");
   }
 
   public boolean isKilled() {
@@ -73,38 +91,44 @@ public class BasicSimulation {
     logger.info("starting new simulation");
     try {
       world = new GlobalMap();
-    } catch (Throwable t){
-       t.printStackTrace();
-       logger.error("!!!! Exception happened while building map: {} \n", t.getMessage());
-       throw t;
+    } catch (Throwable t) {
+      t.printStackTrace();
+      logger.error("!!!! Exception happened while building map: {} \n", t.getMessage());
+      throw t;
     }
 
     simThread = new Thread(() -> {
-      while (!Thread.currentThread().isInterrupted()) {
+      while (!Thread.currentThread().isInterrupted()
+          && ticksElapsed * secondsPerTick < simulationDuration
+          && !simulationCompleted) {
         long startTime = System.nanoTime();
         tick();
         long elapsed = System.nanoTime() - startTime;
         double ms = NANOSECONDS.toMillis(elapsed);
         timeElapsed += ms;
-        // wait for the remaining time (to match ticksPerSecond)
-        int waitTime = (int) Math.floor((userRefreshRate / ticksPerSecond) - ms);
-        if (waitTime > 0) {
-          try {
-            Thread.sleep(waitTime);
-          } catch (InterruptedException e) {
-            //e.printStackTrace();
-            logger.warn("Simulation Stopped");
-            Thread.currentThread().interrupt();
-          }
-        }
 
-        if (ticksElapsed % ticksPerSecond == 0) {
-          if (socketSession != null) {
-            sendStatistics();
+        if (interactiveSimulation) {
+          // wait for the remaining time (to match ticksPerSecond)
+          int waitTime = (int) Math.floor((userRefreshRate / ticksPerSecond) - ms);
+          if (waitTime > 0) {
+            try {
+              Thread.sleep(waitTime);
+            } catch (InterruptedException e) {
+              //e.printStackTrace();
+              logger.warn("Simulation Stopped");
+              Thread.currentThread().interrupt();
+            }
           }
-          simulationTimeElapsed = (int) Math.floor(ticksElapsed * 1.0 / ticksPerSecond);
+          // Send stats to user every ...
+          if (ticksElapsed % ticksPerSecond == 0) {
+            sendStatistics();
+            simulationTimeElapsed = (int) Math.floor(ticksElapsed * 1.0 / ticksPerSecond);
+          }
         }
       }
+      simulationCompleted = true;
+      isRunning = false;
+      logger.info("Simulation completed!");
     });
   }
 
@@ -119,6 +143,10 @@ public class BasicSimulation {
   }
 
   private void sendStatistics() {
+    if (socketSessions.size() == 0) {
+      return;
+    }
+
     JsonObject jsonObject = new JsonObject();
 
     Gson gson = new Gson();
@@ -131,12 +159,16 @@ public class BasicSimulation {
 
     //String json = gson.toJson(journeysMap);
     String json = gson.toJson(jsonObject);
-    //logger.info("JSON: {}", json);
-    try {
-      socketSession.getSession().sendMessage(new TextMessage(json));
-    } catch (Exception e) {
-      socketSession = null;
-      e.printStackTrace();
+    //logger.info("JSON: {}", json);.
+    Iterator<SocketSession> socketsIterator = socketSessions.iterator();
+    while (socketsIterator.hasNext()) {
+      SocketSession socketSession = socketsIterator.next();
+      try {
+        socketSession.getSession().sendMessage(new TextMessage(json));
+      } catch (Exception e) {
+        e.printStackTrace();
+        socketsIterator.remove();
+      }
     }
   }
 
@@ -154,7 +186,11 @@ public class BasicSimulation {
   }
 
   public void setSocketSession(SocketSession socketSession) {
-    this.socketSession = socketSession;
+    socketSessions.add(socketSession);
+  }
+
+  public void removeSocketSessions(SocketSession socketSession) {
+    this.socketSessions.remove(socketSessions);
   }
 
   public void startTrains() {
