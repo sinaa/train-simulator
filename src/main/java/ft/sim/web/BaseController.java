@@ -4,14 +4,19 @@ package ft.sim.web;
  * Created by Sina on 20/02/2017.
  */
 
-import ft.sim.simulation.BasicSimulation;
+import org.apache.commons.lang3.text.WordUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import ft.sim.simulation.BasicSimulation;
+import ft.sim.world.map.MapBuilder;
 
 @Controller
 public class BaseController {
@@ -33,14 +38,17 @@ public class BaseController {
 
   @RequestMapping("/simulation")
   public String simulation(Model model) {
+    Map<String, String> maps=MapBuilder.getMaps().stream().collect(Collectors
+        .toMap(s -> WordUtils.capitalizeFully(s.replace("-", " ").replace("_", " ")), s -> s));
+    model.addAttribute("maps", maps);
     return "simulation";
   }
 
   @RequestMapping("/trains/start")
   public String trainsStart(Model model) {
 
-      BasicSimulation.getInstance().startTrains();
-      model.addAttribute("name", "Trains started");
+    BasicSimulation.getInstance().startTrains();
+    model.addAttribute("name", "Trains started");
 
     return "hi";
   }

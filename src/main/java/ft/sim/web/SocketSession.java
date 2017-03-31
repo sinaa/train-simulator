@@ -76,6 +76,10 @@ public class SocketSession {
             simulation.getWorld().getTrain(trainID).getEngine()
                 .setTargetSpeed(targetSpeed);
             return "OK";
+          case "worldMap":
+            String mapKey = map.get("data");
+            simulation.setWorld(mapKey);
+            return "OK";
         }
       }
     } catch (com.google.gson.JsonSyntaxException ex) {

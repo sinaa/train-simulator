@@ -2,333 +2,377 @@
 <html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.w3.org/1999/xhtml"
       layout:decorator="base">
 <head>
-  <title>Welcome to Ferromonte Trails Simulation</title>
+    <title>Welcome to Ferromonte Trails Simulation</title>
 </head>
 <body>
 
 <div class="container">
-  <div layout:fragment="content">
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h3 class="panel-title">Manage Simulation</h3>
-      </div>
-      <div class="panel-body">
-        <div class="row" style="text-align: center;">
-          <div class="col-md-3">
-            <button class="btn btn-primary" onclick="sendCommand('start simulation')">Start
-              Simulation
-            </button>
-          </div>
-          <div class="col-md-3">
-            <button class="btn btn-success" onclick="sendCommand('start trains')">Start Trains
-            </button>
-          </div>
-          <!--<div class="col-md-3">
-            <button class="btn btn-info" onclick="sendCommand('get push data')">Get Push</button>
-          </div>-->
-          <div class="col-md-3">
-            <button class="btn btn-info" onclick="sendCommand('toggle interactive')">Toggle Interactive</button>
-          </div>
-          <div class="col-md-3">
-            <button class="btn btn-danger" onclick="sendCommand('stop simulation')">Stop
-              Simulation
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="panel panel-primary" id="trains_block" style="display: none;">
-      <div class="panel-heading">
-        <h3 class="panel-title">Trains</h3>
-      </div>
-      <div class="panel-body">
-        <div class="row" id="trains">
-
-        </div>
-      </div>
-    </div>
-
-    <div class="panel panel-success" id="journeys_block" style="display: none;">
-      <div class="panel-heading">
-        <h3 class="panel-title">Journeys</h3>
-      </div>
-      <div class="panel-body">
-        <div class="row" id="journeys">
-
-        </div>
-      </div>
-    </div>
-
-
-    <div id="templates" style="display: none;">
-      <div class="train_template">
-        <div class="col-md-4" style="text-align: center;">
-          <div style="text-align: center"><h3 class="train_name"></h3></div>
-          <canvas class="guage"></canvas>
-          <ul class="list-group">
-            <li class="list-group-item">Current Speed: <span class="current_speed"></span></li>
-            <li class="list-group-item">Target Speed: <span class="target_speed"></span></li>
-            <li class="list-group-item">Acceleration: <span class="acceleration"></span></li>
-            <li class="list-group-item">
-              <input class="slider" type="text" data-slider-min="0" data-slider-max="300"
-                     data-slider-step="1" data-slider-value="0"/>
-              <button class='btn btn-info set_speed'>Set Target Speed</button>
-            </li>
-          </ul>
-        </div>
-      </div>
-      <div class="journey_template">
-        <div class="col-md-4" style="text-align: center;">
-          <div style="text-align: center"><h3 class="journey_name"></h3></div>
-          <div class="progress">
-            <div class="progress-bar progress-bar-striped active" role="progressbar"
-                 aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
+    <div layout:fragment="content">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Manage Simulation</h3>
             </div>
-          </div>
-          <ul class="list-group">
-            <li class="list-group-item">Head Position: <span class="head_position"></span></li>
-            <li class="list-group-item">Tail Position: <span class="tail_position"></span></li>
-            <li class="list-group-item">Path Length: <span class="path_length"></span>m</li>
-            <li class="list-group-item">Path: <span class="path"></span></li>
-            <li class="list-group-item">Currently On: <span class="current_path"></span></li>
-          </ul>
+            <div class="panel-body">
+                <div class="row" style="text-align: center;">
+                    <div class="col-md-3">
+                        <button class="btn btn-primary" onclick="startSimulation();">
+                            Start
+                            Simulation
+                        </button>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-success" onclick="sendCommand('start trains')">Start
+                                                                                              Trains
+                        </button>
+                    </div>
+                    <!--<div class="col-md-3">
+                      <button class="btn btn-info" onclick="sendCommand('get push data')">Get Push</button>
+                    </div>-->
+                    <div class="col-md-3">
+                        <button class="btn btn-info" onclick="sendCommand('toggle interactive')">
+                            Toggle Interactive
+                        </button>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-danger" onclick="sendCommand('stop simulation')">Stop
+                                                                                                Simulation
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <div class="row">
+                        <div class="col-md-3" style="text-align: center; padding-top: 5px;">World
+                                                                                            Map:
+                        </div>
+                        <div class="col-md-9"><select class="form-control" id="worldmap"></select>
+                        </div>
+                    </div>
+                </li>
+            </ul>
         </div>
-      </div>
+
+        <div class="panel panel-primary" id="trains_block" style="display: none;">
+            <div class="panel-heading">
+                <h3 class="panel-title">Trains</h3>
+            </div>
+            <div class="panel-body">
+                <div class="row" id="trains">
+
+                </div>
+            </div>
+        </div>
+
+        <div class="panel panel-success" id="journeys_block" style="display: none;">
+            <div class="panel-heading">
+                <h3 class="panel-title">Journeys</h3>
+            </div>
+            <div class="panel-body">
+                <div class="row" id="journeys">
+
+                </div>
+            </div>
+        </div>
+
+        <div id="templates" style="display: none;">
+            <div class="train_template">
+                <div class="col-md-4" style="text-align: center;">
+                    <div style="text-align: center"><h3 class="train_name"></h3></div>
+                    <canvas class="guage"></canvas>
+                    <ul class="list-group">
+                        <li class="list-group-item">Current Speed: <span
+                                class="current_speed"></span></li>
+                        <li class="list-group-item">Target Speed: <span class="target_speed"></span>
+                        </li>
+                        <li class="list-group-item">Acceleration: <span class="acceleration"></span>
+                        </li>
+                        <li class="list-group-item">
+                            <input class="slider" type="text" data-slider-min="0"
+                                   data-slider-max="300"
+                                   data-slider-step="1" data-slider-value="0"/>
+                            <button class='btn btn-info set_speed'>Set Target Speed</button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="journey_template">
+                <div class="col-md-4" style="text-align: center;">
+                    <div style="text-align: center"><h3 class="journey_name"></h3></div>
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-striped active" role="progressbar"
+                             aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"
+                             style="width: 0%">
+                        </div>
+                    </div>
+                    <ul class="list-group">
+                        <li class="list-group-item">Head Position: <span
+                                class="head_position"></span></li>
+                        <li class="list-group-item">Tail Position: <span
+                                class="tail_position"></span></li>
+                        <li class="list-group-item">Path Length: <span class="path_length"></span>m
+                        </li>
+                        <li class="list-group-item">Path: <span class="path"></span></li>
+                        <li class="list-group-item">Currently On: <span class="current_path"></span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
     </div>
-
-
-  </div>
 </div>
 
-
 <th:block layout:fragment="script">
-  <script type="text/javascript" th:inline="javascript">
-    var guages = {};
-    var sliders = {};
+    <script type="text/javascript" th:inline="javascript">
+        'strict';
+        var worldMaps = /*[[${maps}]]*/{};
 
-    var ws = null;
-    var data = null;
-    var initialised = false;
-    function connect(onOpen) {
-      var target = /*[[@{/ws}]]*/ null;
+        var guages = {};
+        var sliders = {};
 
-      ws = new SockJS(target);
-      ws.onopen = function () {
-        console.log('open');
-        if (onOpen !== undefined) {
-          onOpen();
+        var ws = null;
+        var data = null;
+        var initialised = false;
+        function connect(onOpen) {
+            var target = /*[[@{/ws}]]*/ null;
+
+            ws = new SockJS(target);
+            ws.onopen = function () {
+                console.log('open');
+                if (onOpen !== undefined) {
+                    onOpen();
+                }
+            };
+            ws.onmessage = function (e) {
+                try {
+                    data = JSON.parse(e.data);
+                } catch (err) {
+                    console.log(e.data);
+                }
+
+                if (data !== null) {
+                    if (!initialised) {
+                        initialize();
+                    } else {
+                        updateStats();
+                    }
+                }
+            };
+            ws.onclose = function () {
+                console.log('close');
+                ws = null;
+            };
         }
-      };
-      ws.onmessage = function (e) {
-        try {
-          data = JSON.parse(e.data);
-        } catch (err) {
-          console.log(e.data);
+        function disconnect() {
+            if (ws !== null) {
+                ws.close();
+                ws = null;
+            }
+        }
+        function wsm(msg) {
+            if (ws !== null) {
+                log('Sent: ' + msg);
+                ws.send(msg);
+            } else {
+                log('WebSocket connection not established, please connect.');
+            }
+        }
+        function log(message) {
+            console.log(message);
         }
 
-        if (data != null) {
-          if (!initialised) {
-            initialize();
-          } else {
-            updateStats();
-          }
+        function startSimulation() {
+            sendSet('worldMap', null, $('#worldmap').find(":selected").data('key'));
+            sendCommand('start simulation');
         }
-      };
-      ws.onclose = function () {
-        console.log('close');
-        ws = null;
-      };
-    }
-    function disconnect() {
-      if (ws != null) {
-        ws.close();
-        ws = null;
-      }
-    }
-    function wsm(msg) {
-      if (ws != null) {
-        log('Sent: ' + msg);
-        ws.send(msg);
-      } else {
-        log('WebSocket connection not established, please connect.');
-      }
-    }
-    function log(message) {
-      console.log(message);
-    }
 
-    function sendCommand(command) {
-      var commandObject = {
-        command: command
-      };
-      if (ws == null) {
-        return connect(function () {
-          ws.send(JSON.stringify(commandObject));
-        });
-      }
-      ws.send(JSON.stringify(commandObject));
-    }
+        function sendCommand(command) {
+            var commandObject = {
+                command: command
+            };
+            var action = function () {
+                ws.send(JSON.stringify(commandObject));
+            };
 
-    function sendSet(type, target, data) {
-      var commandObject = {
-        type: 'set',
-        set: type,
-        targetID: target,
-        data: data
-      };
-      console.log(JSON.stringify(commandObject));
-      if (ws == null) {
-        return connect(function () {
-          ws.send(JSON.stringify(commandObject));
-        });
-      }
-      ws.send(JSON.stringify(commandObject));
-    }
-
-    function getPush() {
-      sendCommand('get push data');
-    }
-
-    function updateStats() {
-      updateTrains();
-      updateJourneys();
-    }
-
-    function updateTrains() {
-      var trains = data.world.trainMap;
-      for (var trainID in trains) {
-        var train = trains[trainID];
-        var trainKey = '#train-' + trainID;
-        $(trainKey).find('.target_speed').html(train.engine.targetSpeed);
-        $(trainKey).find('.acceleration').html(train.engine.acceleration);
-        //$(trainKey).find('.slider').slider('setValue', train.engine.speed);
-        //sliders[trainID].slider('setValue', train.engine.targetSpeed);
-        guages[trainID].set(train.engine.speed);
-      }
-    }
-
-    function initialize() {
-      initialised = true;
-      buildTrains();
-      buildJourneys();
-    }
-
-    function updateJourneys() {
-      var journeys = data.world.journeysMap;
-      for (var journeyID in journeys) {
-        var journey = journeys[journeyID];
-        var journeyKey = '#journey-' + journeyID;
-        var percent_completed = Math.round((journey.totalDistanceTravelled) * 100.0 / (journey.path.length
-            - journey.train.length));
-        $(journeyKey).find('.progress-bar').attr('aria-valuenow', percent_completed).css('width',
-            percent_completed + '%').html(percent_completed + '%');
-        $(journeyKey).find('.head_position').html(Math.round(journey.headPosition * 100.0) / 100.0);
-        $(journeyKey).find('.tail_position').html(Math.round(journey.tailPosition * 100.0) / 100.0);
-        $(journeyKey).find('.path_length').html(journey.path.length);
-        //$(journeyKey).find('.is_finished').html(journey.journeyFinished ? "Yes" : "No");
-        if(journey.journeyFinished)
-          $(journeyKey).find('.progress-bar').removeClass('active');
-        else
-          $(journeyKey).find('.progress-bar').addClass('active');
-        var paths = journey.journeyInformation.path;
-        var pathArray = [];
-        for (var pathIndex in paths) {
-          var path = paths[pathIndex];
-          pathArray.push(path);
+            if (ws === null) {
+                return connect(action);
+            }
+            action();
         }
-        var paths = journey.journeyInformation.occupied;
-        var pathArrayOccupied = [];
-        for (var pathIndex in paths) {
-          var path = paths[pathIndex];
-          pathArrayOccupied.push(path);
+
+        function sendSet(type, target, data) {
+            var commandObject = {
+                type: 'set',
+                set: type,
+                targetID: target,
+                data: data
+            };
+            console.log(JSON.stringify(commandObject));
+
+            var action = function () {
+                ws.send(JSON.stringify(commandObject));
+            };
+
+            if (ws === null) {
+                return connect(action);
+            }
+            action();
         }
-        $(journeyKey).find('.path').html(pathArray.join(", "));
-        $(journeyKey).find('.current_path').html(pathArrayOccupied.join(", "));
-        //$(journeyKey).find('.current_path').html(journeyFinished ? "Yes" : "No");
-      }
-    }
 
-    function buildJourneys() {
-      var journeys = data.world.journeysMap;
-      $('#journeys_block').slideDown('fast');
-      for (var journeyID in journeys) {
-        var journey = journeys[journeyID];
-        var journeyKey = 'journey-' + journeyID;
-        var template = $('.journey_template').clone();
-        template.data('journeyID', journeyID);
-        template.attr('id', journeyKey);
-        template.find('.journey_name').text("Journey " + journeyID);
-        template.attr('class', 'single_journey');
-        $('#journeys').append(template);
-      }
-    }
+        function getPush() {
+            sendCommand('get push data');
+        }
 
-    function buildTrains() {
-      var trains = data.world.trainMap;
-      $('#trains_block').slideDown('fast');
-      for (var trainID in trains) {
-        var train = trains[trainID];
-        var trainKey = 'train-' + trainID;
-        var template = $('.train_template').clone();
-        template.data('trainID', trainID);
-        template.attr('id', trainKey);
-        template.find('.train_name').text("Train " + trainID);
-        template.find('.slider').attr('data-slider-value',
-            Math.floor(train.engine.speed));
-        template.attr('class', 'single_train');
+        function updateStats() {
+            updateTrains();
+            updateJourneys();
+        }
 
-        $('#trains').append(template);
-        sliders[trainID] = $('#' + trainKey).find('.slider').slider({
-          formatter: function (value) {
-            return 'Target Speed (meters/s): ' + value;
-          }
-        });
-        // guage
-        var opts = {
-          angle: -0.2, // The span of the gauge arc
-          lineWidth: 0.2, // The line thickness
-          radiusScale: 1, // Relative radius
-          pointer: {
-            length: 0.6, // // Relative to gauge radius
-            strokeWidth: 0.035, // The thickness
-            color: '#000000' // Fill color
-          },
-          limitMax: false,     // If false, the max value of the gauge will be updated if value surpass max
-          limitMin: false,     // If true, the min value of the gauge will be fixed unless you set it manually
-          colorStart: '#6FADCF',   // Colors
-          colorStop: '#8FC0DA',    // just experiment with them
-          strokeColor: '#E0E0E0',  // to see which ones work best for you
-          generateGradient: true,
-          highDpiSupport: true     // High resolution support
-        };
-        var target = $('#' + trainKey).find('.guage')[0]; // your canvas element
-        var gauge = new Gauge(target).setOptions(opts); // create sexy gauge!
-        var textField = $('#' + trainKey).find('.current_speed')[0];
-        gauge.setTextField(textField);
-        guages[trainID] = gauge;
-        gauge.maxValue = 300; // set max gauge value
-        gauge.setMinValue(0);  // Prefer setter over gauge.minValue = 0
-        gauge.animationSpeed = 32; // set animation speed (32 is default value)
-        gauge.set(train.engine.speed); // set actual value
-      }
-    }
+        function updateTrains() {
+            var trains = data.world.trainMap;
+            for (var trainID in trains) {
+                var train = trains[trainID];
+                var trainKey = '#train-' + trainID;
+                $(trainKey).find('.target_speed').html(train.engine.targetSpeed);
+                $(trainKey).find('.acceleration').html(train.engine.acceleration);
+                //$(trainKey).find('.slider').slider('setValue', train.engine.speed);
+                //sliders[trainID].slider('setValue', train.engine.targetSpeed);
+                guages[trainID].set(train.engine.speed);
+            }
+        }
 
-    function setTrainTargetSpeed(trainID, speed) {
-      sendSet('trainTargetSpeed', trainID, speed);
-    }
-    $(document).ready(function () {
-      connect(function(){
-        getPush();
-      });
-      $(document).on('click', '.set_speed', function () {
-        var tid = $(this).parents('.single_train').data('trainID');
-        var newSpeed = sliders[tid].slider('getValue');
-        setTrainTargetSpeed(tid, newSpeed);
-      });
-    })
+        function initialize() {
+            initialised = true;
+            buildTrains();
+            buildJourneys();
+        }
 
-  </script>
+        function updateJourneys() {
+            var journeys = data.world.journeysMap;
+            for (var journeyID in journeys) {
+                var journey = journeys[journeyID];
+                var journeyKey = '#journey-' + journeyID;
+                var percent_completed = Math.round(
+                    (journey.totalDistanceTravelled) * 100.0 / (journey.path.length
+                                                                - journey.train.length));
+                $(journeyKey).find('.progress-bar').attr('aria-valuenow', percent_completed)
+                    .css('width',
+                         percent_completed + '%').html(percent_completed + '%');
+                $(journeyKey).find('.head_position')
+                    .html(Math.round(journey.headPosition * 100.0) / 100.0);
+                $(journeyKey).find('.tail_position')
+                    .html(Math.round(journey.tailPosition * 100.0) / 100.0);
+                $(journeyKey).find('.path_length').html(journey.path.length);
+                //$(journeyKey).find('.is_finished').html(journey.journeyFinished ? "Yes" : "No");
+                if (journey.journeyFinished) {
+                    $(journeyKey).find('.progress-bar').removeClass('active');
+                } else {
+                    $(journeyKey).find('.progress-bar').addClass('active');
+                }
+                var paths = journey.journeyInformation.path;
+                var pathArray = [];
+                for (var pathIndex in paths) {
+                    var path = paths[pathIndex];
+                    pathArray.push(path);
+                }
+                paths = journey.journeyInformation.occupied;
+                var pathArrayOccupied = [];
+                for (var pathIndex in paths) {
+                    var path = paths[pathIndex];
+                    pathArrayOccupied.push(path);
+                }
+                $(journeyKey).find('.path').html(pathArray.join(", "));
+                $(journeyKey).find('.current_path').html(pathArrayOccupied.join(", "));
+                //$(journeyKey).find('.current_path').html(journeyFinished ? "Yes" : "No");
+            }
+        }
+
+        function buildJourneys() {
+            var journeys = data.world.journeysMap;
+            $('#journeys_block').slideDown('fast');
+            for (var journeyID in journeys) {
+                var journey = journeys[journeyID];
+                var journeyKey = 'journey-' + journeyID;
+                var template = $('.journey_template').clone();
+                template.data('journeyID', journeyID);
+                template.attr('id', journeyKey);
+                template.find('.journey_name').text("Journey " + journeyID);
+                template.attr('class', 'single_journey');
+                $('#journeys').append(template);
+            }
+        }
+
+        function buildTrains() {
+            var trains = data.world.trainMap;
+            $('#trains_block').slideDown('fast');
+            for (var trainID in trains) {
+                var train = trains[trainID];
+                var trainKey = 'train-' + trainID;
+                var template = $('.train_template').clone();
+                template.data('trainID', trainID);
+                template.attr('id', trainKey);
+                template.find('.train_name').text("Train " + trainID);
+                template.find('.slider').attr('data-slider-value',
+                                              Math.floor(train.engine.speed));
+                template.attr('class', 'single_train');
+
+                $('#trains').append(template);
+                sliders[trainID] = $('#' + trainKey).find('.slider').slider({
+                                                                                formatter: function (value) {
+                                                                                    return 'Target Speed (meters/s): '
+                                                                                           + value;
+                                                                                }
+                                                                            });
+                // guage
+                var opts = {
+                    angle: -0.2, // The span of the gauge arc
+                    lineWidth: 0.2, // The line thickness
+                    radiusScale: 1, // Relative radius
+                    pointer: {
+                        length: 0.6, // // Relative to gauge radius
+                        strokeWidth: 0.035, // The thickness
+                        color: '#000000' // Fill color
+                    },
+                    limitMax: false,     // If false, the max value of the gauge will be updated if value surpass max
+                    limitMin: false,     // If true, the min value of the gauge will be fixed unless you set it manually
+                    colorStart: '#6FADCF',   // Colors
+                    colorStop: '#8FC0DA',    // just experiment with them
+                    strokeColor: '#E0E0E0',  // to see which ones work best for you
+                    generateGradient: true,
+                    highDpiSupport: true     // High resolution support
+                };
+                var target = $('#' + trainKey).find('.guage')[0]; // your canvas element
+                var gauge = new Gauge(target).setOptions(opts); // create sexy gauge!
+                var textField = $('#' + trainKey).find('.current_speed')[0];
+                gauge.setTextField(textField);
+                guages[trainID] = gauge;
+                gauge.maxValue = 300; // set max gauge value
+                gauge.setMinValue(0);  // Prefer setter over gauge.minValue = 0
+                gauge.animationSpeed = 32; // set animation speed (32 is default value)
+                gauge.set(train.engine.speed); // set actual value
+            }
+        }
+
+        function setTrainTargetSpeed(trainID, speed) {
+            sendSet('trainTargetSpeed', trainID, speed);
+        }
+        $(document).ready(function () {
+            for (var mapName in worldMaps) {
+                var mapKey = worldMaps[mapName];
+                $('#worldmap').append($('<option/>').attr("data-key", mapKey).html(mapName));
+            }
+            connect(function () {
+                getPush();
+            });
+            $(document).on('click', '.set_speed', function () {
+                var tid = $(this).parents('.single_train').data('trainID');
+                var newSpeed = sliders[tid].slider('getValue');
+                setTrainTargetSpeed(tid, newSpeed);
+            });
+        })
+
+    </script>
 </th:block>
 
 </body>
