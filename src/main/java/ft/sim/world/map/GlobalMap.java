@@ -4,6 +4,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import ft.sim.train.Train;
 import ft.sim.world.connectables.Connectable;
+import ft.sim.world.connectables.Section;
 import ft.sim.world.connectables.Station;
 import ft.sim.world.connectables.Switch;
 import ft.sim.world.connectables.Track;
@@ -13,6 +14,7 @@ import ft.sim.world.placeables.FixedBalise;
 import ft.sim.world.placeables.Placeable;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -37,6 +39,16 @@ public class GlobalMap {
   private BiMap<Integer, Switch> switchMap = HashBiMap.create();
   private BiMap<Integer, Train> trainMap = HashBiMap.create();
   private BiMap<Integer, Station> stationMap = HashBiMap.create();
+
+  private HashMap<Section, Integer> sectionsRegistry = new HashMap<>();
+
+  public void registerSectionsForTrack(List<Section> sections, int trackID){
+    sections.forEach(section -> sectionsRegistry.put(section, trackID));
+  }
+
+  public int getTrackIDforSection(Section section){
+    return sectionsRegistry.get(section);
+  }
 
   public void addTrack(int id, Track track) {
     trackMap.put(id, track);

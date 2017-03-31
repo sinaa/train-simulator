@@ -85,4 +85,8 @@ public class Track implements Connectable {
   public double getLength() {
     return length;
   }
+
+  public int getSectionPosition(Section section){
+    return sections.indexOf(section);
+  }
 }

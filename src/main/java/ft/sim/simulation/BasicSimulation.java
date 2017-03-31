@@ -4,12 +4,14 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.sun.org.apache.xpath.internal.operations.Or;
+import ft.sim.monitoring.CriticalViolationException;
 import ft.sim.train.Train;
 import ft.sim.web.SocketSession;
 import ft.sim.world.map.GlobalMap;
 import ft.sim.world.journey.Journey;
 import ft.sim.world.map.MapBuilder;
-import ft.sim.world.observer.Oracle;
+import ft.sim.monitoring.Oracle;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -28,7 +30,12 @@ public class BasicSimulation {
 
   protected Logger logger = LoggerFactory.getLogger(BasicSimulation.class);
 
+  // random seed for disruptor's random generation
+  public static final int RANDOM_SEED = 0;
+
+  // world instance
   private GlobalMap world = null;
+
   // From the point of view of a user, how many ticks we should do per second
   int ticksPerSecond = 300;
   // From the view of the simulation, how much time passed since last tick (in seconds)
@@ -37,18 +44,22 @@ public class BasicSimulation {
   // How often to send request to user
   private int userRefreshRate = 500;
 
+  // elapsed time/tick during the simulation
   private long ticksElapsed = 0;
   private long timeElapsed = 0;
   private int simulationTimeElapsed = 0;
 
+  // The simulation thread
   private Thread simThread;
 
+  // Is the simulation killed?
   private boolean killed = false;
+
+  // Is the simulation running?
+  private boolean isRunning = false;
 
   //private SocketSession socketSession = null;
   private Set<SocketSession> socketSessions = new HashSet<>();
-
-  private boolean isRunning = false;
 
   private boolean interactiveSimulation = true;
 
@@ -60,6 +71,9 @@ public class BasicSimulation {
   private boolean simulationCompleted = false;
 
   public static final String DEFAULT_MAP = "basic";
+
+  // oracle instance
+  Oracle oracle;
 
   public static BasicSimulation getInstance() {
     if (instance == null) {
@@ -92,6 +106,7 @@ public class BasicSimulation {
   private BasicSimulation() {
     logger.info("starting new simulation");
     buildWorld(DEFAULT_MAP);
+    oracle = new Oracle();
     setSimulatorThread();
   }
 
@@ -139,11 +154,14 @@ public class BasicSimulation {
       logger.error("!!!! Exception happened while building map: {} \n", t.getMessage());
       throw t;
     }
+    Disruptor disruptor = new Disruptor(RANDOM_SEED);
+    disruptor.disruptTheWorld(world);
   }
 
-  public void setWorld(String mapYaml){
-    if(isRunning)
+  public void setWorld(String mapYaml) {
+    if (isRunning) {
       throw new UnsupportedOperationException("Cannot set new world when simulation is running");
+    }
     buildWorld(mapYaml);
   }
 
@@ -154,7 +172,13 @@ public class BasicSimulation {
       j.getJourneyInformation().update(j);
     }
     ticksElapsed++;
-    Oracle.instance.checkState(world, ticksElapsed);
+    try {
+      oracle.checkState(world, ticksElapsed);
+    } catch (CriticalViolationException e) {
+      logger.error("Critical Violation detected: {}", e.getMessage());
+      sendStatistics();
+      kill();
+    }
   }
 
   private void sendStatistics() {
@@ -171,7 +195,7 @@ public class BasicSimulation {
     jsonObject.addProperty("timeElapsedCalculating", timeElapsed);
     jsonObject.addProperty("ticksElapsed", ticksElapsed);
     jsonObject.addProperty("simulationTimeElapsed", ticksElapsed * secondsPerTick);
-
+    jsonObject.add("violations", gsonBuilder.toJsonTree(oracle.getViolations()));
     //String json = gson.toJson(journeysMap);
     String json = gsonBuilder.toJson(jsonObject);
     //logger.info("JSON: {}", json);.
@@ -195,9 +219,11 @@ public class BasicSimulation {
 
   public void kill() {
     simThread.interrupt();
+    sendStatistics();
     world = null;
     isRunning = false;
     killed = true;
+    socketSessions.clear();
   }
 
   public void setSocketSession(SocketSession socketSession) {

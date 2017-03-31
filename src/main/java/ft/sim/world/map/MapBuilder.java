@@ -62,7 +62,8 @@ public class MapBuilder {
     ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
     try {
       Resource[] resources = resolver.getResources("maps/*.yaml");
-      Arrays.stream(resources).map(Resource::getFilename).map(f-> f.replace(".yaml","")).forEach(maps::add);
+      Arrays.stream(resources).map(Resource::getFilename).map(f -> f.replace(".yaml", ""))
+          .forEach(maps::add);
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -177,6 +178,7 @@ public class MapBuilder {
       Track t = new Track(trackData.get("numSections"));
 
       map.addTrack(trackID, t);
+      map.registerSectionsForTrack(t.getSections(), trackID);
     }
   }
 
