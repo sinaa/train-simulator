@@ -8,8 +8,8 @@ import ft.sim.train.Train;
 import ft.sim.web.SocketSession;
 import ft.sim.world.map.GlobalMap;
 import ft.sim.world.journey.Journey;
+import ft.sim.world.map.MapBuilder;
 import ft.sim.world.observer.Oracle;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -59,6 +59,8 @@ public class BasicSimulation {
 
   private boolean simulationCompleted = false;
 
+  public static final String DEFAULT_MAP = "basic";
+
   public static BasicSimulation getInstance() {
     if (instance == null) {
       instance = new BasicSimulation();
@@ -89,14 +91,11 @@ public class BasicSimulation {
 
   private BasicSimulation() {
     logger.info("starting new simulation");
-    try {
-      world = new GlobalMap();
-    } catch (Throwable t) {
-      t.printStackTrace();
-      logger.error("!!!! Exception happened while building map: {} \n", t.getMessage());
-      throw t;
-    }
+    buildWorld(DEFAULT_MAP);
+    setSimulatorThread();
+  }
 
+  private void setSimulatorThread() {
     simThread = new Thread(() -> {
       while (!Thread.currentThread().isInterrupted()
           && ticksElapsed * secondsPerTick < simulationDuration
@@ -132,6 +131,22 @@ public class BasicSimulation {
     });
   }
 
+  private void buildWorld(String mapYaml) {
+    try {
+      world = MapBuilder.buildNewMap(mapYaml);
+    } catch (Throwable t) {
+      t.printStackTrace();
+      logger.error("!!!! Exception happened while building map: {} \n", t.getMessage());
+      throw t;
+    }
+  }
+
+  public void setWorld(String mapYaml){
+    if(isRunning)
+      throw new UnsupportedOperationException("Cannot set new world when simulation is running");
+    buildWorld(mapYaml);
+  }
+
   private void tick() {
     for (Map.Entry<Integer, Journey> entry : world.getJourneys().entrySet()) {
       Journey j = entry.getValue();
@@ -147,18 +162,18 @@ public class BasicSimulation {
       return;
     }
 
-    JsonObject jsonObject = new JsonObject();
+    Gson gsonBuilder = new Gson();
 
-    Gson gson = new Gson();
+    JsonObject jsonObject = new JsonObject();
     jsonObject.addProperty("type", "journeyMap");
     //jsonObject.add("journeys", gson.toJsonTree(journeysMap));
-    jsonObject.add("world", gson.toJsonTree(world));
+    jsonObject.add("world", gsonBuilder.toJsonTree(world));
     jsonObject.addProperty("timeElapsedCalculating", timeElapsed);
     jsonObject.addProperty("ticksElapsed", ticksElapsed);
     jsonObject.addProperty("simulationTimeElapsed", ticksElapsed * secondsPerTick);
 
     //String json = gson.toJson(journeysMap);
-    String json = gson.toJson(jsonObject);
+    String json = gsonBuilder.toJson(jsonObject);
     //logger.info("JSON: {}", json);.
     Iterator<SocketSession> socketsIterator = socketSessions.iterator();
     while (socketsIterator.hasNext()) {
