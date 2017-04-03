@@ -1,5 +1,9 @@
 package ft.sim.world.map;
 
+import com.google.common.collect.Iterables;
+import ft.sim.world.journey.Journey;
+import ft.sim.world.journey.JourneyPath;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
@@ -37,23 +41,25 @@ public class MapBuilder {
     return buildNewMap(mapName, new GlobalMap());
   }
 
-  public static GlobalMap buildNewMap(String mapName, GlobalMap globalMap) {
+  private static GlobalMap buildNewMap(String mapYamlFileName, GlobalMap globalMap) {
     MapBuilder mb = new MapBuilder();
     mb.map = globalMap;
     try {
-      if (!mapName.startsWith("maps/")) {
-        mapName = "maps/" + mapName;
+      if (!mapYamlFileName.startsWith("maps/")) {
+        mapYamlFileName = "maps/" + mapYamlFileName;
       }
-      if (!mapName.endsWith(".yaml")) {
-        mapName += ".yaml";
+      if (!mapYamlFileName.endsWith(".yaml")) {
+        mapYamlFileName += ".yaml";
       }
-      mb.importBasicMap(mapName);
+      mb.importBasicMap(mapYamlFileName);
       logger.warn("imported map");
     } catch (IOException e) {
       logger.error("failed to import map");
       e.printStackTrace();
       throw new IllegalStateException("Failed to import map!");
     }
+
+    mb.setupWorld();
     return mb.map;
   }
 
@@ -71,24 +77,57 @@ public class MapBuilder {
     return maps;
   }
 
-  private void importBasicMap(String mapYaml) throws IOException {
-    Resource resource = new ClassPathResource(mapYaml);
+  private void importBasicMap(String mapYamlFile) throws IOException {
+    Resource resource = new ClassPathResource(mapYamlFile);
     Yaml yaml = new Yaml();
-    Map<String, Object> map = (Map<String, Object>) yaml.load(resource.getInputStream());
+    Map<String, Object> mapYaml = (Map<String, Object>) yaml.load(resource.getInputStream());
 
-    createTracks((Map<String, Object>) map.get("tracks"));
+    createTracks((Map<String, Object>) mapYaml.get("tracks"));
 
-    createStations((Map<String, Object>) map.get("stations"));
+    createStations((Map<String, Object>) mapYaml.get("stations"));
 
-    createPlaceables((Map<String, Object>) map.get("placeables"));
+    createPlaceables((Map<String, Object>) mapYaml.get("placeables"));
 
-    createSwitches((Map<String, Object>) map.get("switches"));
+    createSwitches((Map<String, Object>) mapYaml.get("switches"));
 
-    createJourneyPaths((Map<String, Object>) map.get("journeyPaths"));
+    createJourneyPaths((Map<String, Object>) mapYaml.get("journeyPaths"));
 
-    createTrains((Map<String, Object>) map.get("trains"));
+    createTrains((Map<String, Object>) mapYaml.get("trains"));
 
-    createJourneys((Map<String, Object>) map.get("journeys"));
+    createJourneys((Map<String, Object>) mapYaml.get("journeys"));
+  }
+
+  private void setupWorld() {
+    setTrainsAtStations();
+    buildGraph();
+  }
+
+  private void buildGraph() {
+    for (JourneyPath path : map.getJourneyPaths().values()) {
+      List<Connectable> connectables = path.getPath();
+      Connectable previousConnectable = null;
+      for (Connectable connectable : connectables) {
+        map.getGraph().addEdge(previousConnectable, connectable);
+        previousConnectable = connectable;
+      }
+    }
+    map.getGraph().buildGraph();
+  }
+
+  private void setTrainsAtStations() {
+    for (Journey journey : map.getJourneys().values()) {
+      if (journey.isDirectionForward()) {
+        Connectable firstConnectable = Iterables.getFirst(journey.getJourneyPath().getPath(), null);
+        if (firstConnectable instanceof Station) {
+          ((Station) firstConnectable).enteredTrain(journey.getTrain());
+        }
+      } else {
+        Connectable lastConnectable = Iterables.getLast(journey.getJourneyPath().getPath(), null);
+        if (lastConnectable instanceof Station) {
+          ((Station) lastConnectable).enteredTrain(journey.getTrain());
+        }
+      }
+    }
   }
 
   private void createStations(Map<String, Object> stations) {

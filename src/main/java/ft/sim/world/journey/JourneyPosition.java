@@ -1,14 +1,17 @@
 package ft.sim.world.journey;
 
+import com.google.common.collect.Sets;
 import ft.sim.train.Train;
 import ft.sim.world.connectables.Connectable;
 import ft.sim.world.connectables.Section;
+import ft.sim.world.connectables.Station;
 import ft.sim.world.connectables.Track;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -174,18 +177,55 @@ public class JourneyPosition {
   }
 
   private Set<Section> coveredSections = new HashSet<>();
-  private Set<Section> previousSections = new HashSet<>();
 
   public void update(Journey journey, double lastDistanceTravelled) {
-    updatePosition(journey, lastDistanceTravelled);
-    List<Section> sectionsOccupied = getSectionsOccupied();
-    // get the diff
-    sectionsOccupied.removeAll(previousSections);
-    // remove the old ones
-    sectionsOccupied.removeAll(coveredSections);
+    // get old sections occupied
+    Set<Section> previousSections = Sets.newHashSet(getSectionsOccupied());
 
-    train.reachedSections(sectionsOccupied);
-    coveredSections.addAll(sectionsOccupied);
+    // get existing connectables covered by this train
+    Set<Connectable> connectablesOccupied = new HashSet<>(getConnectablesOccupied());
+
+    // get existing stations covered by this train
+    Set<Station> stationsOccupied = getConnectablesOccupied().stream()
+        .filter(c -> c instanceof Station).map(c -> (Station) c).collect(Collectors.toSet());
+
+    // update train position
+    updatePosition(journey, lastDistanceTravelled);
+
+    // get new connectables occupied by this train
+    Set<Connectable> newConnectablesOccupied = new HashSet<>(getConnectablesOccupied());
+    connectablesOccupied.removeAll(newConnectablesOccupied);
+    if (connectablesOccupied.size() > 0) {
+      // TODO: do something with connectables that the train left
+
+    }
+
+    // get new stations covered by this train
+    Set<Station> newStationsOccupied = getConnectablesOccupied().stream()
+        .filter(c -> c instanceof Station).map(c -> (Station) c).collect(Collectors.toSet());
+
+    // did the train leave any stations? (old station list contains stations that the train is no longer on)
+    stationsOccupied.removeAll(newStationsOccupied);
+    if (stationsOccupied.size() > 0) {
+      // notify the sections that the train left them
+      stationsOccupied.forEach(s -> s.leftTrain(train));
+    }
+
+    // get new sections occupied by the train
+    Set<Section> newSectionsOccupied = Sets.newHashSet(getSectionsOccupied());
+    // get the diff
+    newSectionsOccupied.removeAll(previousSections);
+    // get sections the train just left
+    Set<Section> sectionsTrainLeft = Sets.newHashSet(newSectionsOccupied);
+    sectionsTrainLeft.retainAll(coveredSections);
+    // let the train know which sections it just left
+    train.leftSections(sectionsTrainLeft);
+    // remove the old ones
+    newSectionsOccupied.removeAll(coveredSections);
+    // let the train know which new sections it got over
+    train.reachedSections(newSectionsOccupied);
+    // keep track of sections the train has covered so far
+    coveredSections.addAll(newSectionsOccupied);
   }
 
   private void updatePosition(Journey journey, double lastDistanceTravelled) {

@@ -28,6 +28,7 @@ public class GlobalMapTest {
   @Test
   public void testGlobalMap() {
     GlobalMap gm = MapBuilder.buildNewMap(BasicSimulation.DEFAULT_MAP);
+    WorldHandler.getInstance(gm);
     Gson gson = new Gson();
     //Gson gson = new GsonBuilder().setPrettyPrinting().create();
     String json = gson.toJson(gm);

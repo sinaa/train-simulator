@@ -1,11 +1,21 @@
 package ft.sim.world.placeables;
 
+import ft.sim.world.journey.JourneyPath;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Created by Sina on 21/02/2017.
  */
-public interface Balise extends Placeable {
+public abstract class Balise implements Placeable {
 
-  public void setPosition(double position);
+  private Map<JourneyPath, Double> position = new HashMap<>();
 
-  public double getPosition();
+  public void setPosition(JourneyPath journeyPath, double miles) {
+    position.put(journeyPath, miles);
+  }
+
+  public double getPosition(JourneyPath journeyPath) {
+    return position.get(journeyPath);
+  }
 }

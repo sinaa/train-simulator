@@ -120,6 +120,10 @@ public class Journey implements Tickable {
     return path.getLength();
   }
 
+  public boolean isDirectionForward() {
+    return directionForward;
+  }
+
   @Override
   public String toString() {
     String journey = "";

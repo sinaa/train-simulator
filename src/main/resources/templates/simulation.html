@@ -154,11 +154,16 @@
         }
 
         if (data !== null) {
-          if (!initialised) {
-            initialize();
-          } else {
-            if(wasJson)
+          if (wasJson) {
+            if (!initialised) {
+              if (data.interactive) {
+                initialize();
+              } else {
+                checkForViolations();
+              }
+            } else {
               updateStats();
+            }
           }
         }
       };

@@ -42,12 +42,18 @@ public class GlobalMap {
 
   private HashMap<Section, Integer> sectionsRegistry = new HashMap<>();
 
+  private MapGraph graph = new MapGraph();
+
   public void registerSectionsForTrack(List<Section> sections, int trackID){
     sections.forEach(section -> sectionsRegistry.put(section, trackID));
   }
 
   public int getTrackIDforSection(Section section){
     return sectionsRegistry.get(section);
+  }
+
+  public MapGraph getGraph() {
+    return graph;
   }
 
   public void addTrack(int id, Track track) {

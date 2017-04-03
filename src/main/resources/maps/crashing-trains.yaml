@@ -11,6 +11,8 @@ journeys:
 journeyPaths:
   '1':
     path:
+    - type: station
+      id: 1
     - type: track
       id: 1
     - type: track

@@ -95,4 +95,5 @@ stations:
   '4':
     capacity: 4
     wait: 30
-
+simulation:
+  'mode': "fixed_block"

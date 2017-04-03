@@ -63,7 +63,7 @@ public class JourneyPath {
         List<Balise> balises = ((Track) c).getBalises();
         for (Balise b : balises) {
           int relativePosition = ((Track) c).getPlaceablePosition(b);
-          b.setPosition(length + relativePosition);
+          b.setPosition(this, length + relativePosition);
         }
       }
       length += c.getLength();

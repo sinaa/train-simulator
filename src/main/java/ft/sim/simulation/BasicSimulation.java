@@ -8,6 +8,7 @@ import com.sun.org.apache.xpath.internal.operations.Or;
 import ft.sim.monitoring.CriticalViolationException;
 import ft.sim.train.Train;
 import ft.sim.web.SocketSession;
+import ft.sim.world.WorldHandler;
 import ft.sim.world.map.GlobalMap;
 import ft.sim.world.journey.Journey;
 import ft.sim.world.map.MapBuilder;
@@ -166,11 +167,7 @@ public class BasicSimulation {
   }
 
   private void tick() {
-    for (Map.Entry<Integer, Journey> entry : world.getJourneys().entrySet()) {
-      Journey j = entry.getValue();
-      j.tick(secondsPerTick);
-      j.getJourneyInformation().update(j);
-    }
+    WorldHandler.getInstance(world).tick(secondsPerTick);
     ticksElapsed++;
     try {
       oracle.checkState(world, ticksElapsed);
@@ -195,6 +192,7 @@ public class BasicSimulation {
     jsonObject.addProperty("timeElapsedCalculating", timeElapsed);
     jsonObject.addProperty("ticksElapsed", ticksElapsed);
     jsonObject.addProperty("simulationTimeElapsed", ticksElapsed * secondsPerTick);
+    jsonObject.addProperty("interactive", interactiveSimulation);
     jsonObject.add("violations", gsonBuilder.toJsonTree(oracle.getViolations()));
     //String json = gson.toJson(journeysMap);
     String json = gsonBuilder.toJson(jsonObject);

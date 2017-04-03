@@ -1,7 +1,9 @@
 package ft.sim.world.connectables;
 
-import ft.sim.world.placeables.LCU;
+import ft.sim.signalling.SignalController;
+import ft.sim.simulation.BasicSimulation;
 import ft.sim.simulation.Tickable;
+import ft.sim.world.WorldHandler;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,7 +31,7 @@ public class Switch implements Connectable, Tickable {
   private double delayed = 0;
   private List<Track> newStatus = new ArrayList<>(2);
 
-  private LCU lcu;
+  private SignalController lcu;
 
   // By default, a switch is 5 metres long
   private int length = 5;
@@ -93,5 +95,14 @@ public class Switch implements Connectable, Tickable {
   @Override
   public double getLength() {
     return length;
+  }
+
+  @Override
+  public String toString() {
+    try {
+      return "Switch-" + WorldHandler.getInstance().getWorld().getSwitchID(this);
+    } catch (Exception e) {
+      return super.toString();
+    }
   }
 }

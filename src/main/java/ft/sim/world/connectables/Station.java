@@ -1,15 +1,15 @@
 package ft.sim.world.connectables;
 
-import ft.sim.signal.SignalType;
+import ft.sim.signalling.SignalType;
+import ft.sim.simulation.BasicSimulation;
 import ft.sim.simulation.Tickable;
 import ft.sim.train.Train;
+import ft.sim.world.WorldHandler;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * Created by Sina on 27/02/2017.
@@ -26,6 +26,7 @@ public class Station implements Connectable, Tickable {
 
   Map<Train, Double> trains = new HashMap<>();
   Set<Train> trainsLeaving = new HashSet<>();
+  Set<Train> trainsEntering = new HashSet<>();
 
 
   @Override
@@ -40,11 +41,13 @@ public class Station implements Connectable, Tickable {
 
   public void enteredTrain(Train train) {
     trains.put(train, (double) delay);
-    train.signal(SignalType.RED);
+    train.signalChange(SignalType.RED);
+    trainsEntering.remove(train);
   }
 
   public void leftTrain(Train train) {
     trains.remove(train);
+    trainsLeaving.remove(train);
   }
 
   public void tick(double time) {
@@ -56,7 +59,7 @@ public class Station implements Connectable, Tickable {
       }
       delay -= time;
       if (delay <= 0) {
-        t.signal(SignalType.GREEN);
+        t.signalChange(SignalType.GREEN);
         trainsLeaving.add(t);
       }
       trainElement.setValue(delay);
@@ -64,19 +67,30 @@ public class Station implements Connectable, Tickable {
   }
 
   public boolean hasCapacity() {
-    return trains.size() < capacity - reservedCapacity;
+    Set<Train> union = new HashSet<>(trains.keySet());
+    union.addAll(trainsEntering);
+    union.addAll(trainsLeaving);
+    return capacity - union.size() > 0;
   }
 
-  public boolean reserveCapacity() {
+  public boolean reserveCapacity(Train train) {
+    if (trainsEntering.contains(train)) {
+      return true;
+    }
     if (!hasCapacity()) {
       return false;
     }
-    reservedCapacity++;
+    trainsEntering.add(train);
     return true;
   }
 
-  public void unreserveCapacity() {
-    reservedCapacity--;
+  @Override
+  public String toString() {
+    try {
+      return "Station-" + WorldHandler.getInstance().getWorld().getStationID(this);
+    } catch (Exception e) {
+      return super.toString();
+    }
   }
 
 }

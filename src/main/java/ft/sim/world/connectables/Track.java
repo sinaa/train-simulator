@@ -4,6 +4,8 @@ import static java.util.stream.Collectors.toList;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import ft.sim.simulation.BasicSimulation;
+import ft.sim.world.WorldHandler;
 import ft.sim.world.placeables.Balise;
 import ft.sim.world.placeables.Placeable;
 import java.util.ArrayList;
@@ -88,5 +90,14 @@ public class Track implements Connectable {
 
   public int getSectionPosition(Section section){
     return sections.indexOf(section);
+  }
+
+  @Override
+  public String toString() {
+    try {
+      return "Track-" + WorldHandler.getInstance().getWorld().getTrackID(this);
+    } catch (Exception e) {
+      return super.toString();
+    }
   }
 }
