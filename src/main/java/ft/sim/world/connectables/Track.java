@@ -4,19 +4,25 @@ import static java.util.stream.Collectors.toList;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import ft.sim.simulation.BasicSimulation;
+import ft.sim.signalling.SignalController;
+import ft.sim.signalling.SignalLinked;
+import ft.sim.signalling.SignalUnit;
 import ft.sim.world.WorldHandler;
 import ft.sim.world.placeables.Balise;
 import ft.sim.world.placeables.Placeable;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Created by Sina on 21/02/2017.
  */
-public class Track implements Connectable {
+public class Track implements Connectable, SignalLinked {
 
   protected transient final Logger logger = LoggerFactory.getLogger(Track.class);
 
@@ -24,8 +30,20 @@ public class Track implements Connectable {
 
   private transient List<Section> sections;
 
-  private double length = DEFAULT_LENGTH;
-  private static final transient double DEFAULT_LENGTH = 20;
+  private int length = DEFAULT_LENGTH;
+  private static final transient int DEFAULT_LENGTH = 20;
+
+  private Set<SignalUnit> blockSignals = new HashSet<>();
+  private SignalController signalController = null;
+
+  public void addBlockSignal(SignalUnit blockSignal, int position) {
+    placePlaceableOnSectionIndex(blockSignal, position);
+    blockSignals.add(blockSignal);
+  }
+
+  public Set<SignalUnit> getBlockSignals() {
+    return blockSignals;
+  }
 
   public Track(List<Section> sections) {
     this.sections = sections;
@@ -88,7 +106,7 @@ public class Track implements Connectable {
     return length;
   }
 
-  public int getSectionPosition(Section section){
+  public int getSectionPosition(Section section) {
     return sections.indexOf(section);
   }
 
@@ -99,5 +117,10 @@ public class Track implements Connectable {
     } catch (Exception e) {
       return super.toString();
     }
+  }
+
+  @Override
+  public void addSignalController(SignalController signalController) {
+    this.signalController = signalController;
   }
 }

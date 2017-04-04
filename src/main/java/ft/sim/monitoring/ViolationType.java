@@ -5,6 +5,7 @@ package ft.sim.monitoring;
  */
 public enum ViolationType {
   CRASH,
+  FIXED_BLOCK,
   PASSED_RED_SIGNAL,
   OVERFLOWED_JOURNEY,
   SWITCHED_TO_WRONG_TRACK

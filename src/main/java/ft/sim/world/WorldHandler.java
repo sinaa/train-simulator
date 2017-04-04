@@ -23,6 +23,10 @@ public class WorldHandler {
     return instances.computeIfAbsent(world, WorldHandler::new);
   }
 
+  public static void endWorld(GlobalMap world){
+    instances.remove(world);
+  }
+
   public static WorldHandler getInstance(){
     if(instances.size()!=1)
       throw new IllegalStateException("more than one map instances created");

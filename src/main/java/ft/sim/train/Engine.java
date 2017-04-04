@@ -1,5 +1,7 @@
 package ft.sim.train;
 
+import static ft.sim.world.RealWorldConstants.*;
+
 import ft.sim.simulation.BasicSimulation;
 import ft.sim.simulation.Tickable;
 
@@ -8,24 +10,19 @@ import ft.sim.simulation.Tickable;
  */
 public class Engine implements Tickable {
 
-  // Which train does this engine belong to (one-to-one relationship)
-  private int belongsToTrainID;
-
   // 201.6 km/h (56 m/s)
   // 300 km/h
-  double maxSpeed = 83.33;
+  //double maxSpeed = 83.33;
 
   // accelration in m/sec2
   double maxAcceleration = 1.0;
-  double maxDeceleration = -9 * (g / 100.0);
+  //double maxDeceleration = -9 * (g / 100.0);
+  double maxDeceleration = MAX_TRAIN_DECELERATION;
 
   /*double normalAcceleration = 1.0;
   double normalDeceleration = -7 * (g / 100.0);*/
-  double normalAcceleration = 0.4;
-  double normalDeceleration = -0.5;
-
-  // G-force
-  public static final double g = 9.86;
+  double normalAcceleration = NORMAL_TRAIN_ACCELERATION;
+  double normalDeceleration = NORMAL_TRAIN_DECELERATION;
 
   // Current speed, acceleration, targetSpeed
   double speed = 0;
@@ -34,6 +31,8 @@ public class Engine implements Tickable {
 
   // temporary variable to store the last distance travelled
   double lastDistanceTravelled = 0;
+
+
 
   /*
    * Construct an engine, along with the train this engine belongs to
@@ -57,6 +56,15 @@ public class Engine implements Tickable {
   public void setTargetSpeed(double targetSpeed) {
     this.targetSpeed = targetSpeed;
     updateAcceleration();
+  }
+
+  public void roll(){
+    setTargetSpeed(ROLLING_SPEED);
+  }
+
+  public void emergencyBreak(){
+    this.targetSpeed = 0;
+    acceleration = maxDeceleration;
   }
 
   /*
@@ -149,8 +157,4 @@ public class Engine implements Tickable {
   public boolean isStopped() {
     return isStill() && speed == 0;
   }
-
-  /*public int belongsToTrainID() {
-    return belongsToTrainID;
-  }*/
 }

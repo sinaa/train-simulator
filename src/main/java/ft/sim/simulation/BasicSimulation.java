@@ -218,10 +218,11 @@ public class BasicSimulation {
   public void kill() {
     simThread.interrupt();
     sendStatistics();
-    world = null;
     isRunning = false;
     killed = true;
     socketSessions.clear();
+    WorldHandler.endWorld(world);
+    world = null;
   }
 
   public void setSocketSession(SocketSession socketSession) {

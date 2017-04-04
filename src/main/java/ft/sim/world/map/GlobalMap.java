@@ -10,20 +10,13 @@ import ft.sim.world.connectables.Switch;
 import ft.sim.world.connectables.Track;
 import ft.sim.world.journey.Journey;
 import ft.sim.world.journey.JourneyPath;
-import ft.sim.world.placeables.FixedBalise;
 import ft.sim.world.placeables.Placeable;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
-import org.yaml.snakeyaml.Yaml;
 
 /**
  * Created by Sina on 21/02/2017.
@@ -40,15 +33,17 @@ public class GlobalMap {
   private BiMap<Integer, Train> trainMap = HashBiMap.create();
   private BiMap<Integer, Station> stationMap = HashBiMap.create();
 
-  private HashMap<Section, Integer> sectionsRegistry = new HashMap<>();
+  private HashMap<String, Object> configurationsMap = new HashMap<>();
+
+  private transient HashMap<Section, Integer> sectionsRegistry = new HashMap<>();
 
   private MapGraph graph = new MapGraph();
 
-  public void registerSectionsForTrack(List<Section> sections, int trackID){
+  public void registerSectionsForTrack(List<Section> sections, int trackID) {
     sections.forEach(section -> sectionsRegistry.put(section, trackID));
   }
 
-  public int getTrackIDforSection(Section section){
+  public int getTrackIDforSection(Section section) {
     return sectionsRegistry.get(section);
   }
 
@@ -62,6 +57,19 @@ public class GlobalMap {
 
   public void addTrain(int id, Train train) {
     trainMap.put(id, train);
+  }
+
+  public void addConfiguration(String key, Object value) {
+    configurationsMap.put(key, value);
+  }
+
+  public Object getConfiguration(String key) {
+    return configurationsMap.get(key);
+  }
+
+  public boolean isConfiguration(String key, Object value) {
+    Object conf = configurationsMap.get(key);
+    return conf != null && conf.toString().equals(value.toString());
   }
 
   public void addStation(int id, Station station) {

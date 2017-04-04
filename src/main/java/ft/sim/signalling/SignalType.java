@@ -5,6 +5,6 @@ package ft.sim.signalling;
  */
 public enum SignalType {
   RED,
-  AMBER,
+  AMBER, //NOTE: not supported
   GREEN
 }

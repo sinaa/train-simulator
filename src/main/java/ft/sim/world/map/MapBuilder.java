@@ -1,9 +1,26 @@
 package ft.sim.world.map;
 
+import static ft.sim.world.RealWorldConstants.BREAK_DISTANCE;
+
 import com.google.common.collect.Iterables;
+import ft.sim.signalling.SignalController;
+import ft.sim.signalling.SignalUnit;
+import ft.sim.train.Train;
+import ft.sim.world.connectables.Connectable;
+import ft.sim.world.connectables.Station;
+import ft.sim.world.connectables.Track;
 import ft.sim.world.journey.Journey;
 import ft.sim.world.journey.JourneyPath;
-import java.util.stream.Collectors;
+import ft.sim.world.placeables.FixedBalise;
+import ft.sim.world.placeables.Placeable;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
@@ -11,18 +28,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.yaml.snakeyaml.Yaml;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import ft.sim.train.Train;
-import ft.sim.world.connectables.Connectable;
-import ft.sim.world.connectables.Station;
-import ft.sim.world.connectables.Track;
-import ft.sim.world.placeables.FixedBalise;
-import ft.sim.world.placeables.Placeable;
 
 /**
  * Created by Sina on 30/03/2017.
@@ -51,6 +56,7 @@ public class MapBuilder {
       if (!mapYamlFileName.endsWith(".yaml")) {
         mapYamlFileName += ".yaml";
       }
+      mb.importDefaults();
       mb.importBasicMap(mapYamlFileName);
       logger.warn("imported map");
     } catch (IOException e) {
@@ -69,6 +75,7 @@ public class MapBuilder {
     try {
       Resource[] resources = resolver.getResources("maps/*.yaml");
       Arrays.stream(resources).map(Resource::getFilename).map(f -> f.replace(".yaml", ""))
+          .filter(s -> !s.equals("defaults"))
           .forEach(maps::add);
     } catch (IOException e) {
       e.printStackTrace();
@@ -95,11 +102,22 @@ public class MapBuilder {
     createTrains((Map<String, Object>) mapYaml.get("trains"));
 
     createJourneys((Map<String, Object>) mapYaml.get("journeys"));
+
+    setConfigurations((Map<String, Object>) mapYaml.get("simulation"));
+  }
+
+  private void importDefaults() throws IOException {
+    Resource resource = new ClassPathResource("maps/defaults.yaml");
+    Yaml yaml = new Yaml();
+    Map<String, Object> mapYaml = (Map<String, Object>) yaml.load(resource.getInputStream());
+
+    setConfigurations((Map<String, Object>) mapYaml.get("simulation"));
   }
 
   private void setupWorld() {
     setTrainsAtStations();
     buildGraph();
+    setSignals();
   }
 
   private void buildGraph() {
@@ -112,6 +130,64 @@ public class MapBuilder {
       }
     }
     map.getGraph().buildGraph();
+  }
+
+  private void setSignals() {
+    if (!map.getGraph().isBuilt()) {
+      throw new IllegalStateException("Cannot set signals when map isn't built");
+    }
+    setBlockSignals();
+    setSwitchSignals();
+  }
+
+  private void setBlockSignals() {
+    MapGraph graph = map.getGraph();
+    Set<Connectable> roots = graph.getRootConnectables();
+    for (Connectable root : roots) {
+      Track track = graph.getFirstTrack(root);
+      logger.warn("root: Track-{}", map.getTrackID(track));
+      addBlockSignalsOnPath(graph, track);
+    }
+  }
+
+  private void addBlockSignalsOnPath(MapGraph graph, Track track) {
+    if (track == null) {
+      logger.warn("track was null");
+      return;
+    }
+    Connectable nextTrack = graph.getChildren(track).stream()
+        .map(Optional::ofNullable).findFirst().flatMap(Function.identity()).orElse(null);
+    if (nextTrack == null) {
+      logger.warn("next-track was null");
+      return;
+    }
+    if (!(nextTrack instanceof Track)) {
+      graph.getChildren(nextTrack)
+          .forEach(connectable -> addBlockSignalsOnPath(graph, graph.getFirstTrack(connectable)));
+      logger.warn("next-track was not a track");
+      return;
+    }
+    if(!((Track) nextTrack).getBlockSignals().isEmpty()){
+      logger.warn("next-track had block signals");
+      return;
+    }
+
+    SignalController signalController = new SignalController();
+    SignalUnit mainSignal = signalController.getMainSignal();
+    SignalUnit distantSignal = signalController.newDistantSignal();
+
+    if (track.getLength() > BREAK_DISTANCE) {
+      int sectionIndexForDistantSignal = (int) (track.getLength() - BREAK_DISTANCE - 1);
+      track.addBlockSignal(distantSignal, sectionIndexForDistantSignal);
+    }
+    ((Track) nextTrack).addBlockSignal(mainSignal, 0);
+    ((Track) nextTrack).addSignalController(signalController);
+
+    addBlockSignalsOnPath(graph, (Track) nextTrack);
+  }
+
+  private void setSwitchSignals() {
+    //TODO
   }
 
   private void setTrainsAtStations() {
@@ -252,6 +328,15 @@ public class MapBuilder {
       Train t = new Train((int) trainData.get("numCars"));
 
       map.addTrain(trainID, t);
+    }
+  }
+
+  private void setConfigurations(Map<String, Object> configurations) {
+    if (configurations == null) {
+      return;
+    }
+    for (Map.Entry<String, Object> config : configurations.entrySet()) {
+      map.addConfiguration(config.getKey(), config.getValue());
     }
   }
 }

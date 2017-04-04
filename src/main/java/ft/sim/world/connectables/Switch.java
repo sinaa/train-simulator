@@ -1,6 +1,7 @@
 package ft.sim.world.connectables;
 
 import ft.sim.signalling.SignalController;
+import ft.sim.signalling.SignalLinked;
 import ft.sim.simulation.BasicSimulation;
 import ft.sim.simulation.Tickable;
 import ft.sim.world.WorldHandler;
@@ -14,7 +15,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Created by Sina on 21/02/2017.
  */
-public class Switch implements Connectable, Tickable {
+public class Switch implements Connectable, Tickable, SignalLinked {
 
   protected transient final Logger logger = LoggerFactory.getLogger(Switch.class);
 
@@ -37,6 +38,7 @@ public class Switch implements Connectable, Tickable {
   private int length = 5;
 
   boolean isChanging = false;
+  private SignalController signalController;
 
   public Switch(List<Track> a, List<Track> b) {
     this(a,b, a.get(0), b.get(0));
@@ -104,5 +106,10 @@ public class Switch implements Connectable, Tickable {
     } catch (Exception e) {
       return super.toString();
     }
+  }
+
+  @Override
+  public void addSignalController(SignalController signalController) {
+    this.signalController = signalController;
   }
 }

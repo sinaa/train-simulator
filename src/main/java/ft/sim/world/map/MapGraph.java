@@ -3,12 +3,9 @@ package ft.sim.world.map;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import ft.sim.world.connectables.Connectable;
+import ft.sim.world.connectables.Track;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -21,6 +18,10 @@ public class MapGraph {
   private Multimap<Connectable, Connectable> graph = HashMultimap.create();
   private Multimap<Connectable, Connectable> graphInverse = HashMultimap.create();
 
+  private Set<GraphNode> roots = new HashSet<>();
+
+  private boolean isBuilt = false;
+
   public Collection<Connectable> getChildren(Connectable connectable) {
     return graph.get(connectable);
   }
@@ -29,10 +30,17 @@ public class MapGraph {
     return graphInverse.get(connectable);
   }
 
-  Set<GraphNode> roots = new HashSet<>();
+  public boolean isBuilt() {
+    return isBuilt;
+  }
 
   public void buildGraph() {
+    if (isBuilt) {
+      throw new IllegalStateException("Graph was already built!");
+    }
     flattenGraph(roots);
+    verifyGraph();
+    isBuilt = true;
   }
 
   public void addEdge(Connectable from, Connectable to) {
@@ -84,5 +92,31 @@ public class MapGraph {
 
   public Set<Connectable> getRootConnectables() {
     return roots.stream().map(GraphNode::getParent).collect(Collectors.toSet());
+  }
+
+  public Track getFirstTrack(Connectable rootConnectable) {
+    if (rootConnectable instanceof Track) {
+      return (Track) rootConnectable;
+    }
+    for (Connectable connectable : getChildren(rootConnectable)) {
+      Track firstTrack = getFirstTrack(connectable);
+      if (firstTrack != null) {
+        return firstTrack;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Sanity checks for the graph
+   */
+  private void verifyGraph() {
+    for (Entry<Connectable, Collection<Connectable>> connectable : graph.asMap().entrySet()) {
+      if (connectable.getKey() instanceof Track && connectable.getValue().size() > 1) {
+        throw new IllegalStateException(
+            "A track cannot be connected to more than one placeable. Track: "
+                + connectable.getKey());
+      }
+    }
   }
 }

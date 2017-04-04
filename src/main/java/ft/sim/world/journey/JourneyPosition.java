@@ -258,8 +258,8 @@ public class JourneyPosition {
       logger.info("Removed connectable from head");
       // We removed one connectable, now we try to add new connectable at the end
       if (nextConnectable != null) {
-        position.addLast(nextConnectable);
-        logger.info("Added connectable to end");
+        //position.addLast(nextConnectable);
+        //logger.info("Added connectable to end");
       } else {
         logger.warn("On the last connectable");
       }

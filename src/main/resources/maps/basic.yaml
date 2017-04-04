@@ -7,7 +7,7 @@ journeys:
   '2':
     train: 2
     path: 2
-    isForward: false
+    isForward: true
 journeyPaths:
   '1':
     path:
@@ -45,13 +45,13 @@ switches:
     statusRight: 2
 tracks:
   '1':
-    numSections: 1000
+    numSections: 10000
   '2':
-    numSections: 1000
+    numSections: 10000
   '3':
-    numSections: 1000
+    numSections: 10000
   '4':
-    numSections: 1000
+    numSections: 10000
 placeables:
   '1':
     type: fixedBalise
@@ -79,9 +79,9 @@ placeables:
       section: 500
 trains:
   '1':
-    numCars: 2
+    numCars: 8
   '2':
-    numCars: 3
+    numCars: 12
 stations:
   '1':
     capacity: 4
@@ -97,3 +97,4 @@ stations:
     wait: 30
 simulation:
   'mode': "fixed_block"
+  'seed': 0
