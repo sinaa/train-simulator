@@ -25,4 +25,7 @@ public class RealWorldConstants {
 
   // Rolling speed (20 mph - 8.9408 m/s)
   public static final double ROLLING_SPEED = 8.9;
+
+  // Human eye can see this far (m)
+  public static final int EYE_SIGHT_DISTANCE = 30;
 }

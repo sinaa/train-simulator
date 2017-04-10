@@ -58,7 +58,7 @@ public class MapBuilder {
       }
       mb.importDefaults();
       mb.importBasicMap(mapYamlFileName);
-      logger.warn("imported map");
+      logger.info("Map {} imported successfully.", mapYamlFileName);
     } catch (IOException e) {
       logger.error("failed to import map");
       e.printStackTrace();
@@ -145,30 +145,30 @@ public class MapBuilder {
     Set<Connectable> roots = graph.getRootConnectables();
     for (Connectable root : roots) {
       Track track = graph.getFirstTrack(root);
-      logger.warn("root: Track-{}", map.getTrackID(track));
+      logger.debug("root: Track-{}", map.getTrackID(track));
       addBlockSignalsOnPath(graph, track);
     }
   }
 
   private void addBlockSignalsOnPath(MapGraph graph, Track track) {
     if (track == null) {
-      logger.warn("track was null");
+      logger.debug("track was null");
       return;
     }
     Connectable nextTrack = graph.getChildren(track).stream()
         .map(Optional::ofNullable).findFirst().flatMap(Function.identity()).orElse(null);
     if (nextTrack == null) {
-      logger.warn("next-track was null");
+      logger.debug("next-track was null");
       return;
     }
     if (!(nextTrack instanceof Track)) {
       graph.getChildren(nextTrack)
           .forEach(connectable -> addBlockSignalsOnPath(graph, graph.getFirstTrack(connectable)));
-      logger.warn("next-track was not a track");
+      logger.debug("next-track was not a track");
       return;
     }
-    if(!((Track) nextTrack).getBlockSignals().isEmpty()){
-      logger.warn("next-track had block signals");
+    if (!((Track) nextTrack).getBlockSignals().isEmpty()) {
+      logger.debug("next-track had block signals");
       return;
     }
 
@@ -182,6 +182,7 @@ public class MapBuilder {
     }
     ((Track) nextTrack).addBlockSignal(mainSignal, 0);
     ((Track) nextTrack).addSignalController(signalController);
+
 
     addBlockSignalsOnPath(graph, (Track) nextTrack);
   }

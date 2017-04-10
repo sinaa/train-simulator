@@ -3,13 +3,17 @@ package ft.sim.world.journey;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import ft.sim.world.connectables.Connectable;
+import ft.sim.world.connectables.Observable;
+import ft.sim.world.connectables.Section;
 import ft.sim.world.connectables.Track;
+import ft.sim.world.map.MapGraph;
 import ft.sim.world.placeables.Balise;
 import ft.sim.world.placeables.Placeable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,6 +27,22 @@ public class JourneyPath {
   private List<Connectable> path = new ArrayList<>();
   private Map<Connectable, Double> connectablePositions = new HashMap<>();
   private BiMap<Connectable, Integer> connectableIndexes = HashBiMap.create();
+
+  private MapGraph pathGraph = new MapGraph();
+
+  private void buildGraph() {
+    Connectable previousConnectable = null;
+    for (Connectable connectable : path) {
+      pathGraph.addEdge(previousConnectable, connectable);
+      previousConnectable = connectable;
+    }
+
+    pathGraph.buildGraph();
+  }
+
+  public MapGraph getPathGraph() {
+    return pathGraph;
+  }
 
   private double length = 0;
 
@@ -111,6 +131,69 @@ public class JourneyPath {
 
   public List<Connectable> getPath() {
     return path;
+  }
+
+  public List<Observable> getObservablesBetween(double from, double to) {
+    return getSectionsBetween(Math.ceil(from), to).stream()
+        .flatMap(s -> s.getPlaceables().stream()
+            .filter(p -> p instanceof Observable).map(o -> (Observable) o))
+        .collect(Collectors.toList());
+  }
+
+  public List<Section> getSectionsBetween(double from, double to) {
+    List<Section> sections = new ArrayList<>();
+
+    if (from > to) {
+      double tmp = from;
+      from = to;
+      to = tmp;
+    }
+
+    List<Connectable> connectables = getConnectablesBetween(from, to);
+
+    if (connectables.size() == 0) {
+      return sections;
+    }
+
+    // remove offset
+    Connectable firstConnectable = connectables.get(0);
+    double firstConnectableStartingPosition = getConnectableStartingPosition(firstConnectable);
+    from -= firstConnectableStartingPosition;
+    to -= firstConnectableStartingPosition;
+
+    // get sections in the next "delta" meters
+    double delta = to - from;
+
+    double calculated = 0;
+    for (Connectable c : connectables) {
+      if (calculated >= delta) {
+        break;
+      }
+
+      double remaining = c.getLength() - from;
+      if (!(c instanceof Track)) {
+        calculated += c.getLength();
+        from = 0;
+        to = delta - calculated;
+        continue;
+      }
+
+      Track track = (Track) c;
+
+      if (remaining >= delta - calculated) {
+        sections.addAll(track.getSectionsBetween(from, to));
+        break;
+      }
+
+      double dist = delta - calculated;
+      if (from + dist > track.getLength()) {
+        dist = track.getLength() - from;
+      }
+      sections.addAll(track.getSectionsBetween(from, from + dist));
+      from = 0;
+      calculated += dist;
+    }
+    return sections;
   }
 
   public List<Connectable> getConnectablesBetween(double from, double to) {

@@ -3,6 +3,8 @@ package ft.sim.train;
 import ft.sim.signalling.SignalListener;
 import ft.sim.signalling.SignalType;
 import ft.sim.simulation.Tickable;
+import ft.sim.world.WorldHandler;
+import ft.sim.world.connectables.Station;
 import ft.sim.world.placeables.Balise;
 import ft.sim.world.placeables.FixedBalise;
 import ft.sim.world.journey.Journey;
@@ -113,4 +115,12 @@ public class Train implements Tickable, SignalListener {
     }
   }
 
+  @Override
+  public String toString() {
+    try {
+      return "Train-" + WorldHandler.getInstance().getWorld().getTrainID(this);
+    } catch (Exception e) {
+      return super.toString();
+    }
+  }
 }

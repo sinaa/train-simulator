@@ -1,5 +1,8 @@
 package ft.sim.world.connectables;
 
+import static ft.sim.signalling.SignalType.GREEN;
+
+import ft.sim.monitoring.Oracle;
 import ft.sim.signalling.SignalType;
 import ft.sim.simulation.BasicSimulation;
 import ft.sim.simulation.Tickable;
@@ -10,11 +13,15 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by Sina on 27/02/2017.
  */
 public class Station implements Connectable, Tickable {
+
+  protected transient final Logger logger = LoggerFactory.getLogger(Station.class);
 
   ConnectableType type = ConnectableType.STATION;
   // in meters
@@ -45,9 +52,18 @@ public class Station implements Connectable, Tickable {
     trainsEntering.remove(train);
   }
 
-  public void leftTrain(Train train) {
+  public void entered(Train train){
+    if(!trainsEntering.contains(train) && !hasCapacity())
+      throw new IllegalStateException("Train entering station without capacity!");
+
+    trainsEntering.add(train);
+    logger.warn("{} entered {}", train, this);
+  }
+
+  public void left(Train train) {
     trains.remove(train);
     trainsLeaving.remove(train);
+    logger.warn("{} left {}", train, this);
   }
 
   public void tick(double time) {
@@ -67,10 +83,7 @@ public class Station implements Connectable, Tickable {
   }
 
   public boolean hasCapacity() {
-    Set<Train> union = new HashSet<>(trains.keySet());
-    union.addAll(trainsEntering);
-    union.addAll(trainsLeaving);
-    return capacity - union.size() > 0;
+    return capacity - usedCapacity() > 0;
   }
 
   public boolean reserveCapacity(Train train) {
@@ -93,4 +106,14 @@ public class Station implements Connectable, Tickable {
     }
   }
 
+  public int usedCapacity() {
+    Set<Train> union = new HashSet<>(trains.keySet());
+    union.addAll(trainsEntering);
+    union.addAll(trainsLeaving);
+    return union.size();
+  }
+
+  public int getCapacity() {
+    return capacity;
+  }
 }

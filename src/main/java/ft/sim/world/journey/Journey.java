@@ -2,6 +2,8 @@ package ft.sim.world.journey;
 
 import ft.sim.simulation.Tickable;
 import ft.sim.train.Train;
+import ft.sim.world.WorldHandler;
+import ft.sim.world.map.GlobalMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -122,6 +124,11 @@ public class Journey implements Tickable {
 
   public boolean isDirectionForward() {
     return directionForward;
+  }
+
+  public GlobalMap getWorld(){
+    logger.error("Friendly advice: try not to use journey.getWorld()!");
+    return WorldHandler.getWorldForJourney(this);
   }
 
   @Override

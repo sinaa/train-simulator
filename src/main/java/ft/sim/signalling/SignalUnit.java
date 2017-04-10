@@ -1,13 +1,15 @@
 package ft.sim.signalling;
 
+import ft.sim.world.connectables.Observable;
 import ft.sim.world.placeables.Placeable;
 import java.util.HashSet;
+import java.util.Observer;
 import java.util.Set;
 
 /**
  * Created by Sina on 20/03/2017.
  */
-public class SignalUnit implements Placeable{
+public class SignalUnit implements Placeable, Observable{
 
   private SignalType status = SignalType.GREEN;
 

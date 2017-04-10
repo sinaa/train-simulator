@@ -15,7 +15,7 @@ public class Disruptor {
   }
 
   public void disruptTheWorld(GlobalMap map){
-
+    //TODO
   }
 
 }

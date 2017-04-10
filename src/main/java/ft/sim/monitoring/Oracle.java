@@ -6,6 +6,7 @@ import static ft.sim.monitoring.ViolationType.CRASH;
 import ft.sim.train.Train;
 import ft.sim.world.connectables.Connectable;
 import ft.sim.world.connectables.Section;
+import ft.sim.world.connectables.Station;
 import ft.sim.world.connectables.Switch;
 import ft.sim.world.connectables.Track;
 import ft.sim.world.journey.Journey;
@@ -47,6 +48,7 @@ public class Oracle {
     this.tick = tick;
 
     checkForTrainCollisions();
+    ensureStationCapacity();
     if (world.isConfiguration("mode", "fixed_block")) {
       ensureOneTrainPerTrackOrSwitch();
     }
@@ -65,11 +67,17 @@ public class Oracle {
       List<Connectable> duplicateConnectables = connectables.stream()
           .filter(occupiedConnectables::containsKey).collect(Collectors.toList());
 
-      duplicateConnectables.forEach(
-          c -> createFixedBlockViolation(journey.getTrain(), occupiedConnectables.get(c), c));
+      duplicateConnectables.forEach(c -> ViolationBuilder
+          .createFixedBlockViolation(this, journey.getTrain(), occupiedConnectables.get(c), c));
 
-      connectables.forEach(c->occupiedConnectables.put(c,journey.getTrain()));
+      connectables.forEach(c -> occupiedConnectables.put(c, journey.getTrain()));
     }
+  }
+
+  private void ensureStationCapacity() {
+    world.getStations().values().stream()
+        .filter(station -> !station.hasCapacity())
+        .forEach(s -> ViolationBuilder.createOverfullStationViolation(this, s));
   }
 
   private void checkForTrainCollisions() {
@@ -83,8 +91,8 @@ public class Oracle {
       List<Section> duplicateSections = sectionsOccupied.stream().
           filter(occupiedSections::containsKey).collect(Collectors.toList());
 
-      duplicateSections
-          .forEach(s -> createTrainCrashViolation(journey.getTrain(), occupiedSections.get(s), s));
+      duplicateSections.forEach(s -> ViolationBuilder
+          .createTrainCrashViolation(this, journey.getTrain(), occupiedSections.get(s), s));
 
       if (duplicateSections.size() > 0) {
         logger.error("duplicates: {}", duplicateSections.size());
@@ -94,29 +102,12 @@ public class Oracle {
     }
   }
 
-  private void createTrainCrashViolation(Train t1, Train t2, Section section) {
-    int idTrain1 = world.getTrainID(t1);
-    int idTrain2 = world.getTrainID(t2);
-    int trackID = world.getTrackIDforSection(section);
-    int sectionID = world.getTrack(trackID).getSectionPosition(section);
-    String violationDescription = String
-        .format("Train %s and Train %s were on the same Section %s on track %s",
-            idTrain1, idTrain2, sectionID, trackID);
-    addViolation(new Violation(CRASH, CRITICAL, tick, violationDescription));
+
+  public GlobalMap getWorld() {
+    return world;
   }
 
-  private void createFixedBlockViolation(Train t1, Train t2, Connectable connectable) {
-    String connectableName = "Unknown";
-    if (connectable instanceof Track) {
-      connectableName = "Track-" + world.getTrackID((Track) connectable);
-    } else if (connectable instanceof Switch) {
-      connectableName = "Switch-" + world.getSwitchID((Switch) connectable);
-    }
-
-    String violationDescription = String
-        .format("Train %s and Train %s were on the same Connectable %s",
-            world.getTrainID(t1), world.getTrainID(t2), connectableName);
-    addViolation(new Violation(CRASH, CRITICAL, tick, violationDescription));
+  public long getTick() {
+    return tick;
   }
-
 }

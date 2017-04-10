@@ -1,6 +1,5 @@
 package ft.sim.world;
 
-import ft.sim.simulation.Tickable;
 import ft.sim.world.journey.Journey;
 import ft.sim.world.map.GlobalMap;
 import java.util.HashMap;
@@ -12,9 +11,11 @@ import java.util.Map;
 public class WorldHandler {
 
   private GlobalMap world;
+  private static Map<Journey,GlobalMap> journeysWorlds = new HashMap<>();
 
   private WorldHandler(GlobalMap map) {
     this.world = map;
+    this.world.getJourneys().values().forEach(j-> journeysWorlds.put(j,map));
   }
 
   private static Map<GlobalMap, WorldHandler> instances = new HashMap<>();
@@ -24,7 +25,12 @@ public class WorldHandler {
   }
 
   public static void endWorld(GlobalMap world){
+    getInstance(world).getWorld().getJourneys().values().forEach(j-> journeysWorlds.remove(j));
     instances.remove(world);
+  }
+
+  public static GlobalMap getWorldForJourney(Journey journey) {
+    return journeysWorlds.get(journey);
   }
 
   public static WorldHandler getInstance(){

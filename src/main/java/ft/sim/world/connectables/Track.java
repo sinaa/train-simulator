@@ -1,5 +1,7 @@
 package ft.sim.world.connectables;
 
+import static ft.sim.signalling.SignalType.GREEN;
+import static ft.sim.signalling.SignalType.RED;
 import static java.util.stream.Collectors.toList;
 
 import com.google.common.collect.BiMap;
@@ -7,6 +9,7 @@ import com.google.common.collect.HashBiMap;
 import ft.sim.signalling.SignalController;
 import ft.sim.signalling.SignalLinked;
 import ft.sim.signalling.SignalUnit;
+import ft.sim.train.Train;
 import ft.sim.world.WorldHandler;
 import ft.sim.world.placeables.Balise;
 import ft.sim.world.placeables.Placeable;
@@ -66,6 +69,45 @@ public class Track implements Connectable, SignalLinked {
     }
   }
 
+  /**
+   * Get sections between two positions on the track
+   * NOTE: this method assumes that sections are 1 meter long
+   *
+   * @param from meters
+   * @param to meters
+   * @return list of sections
+   */
+  public List<Section> getSectionsBetween(double from, double to) {
+    int fromIndex = (int) Math.floor(from);
+    int toIndex = (int) Math.floor(to);
+
+    if (toIndex == length) {
+      toIndex--;
+    }
+
+    if (sections.size() <= toIndex) {
+      throw new IllegalArgumentException("the track size " + length + " is less than " + to);
+    }
+
+    if (from > to) {
+      throw new IllegalArgumentException("from > to !!");
+    }
+
+    List<Section> sectionsBetween = new ArrayList<>();
+    for (int i = fromIndex; i <= toIndex; i++) {
+      sectionsBetween.add(sections.get(i));
+    }
+
+    // length sanity check
+    int length = sectionsBetween.stream().mapToInt(s -> s.getLength()).sum();
+    double delta = to - from;
+    if (length < delta || length > delta + 2) {
+      throw new IllegalStateException("sections length: " + length + " | to - from: " + delta);
+    }
+
+    return sectionsBetween;
+  }
+
   private BiMap<Integer, Placeable> placeables = HashBiMap.create();
 
   public void placePlaceableOnSectionIndex(Placeable placeable, int sectionIndex) {
@@ -104,6 +146,22 @@ public class Track implements Connectable, SignalLinked {
   @Override
   public double getLength() {
     return length;
+  }
+
+  @Override
+  public void entered(Train train) {
+    logger.info("{} signal controller: {}", this, RED);
+    if (signalController != null) {
+      signalController.setStatus(RED);
+    }
+  }
+
+  @Override
+  public void left(Train train) {
+    logger.info("{} signal controller: {}", this, GREEN);
+    if (signalController != null) {
+      signalController.setStatus(GREEN);
+    }
   }
 
   public int getSectionPosition(Section section) {

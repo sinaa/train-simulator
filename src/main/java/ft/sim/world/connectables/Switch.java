@@ -1,9 +1,13 @@
 package ft.sim.world.connectables;
 
+import static ft.sim.signalling.SignalType.GREEN;
+import static ft.sim.signalling.SignalType.RED;
+
 import ft.sim.signalling.SignalController;
 import ft.sim.signalling.SignalLinked;
 import ft.sim.simulation.BasicSimulation;
 import ft.sim.simulation.Tickable;
+import ft.sim.train.Train;
 import ft.sim.world.WorldHandler;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -97,6 +101,18 @@ public class Switch implements Connectable, Tickable, SignalLinked {
   @Override
   public double getLength() {
     return length;
+  }
+
+  @Override
+  public void entered(Train train) {
+    logger.info("{} signal controller: {}", this, RED);
+    signalController.setStatus(RED);
+  }
+
+  @Override
+  public void left(Train train) {
+    logger.info("{} signal controller: {}", this, GREEN);
+    signalController.setStatus(GREEN);
   }
 
   @Override

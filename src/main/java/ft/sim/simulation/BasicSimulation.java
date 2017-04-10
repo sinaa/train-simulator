@@ -32,7 +32,7 @@ public class BasicSimulation {
   protected Logger logger = LoggerFactory.getLogger(BasicSimulation.class);
 
   // random seed for disruptor's random generation
-  public static final int RANDOM_SEED = 0;
+  public static int RANDOM_SEED = 0;
 
   // world instance
   private GlobalMap world = null;

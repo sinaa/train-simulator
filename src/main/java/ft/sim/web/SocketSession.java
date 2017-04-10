@@ -1,13 +1,11 @@
 package ft.sim.web;
 
-import com.fasterxml.jackson.databind.deser.Deserializers.Base;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import ft.sim.simulation.BasicSimulation;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.Map;
-import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.socket.TextMessage;
@@ -36,8 +34,9 @@ public class SocketSession {
     }*/
 
     BasicSimulation simulation = BasicSimulation.getInstance();
-    if(simulation.isKilled())
+    if (simulation.isKilled()) {
       simulation = BasicSimulation.newInstance();
+    }
     logger.info("message: {}", message);
 
     try {
@@ -46,41 +45,10 @@ public class SocketSession {
       Map<String, String> map = gson.fromJson(message, stringStringMap);
 
       if (map.containsKey("command")) {
-        String command = map.get("command");
-        switch (command) {
-          case "start trains":
-            simulation.startTrains();
-            return "OK";
-          case "stop simulation":
-            simulation.removeSocketSessions(this);
-            simulation.kill();
-            return "OK";
-          case "get push data":
-            simulation.setSocketSession(this);
-            return "SET OK";
-          case "start simulation":
-            simulation.startSimulation();
-            simulation.setSocketSession(this);
-            return "OK";
-          case "toggle interactive":
-            simulation.toggleInteractive();
-            return "OK";
-        }
+        return processCommand(simulation, map) ? "OK" : "FAIL";
       }
       if (map.containsKey("type") && map.get("type").equals("set")) {
-        String set = map.get("set");
-        switch (set) {
-          case "trainTargetSpeed":
-            int trainID = Integer.valueOf(map.get("targetID"));
-            double targetSpeed = Double.valueOf(map.get("data"));
-            simulation.getWorld().getTrain(trainID).getEngine()
-                .setTargetSpeed(targetSpeed);
-            return "OK";
-          case "worldMap":
-            String mapKey = map.get("data");
-            simulation.setWorld(mapKey);
-            return "OK";
-        }
+        return processSetCommand(simulation, map) ? "OK" : "FAIL";
       }
     } catch (com.google.gson.JsonSyntaxException ex) {
       // wasn't json
@@ -88,6 +56,48 @@ public class SocketSession {
     }
 
     return "echo: " + message;
+  }
+
+  private boolean processSetCommand(BasicSimulation simulation, Map<String, String> map) {
+    String set = map.get("set");
+    switch (set) {
+      case "trainTargetSpeed":
+        int trainID = Integer.valueOf(map.get("targetID"));
+        double targetSpeed = Double.valueOf(map.get("data"));
+        simulation.getWorld().getTrain(trainID).getEngine()
+            .setTargetSpeed(targetSpeed);
+        return true;
+      case "worldMap":
+        String mapKey = map.get("data");
+        simulation.setWorld(mapKey);
+        return true;
+    }
+    return false;
+  }
+
+  private boolean processCommand(BasicSimulation simulation, Map<String, String> map) {
+    String command = map.get("command");
+    switch (command) {
+      case "start trains":
+        simulation.startTrains();
+        return true;
+      case "stop simulation":
+        simulation.removeSocketSessions(this);
+        simulation.kill();
+        return true;
+      case "get push data":
+        simulation.setSocketSession(this);
+        return true;
+      case "start simulation":
+        simulation.startSimulation();
+        simulation.setSocketSession(this);
+        return true;
+      case "toggle interactive":
+        simulation.toggleInteractive();
+        return true;
+
+    }
+    return false;
   }
 
   public WebSocketSession getSession() {

@@ -1,13 +1,20 @@
 package ft.sim.world.journey;
 
+import static ft.sim.signalling.SignalType.RED;
+
 import com.google.common.collect.Sets;
+import ft.sim.signalling.SignalType;
+import ft.sim.signalling.SignalUnit;
 import ft.sim.train.Train;
+import ft.sim.world.RealWorldConstants;
 import ft.sim.world.connectables.Connectable;
+import ft.sim.world.connectables.Observable;
 import ft.sim.world.connectables.Section;
 import ft.sim.world.connectables.Station;
 import ft.sim.world.connectables.Track;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -194,10 +201,20 @@ public class JourneyPosition {
 
     // get new connectables occupied by this train
     Set<Connectable> newConnectablesOccupied = new HashSet<>(getConnectablesOccupied());
-    connectablesOccupied.removeAll(newConnectablesOccupied);
-    if (connectablesOccupied.size() > 0) {
+    Set<Connectable> connectablesLeft = Sets.newHashSet(connectablesOccupied);
+    connectablesLeft.removeAll(newConnectablesOccupied);
+    // connectables train left
+    if (connectablesLeft.size() > 0) {
       // TODO: do something with connectables that the train left
-
+      connectablesLeft.forEach(c->c.left(train));
+      connectablesLeft.forEach(c->logger.warn("{} just left {}", train, c));
+    }
+    // connectables train just entered
+    Set<Connectable> newConnectables = Sets.newHashSet(newConnectablesOccupied);
+    newConnectables.removeAll(connectablesOccupied);
+    if (newConnectables.size() > 0) {
+      newConnectables.forEach(c->c.entered(train));
+      newConnectables.forEach(c->logger.warn("{} just entered {}", train, c));
     }
 
     // get new stations covered by this train
@@ -208,7 +225,7 @@ public class JourneyPosition {
     stationsOccupied.removeAll(newStationsOccupied);
     if (stationsOccupied.size() > 0) {
       // notify the sections that the train left them
-      stationsOccupied.forEach(s -> s.leftTrain(train));
+      stationsOccupied.forEach(s -> s.left(train));
     }
 
     // get new sections occupied by the train
@@ -226,6 +243,13 @@ public class JourneyPosition {
     train.reachedSections(newSectionsOccupied);
     // keep track of sections the train has covered so far
     coveredSections.addAll(newSectionsOccupied);
+
+
+    //TODO fix signalling
+    List<Observable> observables = peek(RealWorldConstants.EYE_SIGHT_DISTANCE);
+    observables.stream().filter(o-> o instanceof SignalUnit).map(o->(SignalUnit)o)
+        .filter(s->s.getStatus()== RED).forEach(s->{train.signalChange(RED);
+        s.addListener(train);});
   }
 
   private void updatePosition(Journey journey, double lastDistanceTravelled) {
@@ -255,13 +279,13 @@ public class JourneyPosition {
       Connectable nextConnectable = path.getNext(lastConnectable);
 
       position.removeFirst();
-      logger.info("Removed connectable from head");
+      logger.debug("Removed connectable from head");
       // We removed one connectable, now we try to add new connectable at the end
       if (nextConnectable != null) {
         //position.addLast(nextConnectable);
         //logger.info("Added connectable to end");
       } else {
-        logger.warn("On the last connectable");
+        logger.debug("On the last connectable");
       }
 
       if (position.isEmpty()) {
@@ -280,7 +304,7 @@ public class JourneyPosition {
 
     // If we don't have enough space for our train, add a new section to the train
     if (getAvailableLength(positionFromFirstConnectable) - train.getLength() <= 0) {
-      logger.info("Not enough space: {}, positionFromFirst: {}",
+      logger.debug("Not enough space: {}, positionFromFirst: {}",
           getAvailableLength(positionFromFirstConnectable) - train.getLength(),
           positionFromFirstConnectable);
 
@@ -292,10 +316,10 @@ public class JourneyPosition {
       Connectable nextConnectable = path.getNext(lastConnectable);
       if (nextConnectable != null) {
         position.addLast(nextConnectable);
-        logger.info("Added connectable to end");
+        logger.debug("Added connectable to end");
       } else {
         //train reached the end
-        logger.info("Train reached the end!");
+        logger.debug("Train reached the end!");
         isEnded = true;
         return;
       }
@@ -320,9 +344,9 @@ public class JourneyPosition {
       // We removed one connectable, now we try to add new connectable at the end
       if (previousConnectable != null) {
         position.addFirst(previousConnectable);
-        logger.info("Added connectable to beginning (going backwards)");
+        logger.debug("Added connectable to beginning (going backwards)");
       } else {
-        logger.warn("On the first connectable (going backwards)");
+        logger.debug("On the first connectable (going backwards)");
         isEnded = true;
         return;
       }
@@ -345,8 +369,21 @@ public class JourneyPosition {
     double overflow = getPositionFromLastConnectable();
     if (overflow <= 0) {
       position.removeLast();
-      logger.info("Removed connectable from tail (going backwards)");
+      logger.debug("Removed connectable from tail (going backwards)");
     }
+  }
+
+  /**
+   * peek the observables in the next X meters
+   */
+  public List<Observable> peek(int distance) {
+    if (!isForward) {
+      throw new IllegalStateException("backward movement is not implemented");
+    }
+
+    double headPosition = getHeadPosition();
+
+    return path.getObservablesBetween(headPosition, headPosition + distance);
   }
 
   public double getTailPosition() {
