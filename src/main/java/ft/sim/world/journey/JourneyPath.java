@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -133,11 +134,11 @@ public class JourneyPath {
     return path;
   }
 
-  public List<Observable> getObservablesBetween(double from, double to) {
+  public Set<Observable> getObservablesBetween(double from, double to) {
     return getSectionsBetween(Math.ceil(from), to).stream()
         .flatMap(s -> s.getPlaceables().stream()
             .filter(p -> p instanceof Observable).map(o -> (Observable) o))
-        .collect(Collectors.toList());
+        .collect(Collectors.toSet());
   }
 
   public List<Section> getSectionsBetween(double from, double to) {
@@ -166,6 +167,7 @@ public class JourneyPath {
 
     double calculated = 0;
     for (Connectable c : connectables) {
+
       if (calculated >= delta) {
         break;
       }
@@ -181,7 +183,7 @@ public class JourneyPath {
       Track track = (Track) c;
 
       if (remaining >= delta - calculated) {
-        sections.addAll(track.getSectionsBetween(from, to));
+        sections.addAll(track.getSectionsBetween(from, from + delta - calculated));
         break;
       }
 
@@ -201,7 +203,7 @@ public class JourneyPath {
     List<Connectable> connectables = new ArrayList<>();
 
     if (from < 0 || to > getLength()) {
-      throw new IllegalArgumentException("Invalid From/To arguments");
+      throw new IllegalArgumentException("Invalid From/To arguments! from: " + from + ",to: " + to);
     }
 
     if (from > to) {

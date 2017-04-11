@@ -1,29 +1,42 @@
 package ft.sim.signalling;
 
+import ft.sim.world.connectables.Connectable;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by Sina on 20/03/2017.
  */
 public class SignalController {
 
-  Set<SignalUnit> signalSet = new HashSet<>();
-  Set<SignalListener> signalListeners = new HashSet<>();
+  protected static Logger logger = LoggerFactory.getLogger(SignalController.class);
 
+  private Set<SignalUnit> signalSet = new HashSet<>();
+  private Set<SignalListener> signalListeners = new HashSet<>();
 
-  public void setStatus(SignalType status) {
-    signalSet.forEach(signal -> signal.setStatus(status));
-    signalListeners.forEach(listener -> listener.signalChange(status));
+  transient Connectable belongsTo;
+
+  public SignalController(Connectable belongsTo){
+    this.belongsTo = belongsTo;
   }
 
-  public void addListener(SignalListener signalListener) {
+  public void setStatus(SignalType status) {
+    logger.info("{} signal controller set to {}", belongsTo, status);
+    signalSet.forEach(signal -> signal.setStatus(status));
+    //signalListeners.forEach(listener -> listener.signalChange(status, this));
+  }
+
+  @Deprecated
+  private void addListener(SignalListener signalListener) {
     signalListeners.add(signalListener);
   }
 
-  public void removeSignalListener(SignalListener signalListener) {
+  @Deprecated
+  private void removeSignalListener(SignalListener signalListener) {
     signalListeners.remove(signalListener);
   }
 
@@ -47,21 +60,21 @@ public class SignalController {
     }
     SignalUnit newDistantSignal = new SignalUnit(true);
     newDistantSignal.setStatus(mainSignal.getStatus());
-    signalSet.add(newDistantSignal);
+    addSignalUnit(newDistantSignal);
 
     return newDistantSignal;
   }
 
   private SignalUnit newMainSignal() {
     SignalUnit newMainSignal = new SignalUnit(false);
-    signalSet.add(newMainSignal);
+    addSignalUnit(newMainSignal);
 
     return newMainSignal;
   }
 
   public SignalUnit getMainSignal() {
     return signalSet.stream().filter(s -> !s.isDistantSignal())
-        .map(Optional::ofNullable).findFirst().flatMap(Function.identity()).orElse(null);
+        .map(Optional::ofNullable).findFirst().flatMap(Function.identity()).orElse(newMainSignal());
   }
 
 }

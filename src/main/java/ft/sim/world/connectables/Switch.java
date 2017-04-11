@@ -45,7 +45,7 @@ public class Switch implements Connectable, Tickable, SignalLinked {
   private SignalController signalController;
 
   public Switch(List<Track> a, List<Track> b) {
-    this(a,b, a.get(0), b.get(0));
+    this(a, b, a.get(0), b.get(0));
   }
 
   public Switch(List<Track> a, List<Track> b, Track left, Track right) {
@@ -89,7 +89,7 @@ public class Switch implements Connectable, Tickable, SignalLinked {
     }
   }
 
-  private void setSignals(){
+  private void setSignals() {
     //TODO: set signals based on the status and connected tracks
 
   }
@@ -106,13 +106,17 @@ public class Switch implements Connectable, Tickable, SignalLinked {
   @Override
   public void entered(Train train) {
     logger.info("{} signal controller: {}", this, RED);
-    signalController.setStatus(RED);
+    if (signalController != null) {
+      signalController.setStatus(RED);
+    }
   }
 
   @Override
   public void left(Train train) {
     logger.info("{} signal controller: {}", this, GREEN);
-    signalController.setStatus(GREEN);
+    if (signalController != null) {
+      signalController.setStatus(GREEN);
+    }
   }
 
   @Override

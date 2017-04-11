@@ -7,4 +7,8 @@ public interface SignalListener {
 
   void signalChange(SignalType type);
 
+  void startListeningTo(SignalUnit signalUnit);
+
+  void stopListeningTo(SignalUnit signalUnit);
+
 }

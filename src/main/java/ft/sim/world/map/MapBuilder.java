@@ -4,6 +4,7 @@ import static ft.sim.world.RealWorldConstants.BREAK_DISTANCE;
 
 import com.google.common.collect.Iterables;
 import ft.sim.signalling.SignalController;
+import ft.sim.signalling.SignalType;
 import ft.sim.signalling.SignalUnit;
 import ft.sim.train.Train;
 import ft.sim.world.connectables.Connectable;
@@ -172,18 +173,26 @@ public class MapBuilder {
       return;
     }
 
-    SignalController signalController = new SignalController();
+    SignalController signalController = new SignalController(nextTrack);
+
     SignalUnit mainSignal = signalController.getMainSignal();
     SignalUnit distantSignal = signalController.newDistantSignal();
 
     if (track.getLength() > BREAK_DISTANCE) {
       int sectionIndexForDistantSignal = (int) (track.getLength() - BREAK_DISTANCE - 1);
       track.addBlockSignal(distantSignal, sectionIndexForDistantSignal);
+    } else {
+      throw new IllegalArgumentException("Track is not long enough for placing distant signals");
     }
     ((Track) nextTrack).addBlockSignal(mainSignal, 0);
     ((Track) nextTrack).addSignalController(signalController);
 
-
+    if (MapBuilderHelper.hasTrain(map, ((Track) nextTrack))) {
+      signalController.setStatus(SignalType.RED);
+      logger.warn("set track-{}'s signal controller status to RED", map.getTrackID(((Track) nextTrack)));
+    } else {
+      logger.warn("track-{} doesn't have a signal controller",map.getTrackID(((Track) nextTrack)) );
+    }
     addBlockSignalsOnPath(graph, (Track) nextTrack);
   }
 
@@ -230,7 +239,7 @@ public class MapBuilder {
       Map<String, Object> journeyData = (Map<String, Object>) j.getValue();
       int trainID = (int) journeyData.get("train");
       int jpID = (int) journeyData.get("path");
-      boolean isForward = (boolean) journeyData.get("isForward");
+      boolean isForward = (boolean) journeyData.getOrDefault("isForward", true);
 
       map.addJourney(journeyID, jpID, trainID, isForward);
     }

@@ -76,7 +76,7 @@ public class Oracle {
 
   private void ensureStationCapacity() {
     world.getStations().values().stream()
-        .filter(station -> !station.hasCapacity())
+        .filter(station -> station.getCapacity() < station.usedCapacity())
         .forEach(s -> ViolationBuilder.createOverfullStationViolation(this, s));
   }
 

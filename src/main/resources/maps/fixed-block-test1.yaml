@@ -3,11 +3,9 @@ journeys:
   '1':
     train: 1
     path: 1
-    isForward: true
   '2':
     train: 2
     path: 2
-    isForward: true
 journeyPaths:
   '1':
     path:
@@ -17,26 +15,26 @@ journeyPaths:
       id: 1
     - type: track
       id: 2
-    - type: switch
-      id: 1
     - type: track
       id: 3
+    - type: track
+      id: 4
+    - type: track
+      id: 5
+    - type: station
+      id: 2
   '2':
     path:
     - type: track
       id: 2
-    - type: switch
-      id: 1
     - type: track
       id: 3
-switches:
-  '1':
-    left:
-    - 2
-    right:
-    - 3
-    statusLeft: 2
-    statusRight: 3
+    - type: track
+      id: 4
+    - type: track
+      id: 5
+    - type: station
+      id: 2
 tracks:
   '1':
     numSections: 10000
@@ -44,31 +42,35 @@ tracks:
     numSections: 10000
   '3':
     numSections: 10000
+  '4':
+    numSections: 10000
+  '5':
+    numSections: 10000
 placeables:
   '1':
     type: fixedBalise
-    advisorySpeed: 2
+    advisorySpeed: 200
     placeOn:
-      track: 2
-      section: 200
+      track: 1
+      section: 1000
   '2':
     type: fixedBalise
-    advisorySpeed: 2
+    advisorySpeed: 4
     placeOn:
       track: 2
-      section: 700
+      section: 1000
   '3':
     type: fixedBalise
-    advisorySpeed: 2
+    advisorySpeed: 200
     placeOn:
       track: 3
-      section: 0
+      section: 2000
   '4':
     type: fixedBalise
-    advisorySpeed: 2
+    advisorySpeed: 250
     placeOn:
       track: 3
-      section: 500
+      section: 5000
 trains:
   '1':
     numCars: 2

@@ -38,7 +38,7 @@ public class BasicSimulation {
   private GlobalMap world = null;
 
   // From the point of view of a user, how many ticks we should do per second
-  int ticksPerSecond = 300;
+  int ticksPerSecond = 1000;
   // From the view of the simulation, how much time passed since last tick (in seconds)
   private double secondsPerTick = 1.0 / 100.0;
 
@@ -113,6 +113,7 @@ public class BasicSimulation {
 
   private void setSimulatorThread() {
     simThread = new Thread(() -> {
+      logger.warn("simulation started!");
       while (!Thread.currentThread().isInterrupted()
           && ticksElapsed * secondsPerTick < simulationDuration
           && !simulationCompleted) {
@@ -144,6 +145,7 @@ public class BasicSimulation {
       simulationCompleted = true;
       isRunning = false;
       logger.info("Simulation completed!");
+      kill();
     });
   }
 

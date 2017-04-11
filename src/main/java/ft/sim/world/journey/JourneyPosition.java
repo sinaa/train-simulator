@@ -206,15 +206,15 @@ public class JourneyPosition {
     // connectables train left
     if (connectablesLeft.size() > 0) {
       // TODO: do something with connectables that the train left
-      connectablesLeft.forEach(c->c.left(train));
-      connectablesLeft.forEach(c->logger.warn("{} just left {}", train, c));
+      connectablesLeft.forEach(c -> c.left(train));
+      connectablesLeft.forEach(c -> logger.warn("{} just left {}", train, c));
     }
     // connectables train just entered
     Set<Connectable> newConnectables = Sets.newHashSet(newConnectablesOccupied);
     newConnectables.removeAll(connectablesOccupied);
     if (newConnectables.size() > 0) {
-      newConnectables.forEach(c->c.entered(train));
-      newConnectables.forEach(c->logger.warn("{} just entered {}", train, c));
+      newConnectables.forEach(c -> c.entered(train));
+      newConnectables.forEach(c -> logger.warn("{} just entered {}", train, c));
     }
 
     // get new stations covered by this train
@@ -244,12 +244,9 @@ public class JourneyPosition {
     // keep track of sections the train has covered so far
     coveredSections.addAll(newSectionsOccupied);
 
-
-    //TODO fix signalling
-    List<Observable> observables = peek(RealWorldConstants.EYE_SIGHT_DISTANCE);
-    observables.stream().filter(o-> o instanceof SignalUnit).map(o->(SignalUnit)o)
-        .filter(s->s.getStatus()== RED).forEach(s->{train.signalChange(RED);
-        s.addListener(train);});
+    // tell the train what it's seeing/should be seeing
+    Set<Observable> observables = peek(RealWorldConstants.EYE_SIGHT_DISTANCE);
+    train.see(observables);
   }
 
   private void updatePosition(Journey journey, double lastDistanceTravelled) {
@@ -376,14 +373,32 @@ public class JourneyPosition {
   /**
    * peek the observables in the next X meters
    */
-  public List<Observable> peek(int distance) {
+  public Set<Observable> peek(int distance) {
+
     if (!isForward) {
-      throw new IllegalStateException("backward movement is not implemented");
+      logger.error("!!!!! Backwards movement is not implemented !!!!!");
+      //throw new IllegalStateException("backward movement is not implemented");
+      return new HashSet<>();
     }
 
-    double headPosition = getHeadPosition();
+    // the reason for the +1 is because the train is past the current signal
+    double headPosition = Math.ceil(getHeadPosition()) + 1;
+    double to = headPosition + distance;
 
-    return path.getObservablesBetween(headPosition, headPosition + distance);
+    if (path.getLength() < to) {
+      to = path.getLength();
+    }
+
+    if (headPosition >= to) {
+      logger.error("train falling from the end!");
+      return new HashSet<>();
+    }
+
+    Set<Observable> x =  path.getObservablesBetween(headPosition, to);
+    /*if(!x.isEmpty())
+      logger.warn("x:{}, from:{}, to:{}, {}", x,headPosition, to, train);*/
+
+    return x;
   }
 
   public double getTailPosition() {

@@ -33,6 +33,12 @@ public class Engine implements Tickable {
   double lastDistanceTravelled = 0;
 
 
+  /*
+   * Get current speed (m/s), m is metres
+   */
+  public double getSpeed() {
+    return speed;
+  }
 
   /*
    * Construct an engine, along with the train this engine belongs to
@@ -44,13 +50,6 @@ public class Engine implements Tickable {
   }
 
   /*
-   * Get current speed (m/s), m is metres
-   */
-  public double getSpeed() {
-    return speed;
-  }
-
-  /*
    * Set the target (advisory) speed (m/s)
    */
   public void setTargetSpeed(double targetSpeed) {
@@ -58,11 +57,11 @@ public class Engine implements Tickable {
     updateAcceleration();
   }
 
-  public void roll(){
+  public void roll() {
     setTargetSpeed(ROLLING_SPEED);
   }
 
-  public void emergencyBreak(){
+  public void emergencyBreak() {
     this.targetSpeed = 0;
     acceleration = maxDeceleration;
   }
@@ -118,6 +117,9 @@ public class Engine implements Tickable {
 
     if (speed < 0) {
       speed = 0;
+    }
+    if (speed == 0 && acceleration < 0) {
+      acceleration = 0;
     }
     updateAcceleration();
   }

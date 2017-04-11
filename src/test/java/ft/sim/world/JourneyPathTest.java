@@ -11,7 +11,9 @@ import ft.sim.world.connectables.Track;
 import ft.sim.world.journey.JourneyPath;
 import ft.sim.world.placeables.Placeable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.junit.Test;
 
 /**
@@ -168,8 +170,8 @@ public class JourneyPathTest {
     journeyPath1.add(t2);
     JourneyPath jp = new JourneyPath(journeyPath1);
 
-    List<Observable> observables = jp.getObservablesBetween(0, 5);
-    List<Observable> observablesExpected = new ArrayList<>();
+    Set<Observable> observables = jp.getObservablesBetween(0, 5);
+    Set<Observable> observablesExpected = new HashSet<>();
     observablesExpected.add((Observable) p1);
     assertEquals(observablesExpected, observables);
 
