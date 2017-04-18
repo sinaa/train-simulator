@@ -8,7 +8,7 @@ import ft.sim.world.connectables.Switch;
 import ft.sim.world.connectables.Track;
 import ft.sim.world.journey.Journey;
 import ft.sim.world.journey.JourneyPath;
-import ft.sim.world.placeables.FixedBalise;
+import ft.sim.world.placeables.PassiveBalise;
 import ft.sim.world.placeables.Placeable;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -110,10 +110,10 @@ public class OriginalMapBuilder {
   }
 
   private void createPlaceables(){
-    FixedBalise fb1 = new FixedBalise(50 ,1);
-    FixedBalise fb2 = new FixedBalise(30 ,2);
-    FixedBalise fb3 = new FixedBalise(10 ,3);
-    FixedBalise fb4 = new FixedBalise(60 ,4);
+    PassiveBalise fb1 = new PassiveBalise(50 ,1);
+    PassiveBalise fb2 = new PassiveBalise(30 ,2);
+    PassiveBalise fb3 = new PassiveBalise(10 ,3);
+    PassiveBalise fb4 = new PassiveBalise(60 ,4);
 
     placeablesMap.put(1,fb1);
     placeablesMap.put(2,fb2);

@@ -12,7 +12,7 @@ import ft.sim.world.connectables.Station;
 import ft.sim.world.connectables.Track;
 import ft.sim.world.journey.Journey;
 import ft.sim.world.journey.JourneyPath;
-import ft.sim.world.placeables.FixedBalise;
+import ft.sim.world.placeables.PassiveBalise;
 import ft.sim.world.placeables.Placeable;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -316,7 +316,7 @@ public class MapBuilder {
       Map<String, Object> placeableData = (Map<String, Object>) placeable.getValue();
       Placeable p = null;
       if (placeableData.get("type").equals("fixedBalise")) {
-        p = new FixedBalise(Double.valueOf((int) placeableData.get("advisorySpeed")), placeableID);
+        p = new PassiveBalise(Double.valueOf((int) placeableData.get("advisorySpeed")), placeableID);
       }
       Map<String, Integer> placeOnMap = ((Map<String, Integer>) placeableData.get("placeOn"));
       int trackID = placeOnMap.get("track");

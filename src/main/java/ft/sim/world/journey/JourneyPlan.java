@@ -5,5 +5,7 @@ package ft.sim.world.journey;
  */
 public class JourneyPlan {
 
+  JourneyPath journeyPath;
+  
 
 }

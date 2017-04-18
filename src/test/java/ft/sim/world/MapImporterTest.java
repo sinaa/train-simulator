@@ -1,7 +1,7 @@
 package ft.sim.world;
 
 import ft.sim.world.connectables.Track;
-import ft.sim.world.placeables.FixedBalise;
+import ft.sim.world.placeables.PassiveBalise;
 import ft.sim.world.placeables.Placeable;
 import java.io.IOException;
 import java.util.List;
@@ -55,7 +55,7 @@ public class MapImporterTest {
       Map<String, Integer> placeOnMap = ((Map<String, Integer>) placeableData.get("placeOn"));
       Placeable p;
       if (placeableData.get("type").equals("fixedBalise")) {
-        p = new FixedBalise(Double.valueOf((int) placeableData.get("advisorySpeed")), placeableID);
+        p = new PassiveBalise(Double.valueOf((int) placeableData.get("advisorySpeed")), placeableID);
       }
 
       int trackID = placeOnMap.get("track");

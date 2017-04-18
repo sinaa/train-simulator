@@ -11,11 +11,11 @@ import ft.sim.world.WorldHandler;
 import ft.sim.world.connectables.Observable;
 import ft.sim.world.connectables.ObservableHelper;
 import ft.sim.world.placeables.Balise;
-import ft.sim.world.placeables.FixedBalise;
+import ft.sim.world.placeables.PassiveBalise;
 import ft.sim.world.journey.Journey;
 import ft.sim.world.placeables.Placeable;
 import ft.sim.world.connectables.Section;
-import ft.sim.world.placeables.TransparentBalise;
+import ft.sim.world.placeables.ActiveBalise;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -84,8 +84,8 @@ public class Train implements Tickable, SignalListener {
       List<Placeable> sectionPlaceables = s.getPlaceables();
       for (Placeable p : sectionPlaceables) {
         if (p instanceof Balise) {
-          if (p instanceof FixedBalise) {
-            FixedBalise balise = (FixedBalise) p;
+          if (p instanceof PassiveBalise) {
+            PassiveBalise balise = (PassiveBalise) p;
             lastAdvisorySpeed = balise.getAdvisorySpeed();
             if (lastObjective == PROCEED) {
               engine.setTargetSpeed(lastAdvisorySpeed);
@@ -102,8 +102,8 @@ public class Train implements Tickable, SignalListener {
       List<Placeable> sectionPlaceables = s.getPlaceables();
       for (Placeable p : sectionPlaceables) {
         if (p instanceof Balise) {
-          if (p instanceof TransparentBalise) {
-            TransparentBalise balise = (TransparentBalise) p;
+          if (p instanceof ActiveBalise) {
+            ActiveBalise balise = (ActiveBalise) p;
             //TODO: do something with the balise
           }
         }

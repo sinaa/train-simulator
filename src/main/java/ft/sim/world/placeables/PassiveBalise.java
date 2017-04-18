@@ -8,14 +8,14 @@ import java.util.Map;
 /**
  * Created by Sina on 06/03/2017.
  */
-public class FixedBalise extends Balise {
+public class PassiveBalise extends Balise {
 
   private double advisorySpeed = 0;
 
   private int baliseID = 0;
 
 
-  public FixedBalise(double advisorySpeed, int baliseID) {
+  public PassiveBalise(double advisorySpeed, int baliseID) {
     this.advisorySpeed = advisorySpeed;
     this.baliseID = baliseID;
   }
