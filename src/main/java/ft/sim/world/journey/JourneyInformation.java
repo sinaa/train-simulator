@@ -1,6 +1,7 @@
 package ft.sim.world.journey;
 
 import ft.sim.simulation.BasicSimulation;
+import ft.sim.world.WorldHandler;
 import ft.sim.world.connectables.Connectable;
 import ft.sim.world.connectables.Station;
 import ft.sim.world.connectables.Switch;
@@ -35,15 +36,15 @@ public class JourneyInformation {
       int id = 0;
       String type = "N/A";
       if(c instanceof Track) {
-        id = BasicSimulation.getInstance().getWorld().getTrackID((Track) c);
+        id = WorldHandler.getInstance().getWorld().getTrackID((Track) c);
         type = "Track";
       }
       else if(c instanceof Switch) {
-        id = BasicSimulation.getInstance().getWorld().getSwitchID((Switch) c);
+        id = WorldHandler.getInstance().getWorld().getSwitchID((Switch) c);
         type = "Switch";
       }
       else if(c instanceof Station) {
-        id = BasicSimulation.getInstance().getWorld().getStationID((Station) c);
+        id = WorldHandler.getInstance().getWorld().getStationID((Station) c);
         type = "Station";
       }
       p.add(type + "-" + id);

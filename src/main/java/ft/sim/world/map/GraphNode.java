@@ -2,6 +2,7 @@ package ft.sim.world.map;
 
 import ft.sim.world.connectables.Connectable;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -10,7 +11,7 @@ import java.util.Set;
 public class GraphNode {
 
   private Connectable connectable;
-  private Set<GraphNode> edges = new HashSet<>();
+  private Set<GraphNode> edges = new LinkedHashSet<>();
 
   GraphNode(Connectable connectable) {
     this.connectable = connectable;
@@ -29,9 +30,25 @@ public class GraphNode {
     return edges;
   }
 
+  public void addEdge(GraphNode edge) {
+    edges.add(edge);
+  }
+
   private void addEdge(Connectable connectable) {
     GraphNode node = new GraphNode(connectable);
     edges.add(node);
+  }
+
+  public boolean hasEdge(Connectable c) {
+    if (getParent() == c) {
+      return true;
+    }
+    for (GraphNode childNode : this.edges) {
+      if (childNode.hasEdge(c)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   public boolean addEdge(Connectable parent, Connectable child, Set<GraphNode> covered) {
@@ -39,7 +56,7 @@ public class GraphNode {
     if (covered == null) {
       covered = new HashSet<>();
     }
-    if (parent.equals(this.connectable)) {
+    if (parent != null && parent.equals(this.connectable)) {
       addEdge(child);
       added = true;
     } else {

@@ -34,9 +34,9 @@ public class SocketSession {
     }*/
 
     BasicSimulation simulation = BasicSimulation.getInstance();
-    if (simulation.isKilled()) {
+    /*if (simulation.isKilled()) {
       simulation = BasicSimulation.newInstance();
-    }
+    }*/
     logger.info("message: {}", message);
 
     try {
@@ -69,7 +69,11 @@ public class SocketSession {
         return true;
       case "worldMap":
         String mapKey = map.get("data");
-        simulation.setWorld(mapKey);
+        if (simulation == null) {
+          BasicSimulation.getInstance(mapKey);
+        } else {
+          simulation.setWorld(mapKey);
+        }
         return true;
     }
     return false;
@@ -86,8 +90,11 @@ public class SocketSession {
         simulation.kill();
         return true;
       case "get push data":
-        simulation.setSocketSession(this);
-        return true;
+        if (simulation != null) {
+          simulation.setSocketSession(this);
+          return true;
+        }
+        return false;
       case "start simulation":
         simulation.startSimulation();
         simulation.setSocketSession(this);

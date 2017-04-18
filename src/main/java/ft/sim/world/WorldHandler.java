@@ -11,11 +11,11 @@ import java.util.Map;
 public class WorldHandler {
 
   private GlobalMap world;
-  private static Map<Journey,GlobalMap> journeysWorlds = new HashMap<>();
+  private static Map<Journey, GlobalMap> journeysWorlds = new HashMap<>();
 
   private WorldHandler(GlobalMap map) {
     this.world = map;
-    this.world.getJourneys().values().forEach(j-> journeysWorlds.put(j,map));
+    this.world.getJourneys().values().forEach(j -> journeysWorlds.put(j, map));
   }
 
   private static Map<GlobalMap, WorldHandler> instances = new HashMap<>();
@@ -24,8 +24,10 @@ public class WorldHandler {
     return instances.computeIfAbsent(world, WorldHandler::new);
   }
 
-  public static void endWorld(GlobalMap world){
-    getInstance(world).getWorld().getJourneys().values().forEach(j-> journeysWorlds.remove(j));
+  public static void endWorld(GlobalMap world) {
+    if (instances.containsKey(world)) {
+      getInstance(world).getWorld().getJourneys().values().forEach(j -> journeysWorlds.remove(j));
+    }
     instances.remove(world);
   }
 
@@ -33,9 +35,10 @@ public class WorldHandler {
     return journeysWorlds.get(journey);
   }
 
-  public static WorldHandler getInstance(){
-    if(instances.size()!=1)
+  public static WorldHandler getInstance() {
+    if (instances.size() != 1) {
       throw new IllegalStateException("more than one map instances created");
+    }
     return instances.values().iterator().next();
   }
 

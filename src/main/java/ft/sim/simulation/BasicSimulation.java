@@ -76,11 +76,15 @@ public class BasicSimulation {
   // oracle instance
   Oracle oracle;
 
-  public static BasicSimulation getInstance() {
+  public static BasicSimulation getInstance(String mapName) {
     if (instance == null) {
-      instance = new BasicSimulation();
+      instance = new BasicSimulation(mapName);
     }
     return instance;
+  }
+
+  public static BasicSimulation getInstance(){
+   return instance;
   }
 
   public void toggleInteractive() {
@@ -96,17 +100,17 @@ public class BasicSimulation {
     return isRunning;
   }
 
-  public static BasicSimulation newInstance() {
+  public static BasicSimulation newInstance(String mapName) {
     if (instance != null) {
       instance.kill();
       instance = null;
     }
-    return getInstance();
+    return getInstance(mapName);
   }
 
-  private BasicSimulation() {
+  private BasicSimulation(String mapName) {
     logger.info("starting new simulation");
-    buildWorld(DEFAULT_MAP);
+    buildWorld(mapName);
     oracle = new Oracle();
     setSimulatorThread();
   }
@@ -225,6 +229,8 @@ public class BasicSimulation {
     socketSessions.clear();
     WorldHandler.endWorld(world);
     world = null;
+
+    instance = null;
   }
 
   public void setSocketSession(SocketSession socketSession) {

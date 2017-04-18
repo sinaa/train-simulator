@@ -12,11 +12,13 @@ import ft.sim.world.connectables.Station;
 import ft.sim.world.connectables.Track;
 import ft.sim.world.journey.Journey;
 import ft.sim.world.journey.JourneyPath;
+import ft.sim.world.placeables.Balise;
 import ft.sim.world.placeables.PassiveBalise;
 import ft.sim.world.placeables.Placeable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -44,7 +46,7 @@ public class MapBuilder {
   }*/
 
   public static GlobalMap buildNewMap(String mapName) {
-    return buildNewMap(mapName, new GlobalMap());
+    return buildNewMap(mapName, new GlobalMap(mapName));
   }
 
   private static GlobalMap buildNewMap(String mapYamlFileName, GlobalMap globalMap) {
@@ -119,6 +121,41 @@ public class MapBuilder {
     setTrainsAtStations();
     buildGraph();
     setSignals();
+    initBalisePositions();
+  }
+
+  private void initBalisePositions() {
+    MapGraph graph = map.getGraph();
+    Set<Connectable> roots = graph.getRootConnectables();
+    boolean balisesInitialised = true;
+    for (Connectable root : roots) {
+      try {
+        initBalisePosition(graph, root);
+      } catch (IllegalStateException e) {
+        balisesInitialised = false;
+        logger.error("Map {} has branching tracks, which is not supported!", map.getName());
+      }
+    }
+    if (balisesInitialised) {
+      logger.info("Balises initliased successfully for map {}", map.getName());
+    }
+  }
+
+  private void initBalisePosition(MapGraph graph, Connectable root) {
+    double length = 0;
+    Iterator<Connectable> mapIterator = graph.getIterator(root);
+    while (mapIterator.hasNext()) {
+      Connectable c = mapIterator.next();
+
+      if (c instanceof Track) {
+        List<Balise> balises = ((Track) c).getBalises();
+        for (Balise b : balises) {
+          int relativePosition = ((Track) c).getPlaceablePosition(b);
+          b.setPosition(length + relativePosition);
+        }
+      }
+      length += c.getLength();
+    }
   }
 
   private void buildGraph() {
@@ -144,32 +181,41 @@ public class MapBuilder {
   private void setBlockSignals() {
     MapGraph graph = map.getGraph();
     Set<Connectable> roots = graph.getRootConnectables();
+    if(roots.stream().iterator().next() instanceof Track)
+      logger.error("graph: {}", graph.getConnectablesGraph());
+    logger.warn("roots: {}", roots);
     for (Connectable root : roots) {
       Track track = graph.getFirstTrack(root);
-      logger.debug("root: Track-{}", map.getTrackID(track));
+      logger.info("root: Track-{}", map.getTrackID(track));
       addBlockSignalsOnPath(graph, track);
     }
   }
 
   private void addBlockSignalsOnPath(MapGraph graph, Track track) {
+
+
     if (track == null) {
-      logger.debug("track was null");
+      logger.info("track was null");
       return;
     }
+    logger.warn("trying to add Blocksignal on track {}", map.getTrackID(((Track) track)));
     Connectable nextTrack = graph.getChildren(track).stream()
         .map(Optional::ofNullable).findFirst().flatMap(Function.identity()).orElse(null);
+    if (nextTrack instanceof Track) {
+      logger.warn("Next track: track {}", map.getTrackID(((Track) nextTrack)));
+    }
     if (nextTrack == null) {
-      logger.debug("next-track was null");
+      logger.info("next-track was null");
       return;
     }
     if (!(nextTrack instanceof Track)) {
       graph.getChildren(nextTrack)
           .forEach(connectable -> addBlockSignalsOnPath(graph, graph.getFirstTrack(connectable)));
-      logger.debug("next-track was not a track");
+      logger.info("next-track was not a track");
       return;
     }
     if (!((Track) nextTrack).getBlockSignals().isEmpty()) {
-      logger.debug("next-track had block signals");
+      logger.info("next-track had block signals");
       return;
     }
 
@@ -181,6 +227,8 @@ public class MapBuilder {
     if (track.getLength() > BREAK_DISTANCE) {
       int sectionIndexForDistantSignal = (int) (track.getLength() - BREAK_DISTANCE - 1);
       track.addBlockSignal(distantSignal, sectionIndexForDistantSignal);
+      logger.info("added distance signal {} on section {} on track {}", distantSignal,
+          sectionIndexForDistantSignal, map.getTrackID(((Track) track)));
     } else {
       throw new IllegalArgumentException("Track is not long enough for placing distant signals");
     }
@@ -189,9 +237,10 @@ public class MapBuilder {
 
     if (MapBuilderHelper.hasTrain(map, ((Track) nextTrack))) {
       signalController.setStatus(SignalType.RED);
-      logger.warn("set track-{}'s signal controller status to RED", map.getTrackID(((Track) nextTrack)));
+      logger.warn("set track-{}'s signal controller status to RED",
+          map.getTrackID(((Track) nextTrack)));
     } else {
-      logger.warn("track-{} doesn't have a signal controller",map.getTrackID(((Track) nextTrack)) );
+      logger.warn("track-{} doesn't have a train", map.getTrackID(((Track) nextTrack)));
     }
     addBlockSignalsOnPath(graph, (Track) nextTrack);
   }
@@ -316,7 +365,8 @@ public class MapBuilder {
       Map<String, Object> placeableData = (Map<String, Object>) placeable.getValue();
       Placeable p = null;
       if (placeableData.get("type").equals("fixedBalise")) {
-        p = new PassiveBalise(Double.valueOf((int) placeableData.get("advisorySpeed")), placeableID);
+        p = new PassiveBalise(Double.valueOf((int) placeableData.get("advisorySpeed")),
+            placeableID);
       }
       Map<String, Integer> placeOnMap = ((Map<String, Integer>) placeableData.get("placeOn"));
       int trackID = placeOnMap.get("track");

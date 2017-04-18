@@ -6,19 +6,26 @@ import ft.sim.world.connectables.Connectable;
 import ft.sim.world.connectables.Track;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Map.Entry;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by Sina on 03/04/2017.
  */
 public class MapGraph {
 
+  protected transient static final Logger logger = LoggerFactory.getLogger(MapGraph.class);
+
   private Multimap<Connectable, Connectable> graph = HashMultimap.create();
   private Multimap<Connectable, Connectable> graphInverse = HashMultimap.create();
 
-  private Set<GraphNode> roots = new HashSet<>();
+  private Set<GraphNode> roots = new LinkedHashSet<>();
 
   private boolean isBuilt = false;
 
@@ -38,21 +45,45 @@ public class MapGraph {
     if (isBuilt) {
       throw new IllegalStateException("Graph was already built!");
     }
+
     flattenGraph(roots);
     verifyGraph();
     isBuilt = true;
   }
 
   public void addEdge(Connectable from, Connectable to) {
-    if (from == null) {
-      roots.add(new GraphNode(to));
+    GraphNode potentialParent = getRootGraphNode(to);
+    if (potentialParent != null) {
+      roots.remove(potentialParent);
+      GraphNode newRootParent = new GraphNode(from);
+      newRootParent.addEdge(potentialParent);
+
+      roots.add(newRootParent);
       return;
     }
+
     for (GraphNode node : roots) {
+      if (from == null && node.hasEdge(to)) {
+        return;
+      }
       if (node.addEdge(from, to, null)) {
         return;
       }
     }
+    if (from == null) {
+      roots.add(new GraphNode(to));
+      logger.warn("adding {} root", to.getClass().getSimpleName());
+      return;
+    }
+  }
+
+  private GraphNode getRootGraphNode(Connectable c) {
+    for (GraphNode node : roots) {
+      if (node.getParent() == c) {
+        return node;
+      }
+    }
+    return null;
   }
 
   private void flattenGraph(Set<GraphNode> nodes) {
@@ -118,5 +149,57 @@ public class MapGraph {
                 + connectable.getKey());
       }
     }
+  }
+
+
+  public Iterator<Connectable> getIterator(Connectable root) {
+    Iterator<Connectable> it = new Iterator<Connectable>() {
+
+      private final Connectable rootNode = root;
+      private Connectable currentNode = null;
+
+      @Override
+      public boolean hasNext() {
+        if (currentNode == null) {
+          return true;
+        }
+
+        Collection<Connectable> children = getChildren(currentNode);
+
+        if (children.size() > 1) {
+          throw new IllegalStateException(
+              "Branching rail structure isn't allowed. Children: " + children.size());
+        }
+
+        return !children.isEmpty() && (children.iterator().next() != null);
+      }
+
+      @Override
+      public Connectable next() {
+        if (currentNode == null) {
+          currentNode = rootNode;
+          return currentNode;
+        }
+
+        //Connectable tmpCurrentNode = currentNode;
+        Connectable nextNode = getChildren(currentNode).iterator().next();
+        if (nextNode == null) {
+          throw new NoSuchElementException();
+        }
+
+        currentNode = nextNode;
+        return currentNode;
+      }
+
+      @Override
+      public void remove() {
+        throw new UnsupportedOperationException();
+      }
+    };
+    return it;
+  }
+
+  public Multimap<Connectable, Connectable> getConnectablesGraph() {
+    return graph;
   }
 }

@@ -25,6 +25,12 @@ public class GlobalMap {
 
   protected transient final Logger logger = LoggerFactory.getLogger(GlobalMap.class);
 
+  private final String name;
+
+  public GlobalMap(String mapName){
+    name = mapName;
+  }
+
   private BiMap<Integer, Journey> journeysMap = HashBiMap.create();
   private BiMap<Integer, JourneyPath> journeyPathsMap = HashBiMap.create();
   private BiMap<Integer, Track> trackMap = HashBiMap.create();
@@ -206,5 +212,9 @@ public class GlobalMap {
 
   public int getStationID(Station s) {
     return stationMap.inverse().get(s);
+  }
+
+  public String getName() {
+    return name;
   }
 }
