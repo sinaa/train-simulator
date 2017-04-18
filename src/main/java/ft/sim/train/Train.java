@@ -204,4 +204,8 @@ public class Train implements Tickable, SignalListener {
       return super.toString();
     }
   }
+
+  public void setObjective(TrainObjective objective) {
+    this.lastObjective = objective;
+  }
 }

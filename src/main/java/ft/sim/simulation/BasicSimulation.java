@@ -48,6 +48,7 @@ public class BasicSimulation {
   // elapsed time/tick during the simulation
   private long ticksElapsed = 0;
   private long timeElapsed = 0;
+  private long nanosElapsed = 0;
   private int simulationTimeElapsed = 0;
 
   // The simulation thread
@@ -122,8 +123,11 @@ public class BasicSimulation {
           && ticksElapsed * secondsPerTick < simulationDuration
           && !simulationCompleted) {
         long startTime = System.nanoTime();
+        if(world.getJourneys().values().stream().allMatch(Journey::isJourneyFinished))
+          simulationCompleted = true;
         tick();
         long elapsed = System.nanoTime() - startTime;
+        nanosElapsed += elapsed;
         double ms = NANOSECONDS.toMillis(elapsed);
         timeElapsed += ms;
 
@@ -149,6 +153,7 @@ public class BasicSimulation {
       simulationCompleted = true;
       isRunning = false;
       logger.info("Simulation completed!");
+      sendStatistics();
       kill();
     });
   }
@@ -196,6 +201,7 @@ public class BasicSimulation {
     //jsonObject.add("journeys", gson.toJsonTree(journeysMap));
     jsonObject.add("world", gsonBuilder.toJsonTree(world));
     jsonObject.addProperty("timeElapsedCalculating", timeElapsed);
+    jsonObject.addProperty("nanosElapsed", nanosElapsed);
     jsonObject.addProperty("ticksElapsed", ticksElapsed);
     jsonObject.addProperty("simulationTimeElapsed", ticksElapsed * secondsPerTick);
     jsonObject.addProperty("interactive", interactiveSimulation);

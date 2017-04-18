@@ -3,6 +3,7 @@ package ft.sim.world.connectables;
 import static ft.sim.signalling.SignalType.GREEN;
 
 import ft.sim.monitoring.Oracle;
+import ft.sim.signalling.SignalController;
 import ft.sim.signalling.SignalType;
 import ft.sim.simulation.BasicSimulation;
 import ft.sim.simulation.Tickable;
@@ -35,6 +36,11 @@ public class Station implements Connectable, Tickable {
   Set<Train> trainsLeaving = new HashSet<>();
   Set<Train> trainsEntering = new HashSet<>();
 
+  SignalController nextBlockSignalController;
+
+  public void setNextBlockSignalController(SignalController nextBlockSignalController) {
+    this.nextBlockSignalController = nextBlockSignalController;
+  }
 
   @Override
   public double getLength() {
@@ -47,14 +53,19 @@ public class Station implements Connectable, Tickable {
   }
 
   public void enteredTrain(Train train) {
+    if (trains.containsKey(train) || trainsLeaving.contains(train)) {
+      return;
+    }
     trains.put(train, (double) delay);
     train.signalChange(SignalType.RED);
     trainsEntering.remove(train);
   }
 
-  public void entered(Train train){
-    if(!trainsEntering.contains(train) && !hasCapacity())
+  @Override
+  public void entered(Train train) {
+    if (!trainsEntering.contains(train) && !hasCapacity()) {
       throw new IllegalStateException("Train entering station without capacity!");
+    }
 
     trainsEntering.add(train);
     logger.warn("{} entered {}", train, this);
@@ -69,14 +80,21 @@ public class Station implements Connectable, Tickable {
   public void tick(double time) {
     for (Entry<Train, Double> trainElement : trains.entrySet()) {
       Train t = trainElement.getKey();
+      if (nextBlockSignalController == null) {
+        continue;
+      }
       double delay = trainElement.getValue();
       if (trainsLeaving.contains(t)) {
         continue; // ignore them, they're leaving
       }
       delay -= time;
       if (delay <= 0) {
-        t.signalChange(SignalType.GREEN);
-        trainsLeaving.add(t);
+        if (nextBlockSignalController.getStatus() != GREEN) {
+          delay += 5; // wait for 5 more seconds
+        } else {
+          t.signalChange(SignalType.GREEN);
+          trainsLeaving.add(t);
+        }
       }
       trainElement.setValue(delay);
     }

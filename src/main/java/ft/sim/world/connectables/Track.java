@@ -181,4 +181,8 @@ public class Track implements Connectable, SignalLinked {
   public void addSignalController(SignalController signalController) {
     this.signalController = signalController;
   }
+
+  public SignalController getSignalController() {
+    return signalController;
+  }
 }

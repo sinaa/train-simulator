@@ -15,6 +15,8 @@ public class SignalController {
 
   protected static Logger logger = LoggerFactory.getLogger(SignalController.class);
 
+  private SignalType status = SignalType.GREEN;
+
   private Set<SignalUnit> signalSet = new HashSet<>();
   private Set<SignalListener> signalListeners = new HashSet<>();
 
@@ -25,9 +27,14 @@ public class SignalController {
   }
 
   public void setStatus(SignalType status) {
+    this.status = status;
     logger.info("{} signal controller set to {}", belongsTo, status);
     signalSet.forEach(signal -> signal.setStatus(status));
     //signalListeners.forEach(listener -> listener.signalChange(status, this));
+  }
+
+  public SignalType getStatus() {
+    return status;
   }
 
   @Deprecated

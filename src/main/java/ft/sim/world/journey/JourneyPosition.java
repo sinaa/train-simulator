@@ -38,6 +38,8 @@ public class JourneyPosition {
 
   private boolean isEnded = false;
 
+  private boolean reachedLastConnectable = false;
+
   private final boolean isForward;
 
   public JourneyPosition(JourneyPath path, Train train, boolean isForward) {
@@ -217,6 +219,11 @@ public class JourneyPosition {
       newConnectables.forEach(c -> logger.warn("{} just entered {}", train, c));
     }
 
+    // If the train is only on a station, it has now fully entered the station
+    if (newConnectablesOccupied.stream().allMatch(c -> c instanceof Station)) {
+      newConnectablesOccupied.stream().map(c -> (Station) c).forEach(s -> s.enteredTrain(train));
+    }
+
     // get new stations covered by this train
     Set<Station> newStationsOccupied = getConnectablesOccupied().stream()
         .filter(c -> c instanceof Station).map(c -> (Station) c).collect(Collectors.toSet());
@@ -250,9 +257,15 @@ public class JourneyPosition {
   }
 
   private void updatePosition(Journey journey, double lastDistanceTravelled) {
-    if (isEnded || lastDistanceTravelled == 0) {
+    if (isEnded) {
       return;
     }
+    if (lastDistanceTravelled == 0) {
+      if (reachedLastConnectable) {
+        isEnded = true;
+      }
+    }
+
     if (isForward) {
       updatePositionForward(lastDistanceTravelled);
     } else {
@@ -282,6 +295,7 @@ public class JourneyPosition {
         //position.addLast(nextConnectable);
         //logger.info("Added connectable to end");
       } else {
+        reachedLastConnectable = true;
         logger.debug("On the last connectable");
       }
 
@@ -344,7 +358,8 @@ public class JourneyPosition {
         logger.debug("Added connectable to beginning (going backwards)");
       } else {
         logger.debug("On the first connectable (going backwards)");
-        isEnded = true;
+        reachedLastConnectable = true;
+        //isEnded = true;
         return;
       }
 
@@ -394,7 +409,7 @@ public class JourneyPosition {
       return new HashSet<>();
     }
 
-    Set<Observable> x =  path.getObservablesBetween(headPosition, to);
+    Set<Observable> x = path.getObservablesBetween(headPosition, to);
     /*if(!x.isEmpty())
       logger.warn("x:{}, from:{}, to:{}, {}", x,headPosition, to, train);*/
 

@@ -3,6 +3,7 @@ package ft.sim.world.map;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import ft.sim.world.connectables.Connectable;
+import ft.sim.world.connectables.Station;
 import ft.sim.world.connectables.Track;
 import java.util.Collection;
 import java.util.HashSet;
@@ -10,6 +11,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -143,10 +145,19 @@ public class MapGraph {
    */
   private void verifyGraph() {
     for (Entry<Connectable, Collection<Connectable>> connectable : graph.asMap().entrySet()) {
-      if (connectable.getKey() instanceof Track && connectable.getValue().size() > 1) {
+      Connectable from = connectable.getKey();
+      if (from instanceof Track && connectable.getValue().size() > 1) {
         throw new IllegalStateException(
-            "A track cannot be connected to more than one placeable. Track: "
-                + connectable.getKey());
+            "A track cannot be connected to more than one placeable. Track: " + from);
+      }
+      if (from instanceof Station && connectable.getValue().size() > 1) {
+        throw new IllegalStateException(
+            "A station cannot be connected to more than one placeable. Station: " + from);
+      }
+      if (from instanceof Station && connectable.getValue().stream().filter(Objects::nonNull)
+          .anyMatch(c -> !(c instanceof Track))) {
+        throw new IllegalStateException(
+            "A station cannot be connected to something other than a track. Station: " + from);
       }
     }
   }

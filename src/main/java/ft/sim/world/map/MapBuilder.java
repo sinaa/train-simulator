@@ -7,6 +7,7 @@ import ft.sim.signalling.SignalController;
 import ft.sim.signalling.SignalType;
 import ft.sim.signalling.SignalUnit;
 import ft.sim.train.Train;
+import ft.sim.train.TrainObjective;
 import ft.sim.world.connectables.Connectable;
 import ft.sim.world.connectables.Station;
 import ft.sim.world.connectables.Track;
@@ -176,13 +177,50 @@ public class MapBuilder {
     }
     setBlockSignals();
     setSwitchSignals();
+    setStationSignals();
+  }
+
+  private void setStationSignals() {
+    MapGraph graph = map.getGraph();
+    Set<Station> stations = map.getStations().values();
+    for (Station station : stations) {
+      logger.warn("setting signals for station {}", station);
+      Track nextTrack = graph.getChildren(station).stream().map(Optional::ofNullable)
+          .findFirst().flatMap(Function.identity()).map(c -> (Track) c).orElse(null);
+      Track previousTrack = graph.getParents(station).stream().map(Optional::ofNullable)
+          .findFirst().flatMap(Function.identity()).map(c -> (Track) c).orElse(null);
+
+      if (nextTrack != null) {
+        SignalController signalControllerNext = nextTrack.getSignalController();
+        if(signalControllerNext!=null)
+          throw new IllegalStateException("no idea how this can happen");
+
+        SignalController signalController = new SignalController(nextTrack);
+
+
+
+        SignalUnit mainSignal = signalController.getMainSignal();
+        nextTrack.addBlockSignal(mainSignal, 0);
+        if (MapBuilderHelper.hasTrain(map, nextTrack)) {
+          signalController.setStatus(SignalType.RED);
+        }
+        station.setNextBlockSignalController(signalController);
+        nextTrack.addSignalController(signalController);
+        logger.warn("added new signal controller");
+      }
+
+      if (previousTrack != null) {
+        //TODO: probably install a balise so that the train slows down
+      }
+    }
   }
 
   private void setBlockSignals() {
     MapGraph graph = map.getGraph();
     Set<Connectable> roots = graph.getRootConnectables();
-    if(roots.stream().iterator().next() instanceof Track)
+    if (roots.stream().iterator().next() instanceof Track) {
       logger.error("graph: {}", graph.getConnectablesGraph());
+    }
     logger.warn("roots: {}", roots);
     for (Connectable root : roots) {
       Track track = graph.getFirstTrack(root);
@@ -192,7 +230,6 @@ public class MapBuilder {
   }
 
   private void addBlockSignalsOnPath(MapGraph graph, Track track) {
-
 
     if (track == null) {
       logger.info("track was null");
@@ -255,11 +292,13 @@ public class MapBuilder {
         Connectable firstConnectable = Iterables.getFirst(journey.getJourneyPath().getPath(), null);
         if (firstConnectable instanceof Station) {
           ((Station) firstConnectable).enteredTrain(journey.getTrain());
+          journey.getTrain().setObjective(TrainObjective.STOP);
         }
       } else {
         Connectable lastConnectable = Iterables.getLast(journey.getJourneyPath().getPath(), null);
         if (lastConnectable instanceof Station) {
           ((Station) lastConnectable).enteredTrain(journey.getTrain());
+          journey.getTrain().setObjective(TrainObjective.STOP);
         }
       }
     }

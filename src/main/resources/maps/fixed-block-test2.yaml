@@ -1,0 +1,88 @@
+---
+journeys:
+  '1':
+    train: 1
+    path: 1
+  '2':
+    train: 2
+    path: 2
+journeyPaths:
+  '1':
+    path:
+    - type: station
+      id: 1
+    - type: track
+      id: 1
+    - type: track
+      id: 2
+    - type: track
+      id: 3
+    - type: track
+      id: 4
+    - type: track
+      id: 5
+    - type: station
+      id: 2
+  '2':
+    path:
+    - type: track
+      id: 1
+    - type: track
+      id: 2
+    - type: track
+      id: 3
+    - type: track
+      id: 4
+    - type: track
+      id: 5
+    - type: station
+      id: 2
+tracks:
+  '1':
+    numSections: 10000
+  '2':
+    numSections: 10000
+  '3':
+    numSections: 10000
+  '4':
+    numSections: 10000
+  '5':
+    numSections: 10000
+placeables:
+  '1':
+    type: fixedBalise
+    advisorySpeed: 200
+    placeOn:
+      track: 1
+      section: 1000
+  '2':
+    type: fixedBalise
+    advisorySpeed: 4
+    placeOn:
+      track: 2
+      section: 1000
+  '3':
+    type: fixedBalise
+    advisorySpeed: 200
+    placeOn:
+      track: 3
+      section: 2000
+  '4':
+    type: fixedBalise
+    advisorySpeed: 250
+    placeOn:
+      track: 3
+      section: 5000
+trains:
+  '1':
+    numCars: 2
+  '2':
+    numCars: 3
+stations:
+  '1':
+    capacity: 4
+    wait: 10
+  '2':
+    capacity: 2
+    wait: 60
+
