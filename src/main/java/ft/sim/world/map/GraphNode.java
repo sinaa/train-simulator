@@ -1,6 +1,7 @@
 package ft.sim.world.map;
 
 import ft.sim.world.connectables.Connectable;
+import ft.sim.world.journey.Journey;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;

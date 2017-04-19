@@ -43,6 +43,14 @@ public class ViolationBuilder {
     o.addViolation(new Violation(FIXED_BLOCK, CRITICAL, o.getTick(), violationDescription));
   }
 
+  public static void createVariableBlockViolation(Oracle o, Train t1, Train t2, double distance) {
+    String violationDescription = String.format(
+        "Train %s and Train %s were within less than breaking distance from each other (%s)",
+        o.getWorld().getTrainID(t1), o.getWorld().getTrainID(t2), distance);
+
+    o.addViolation(new Violation(VARIABLE_BLOCK, CRITICAL, o.getTick(), violationDescription));
+  }
+
   public static void createOverfullStationViolation(Oracle o, Station station) {
     int stationID = o.getWorld().getStationID(station);
     String violationDescription = String

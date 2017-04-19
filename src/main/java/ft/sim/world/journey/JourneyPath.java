@@ -25,6 +25,11 @@ public class JourneyPath {
 
   protected transient final Logger logger = LoggerFactory.getLogger(JourneyPath.class);
 
+  // distance from root node of the graph
+  private double distanceFromGraphRoot = 0;
+  // root connectable
+  private Connectable graphRootConnectable;
+
   private List<Connectable> path = new ArrayList<>();
   private Map<Connectable, Double> connectablePositions = new HashMap<>();
   private BiMap<Connectable, Integer> connectableIndexes = HashBiMap.create();
@@ -248,4 +253,19 @@ public class JourneyPath {
     return path.get(path.size() - 1);
   }
 
+  public void setDistanceFromGraphRoot(double distanceFromGraphRoot) {
+    this.distanceFromGraphRoot = distanceFromGraphRoot;
+  }
+
+  public double getDistanceFromGraphRoot() {
+    return distanceFromGraphRoot;
+  }
+
+  public void setGraphRootConnectable(Connectable graphRootConnectable) {
+    this.graphRootConnectable = graphRootConnectable;
+  }
+
+  public Connectable getGraphRootConnectable() {
+    return graphRootConnectable;
+  }
 }

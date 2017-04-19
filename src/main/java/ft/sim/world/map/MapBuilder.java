@@ -169,6 +169,8 @@ public class MapBuilder {
       }
     }
     map.getGraph().buildGraph();
+
+    map.getJourneyPaths().values().forEach(p->map.getGraph().initJourney(p));
   }
 
   private void setSignals() {
@@ -192,12 +194,11 @@ public class MapBuilder {
 
       if (nextTrack != null) {
         SignalController signalControllerNext = nextTrack.getSignalController();
-        if(signalControllerNext!=null)
+        if (signalControllerNext != null) {
           throw new IllegalStateException("no idea how this can happen");
+        }
 
         SignalController signalController = new SignalController(nextTrack);
-
-
 
         SignalUnit mainSignal = signalController.getMainSignal();
         nextTrack.addBlockSignal(mainSignal, 0);
@@ -292,13 +293,13 @@ public class MapBuilder {
         Connectable firstConnectable = Iterables.getFirst(journey.getJourneyPath().getPath(), null);
         if (firstConnectable instanceof Station) {
           ((Station) firstConnectable).enteredTrain(journey.getTrain());
-          journey.getTrain().setObjective(TrainObjective.STOP);
+          journey.getTrain().getEngine().setObjective(TrainObjective.STOP);
         }
       } else {
         Connectable lastConnectable = Iterables.getLast(journey.getJourneyPath().getPath(), null);
         if (lastConnectable instanceof Station) {
           ((Station) lastConnectable).enteredTrain(journey.getTrain());
-          journey.getTrain().setObjective(TrainObjective.STOP);
+          journey.getTrain().getEngine().setObjective(TrainObjective.STOP);
         }
       }
     }

@@ -1,16 +1,15 @@
 package ft.sim.monitoring;
 
 import static ft.sim.monitoring.ViolationSeverity.CRITICAL;
-import static ft.sim.monitoring.ViolationType.CRASH;
 
 import ft.sim.train.Train;
 import ft.sim.world.connectables.Connectable;
 import ft.sim.world.connectables.Section;
-import ft.sim.world.connectables.Station;
 import ft.sim.world.connectables.Switch;
 import ft.sim.world.connectables.Track;
 import ft.sim.world.journey.Journey;
 import ft.sim.world.map.GlobalMap;
+import ft.sim.world.map.MapBuilderHelper;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -51,6 +50,23 @@ public class Oracle {
     ensureStationCapacity();
     if (world.isConfiguration("mode", "fixed_block")) {
       ensureOneTrainPerTrackOrSwitch();
+    }
+    if (world.isConfiguration("mode", "variable_block")) {
+      ensureTrainsWithinEmergencyBreakingDistance();
+    }
+  }
+
+  private void ensureTrainsWithinEmergencyBreakingDistance() {
+    Map<Journey, Journey> trainMap = MapBuilderHelper.getJourneysFollowingEachOther(world);
+    for (Entry<Journey, Journey> pair : trainMap.entrySet()) {
+      Journey j1 = pair.getKey();
+      Journey j2 = pair.getValue();
+      double distance = MapBuilderHelper.getJourneyDistance(j2, j1);
+
+      double breakingDistance = j1.getTrain().getEcu().calculateBreakingDistance();
+      if (breakingDistance < distance) {
+        ViolationBuilder.createVariableBlockViolation(this, j1.getTrain(), j2.getTrain(), distance);
+      }
     }
   }
 

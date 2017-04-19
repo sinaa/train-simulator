@@ -1,9 +1,11 @@
 package ft.sim.train;
 
+import static ft.sim.train.TrainObjective.PROCEED;
 import static ft.sim.world.RealWorldConstants.*;
 
 import ft.sim.simulation.BasicSimulation;
 import ft.sim.simulation.Tickable;
+import ft.sim.world.RealWorldConstants;
 
 /**
  * Created by Sina on 21/02/2017.
@@ -15,24 +17,31 @@ public class Engine implements Tickable {
   //double maxSpeed = 83.33;
 
   // accelration in m/sec2
-  double maxAcceleration = 1.0;
+  private double maxAcceleration = 1.0;
   //double maxDeceleration = -9 * (g / 100.0);
-  double maxDeceleration = MAX_TRAIN_DECELERATION;
+  private double maxDeceleration = MAX_TRAIN_DECELERATION;
 
   /*double normalAcceleration = 1.0;
   double normalDeceleration = -7 * (g / 100.0);*/
-  double normalAcceleration = NORMAL_TRAIN_ACCELERATION;
-  double normalDeceleration = NORMAL_TRAIN_DECELERATION;
+  private double normalAcceleration = NORMAL_TRAIN_ACCELERATION;
+  private double normalDeceleration = NORMAL_TRAIN_DECELERATION;
 
   // Current speed, acceleration, targetSpeed
-  double speed = 0;
-  double acceleration = 0;
-  double targetSpeed = 0;
+  private double speed = 0;
+  private double acceleration = 0;
+  private double targetSpeed = 0;
 
   // temporary variable to store the last distance travelled
-  double lastDistanceTravelled = 0;
+  private double lastDistanceTravelled = 0;
 
 
+  private TrainObjective lastObjective = PROCEED;
+
+  // total distance travelled
+  private double totalDistanceTravelled = 0;
+
+  // Last advisory train speed
+  private double lastAdvisorySpeed = RealWorldConstants.DEFAULT_SET_OFF_SPEED;
   /*
    * Get current speed (m/s), m is metres
    */
@@ -111,7 +120,7 @@ public class Engine implements Tickable {
   public void tick(double time) {
     // distance = v1 x t + 1/2 * a * t^2
     lastDistanceTravelled += speed * time + (acceleration * Math.pow(time, 2) / 2.0);
-
+    totalDistanceTravelled += lastDistanceTravelled;
     // v2 = (t2-t1) x a + v1
     speed = time * acceleration + speed;
 
@@ -144,12 +153,16 @@ public class Engine implements Tickable {
     return dist;
   }
 
+  public double getTotalDistanceTravelled() {
+    return totalDistanceTravelled;
+  }
+
   public boolean isBreaking() {
-    return (acceleration > 0);
+    return (acceleration < 0);
   }
 
   public boolean isAccelerating() {
-    return (acceleration < 0);
+    return (acceleration > 0);
   }
 
   public boolean isStill() {
@@ -158,5 +171,25 @@ public class Engine implements Tickable {
 
   public boolean isStopped() {
     return isStill() && speed == 0;
+  }
+
+  public double getMaxDeceleration() {
+    return maxDeceleration;
+  }
+
+  public void setObjective(TrainObjective objective) {
+    this.lastObjective = objective;
+  }
+
+  public TrainObjective getObjective() {
+    return lastObjective;
+  }
+
+  public double getLastAdvisorySpeed() {
+    return lastAdvisorySpeed;
+  }
+
+  public void setLastAdvisorySpeed(double lastAdvisorySpeed) {
+    this.lastAdvisorySpeed = lastAdvisorySpeed;
   }
 }

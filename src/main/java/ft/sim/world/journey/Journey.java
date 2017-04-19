@@ -24,6 +24,7 @@ public class Journey implements Tickable {
   private JourneyPath path;
   private JourneyPosition journeyPosition;
   private JourneyInformation journeyInformation;
+  private JourneyTimer journeyTimer;
 
   private double totalDistanceTravelled = 0;
 
@@ -33,6 +34,7 @@ public class Journey implements Tickable {
     directionForward = isForward;
     journeyPosition = new JourneyPosition(jp, train, isForward);
     journeyInformation = new JourneyInformation();
+    journeyTimer = new JourneyTimer();
     calculateInitialPosition();
 
     train.initECU(this);
@@ -57,6 +59,7 @@ public class Journey implements Tickable {
   }
 
   public void tick(double time) {
+    journeyTimer.tick(time);
     if (journeyFinished) {
       return;
     }
@@ -129,6 +132,10 @@ public class Journey implements Tickable {
   public GlobalMap getWorld(){
     logger.error("Friendly advice: try not to use journey.getWorld()!");
     return WorldHandler.getWorldForJourney(this);
+  }
+
+  public JourneyTimer getJourneyTimer() {
+    return journeyTimer;
   }
 
   @Override

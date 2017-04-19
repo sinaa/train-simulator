@@ -5,6 +5,8 @@ import com.google.common.collect.Multimap;
 import ft.sim.world.connectables.Connectable;
 import ft.sim.world.connectables.Station;
 import ft.sim.world.connectables.Track;
+import ft.sim.world.journey.Journey;
+import ft.sim.world.journey.JourneyPath;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -213,4 +215,39 @@ public class MapGraph {
   public Multimap<Connectable, Connectable> getConnectablesGraph() {
     return graph;
   }
+
+  public void initJourney(JourneyPath journeyPath) {
+    Connectable globalRoot = getRootNodeForJourney(journeyPath).getParent();
+    Connectable journeyRoot = journeyPath.getFirst();
+
+    journeyPath.setGraphRootConnectable(globalRoot);
+
+    if (globalRoot == journeyRoot) {
+      return;
+    }
+
+    Connectable node = globalRoot;
+    double length = 0;
+    while (node != journeyRoot) {
+      length += node.getLength();
+      try {
+        node = graph.get(node).stream().iterator().next();
+      } catch (NoSuchElementException e) {
+        throw new IllegalStateException("Reached the end of the graph without finding node");
+      }
+    }
+    journeyPath.setDistanceFromGraphRoot(length);
+  }
+
+  private GraphNode getRootNodeForJourney(JourneyPath journeyPath) {
+    Connectable connectable = journeyPath.getFirst();
+    for (GraphNode root : roots) {
+      if (root.getParent() == connectable || root.hasEdge(connectable)) {
+        return root;
+      }
+    }
+    throw new IllegalStateException("The journey's root doesn't exist in the graph!");
+  }
+
+
 }
