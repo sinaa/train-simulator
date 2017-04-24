@@ -13,6 +13,7 @@ import ft.sim.world.connectables.Station;
 import ft.sim.world.connectables.Track;
 import ft.sim.world.journey.Journey;
 import ft.sim.world.journey.JourneyPath;
+import ft.sim.world.placeables.ActiveBalise;
 import ft.sim.world.placeables.Balise;
 import ft.sim.world.placeables.PassiveBalise;
 import ft.sim.world.placeables.Placeable;
@@ -93,6 +94,8 @@ public class MapBuilder {
     Yaml yaml = new Yaml();
     Map<String, Object> mapYaml = (Map<String, Object>) yaml.load(resource.getInputStream());
 
+    setConfigurations((Map<String, Object>) mapYaml.get("simulation"));
+
     createTracks((Map<String, Object>) mapYaml.get("tracks"));
 
     createStations((Map<String, Object>) mapYaml.get("stations"));
@@ -107,8 +110,8 @@ public class MapBuilder {
 
     createJourneys((Map<String, Object>) mapYaml.get("journeys"));
 
-    setConfigurations((Map<String, Object>) mapYaml.get("simulation"));
   }
+
 
   private void importDefaults() throws IOException {
     Resource resource = new ClassPathResource("maps/defaults.yaml");
@@ -122,6 +125,9 @@ public class MapBuilder {
     setTrainsAtStations();
     buildGraph();
     setSignals();
+    if (map.isConfiguration("mode", "variable_block")) {
+      createActiveBalises();
+    }
     initBalisePositions();
   }
 
@@ -170,16 +176,22 @@ public class MapBuilder {
     }
     map.getGraph().buildGraph();
 
-    map.getJourneyPaths().values().forEach(p->map.getGraph().initJourney(p));
+    map.getJourneyPaths().values().forEach(p -> map.getGraph().initJourney(p));
   }
 
   private void setSignals() {
     if (!map.getGraph().isBuilt()) {
       throw new IllegalStateException("Cannot set signals when map isn't built");
     }
-    setBlockSignals();
-    setSwitchSignals();
-    setStationSignals();
+    if (map.isConfiguration("mode", "fixed_block")) {
+      setBlockSignals();
+      setSwitchSignals();
+      setStationSignals();
+    } else {
+      for (Station station : map.getStations().values()) {
+        station.setNextBlockSignalController(new SignalController(station));
+      }
+    }
   }
 
   private void setStationSignals() {
@@ -414,6 +426,37 @@ public class MapBuilder {
 
       map.addPlaceable(placeableID, p, trackID, section);
       assert (p != null) : "Placeable should not be null";
+    }
+  }
+
+  private void createActiveBalises() {
+    int baliseDistance = (int) map.getConfiguration("ferromone_distance");
+
+    MapGraph graph = map.getGraph();
+    Set<Connectable> roots = graph.getRootConnectables();
+
+    for (Connectable root : roots) {
+      Iterator<Connectable> mapIterator = graph.getIterator(root);
+      double length = 0;
+      while (mapIterator.hasNext()) {
+        Connectable c = mapIterator.next();
+
+        if (c instanceof Track && c.getLength() > baliseDistance) {
+          Track track = (Track) c;
+          for (double d = 0; d < track.getLength(); d += baliseDistance) {
+            if (length == 0) {
+              length += baliseDistance;
+              continue;
+            }
+            Placeable balise = new ActiveBalise();
+            track.placePlaceableOnSectionIndex(balise, (int) d);
+            logger.info("Palced active balise on track {} position {}", map.getTrackID(track),
+                (int) d);
+            length += baliseDistance;
+          }
+        }
+        length += c.getLength();
+      }
     }
   }
 

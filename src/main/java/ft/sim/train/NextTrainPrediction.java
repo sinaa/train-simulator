@@ -58,7 +58,13 @@ public class NextTrainPrediction {
         distance = potentialDistance;
       }
     }
+    if (distance < 0) {
+      throw new IllegalStateException("distance " + distance + " cannot be negative!");
+    }
     distance -= distanceTravelledSinceLastBalise;
+    if (distance < 0) {
+      distance = 0;
+    }
   }
 
   public double getDistance() {
@@ -66,7 +72,7 @@ public class NextTrainPrediction {
   }
 
   private double guessNextTrainAcceleration() {
-    ActiveBaliseData lastObservation = observations.getFirst();
+    ActiveBaliseData lastObservation = observations.peekFirst();
     if (lastObservation == null) {
       return 0;
     }

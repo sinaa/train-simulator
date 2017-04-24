@@ -237,13 +237,15 @@ public class JourneyPosition {
 
     // get new sections occupied by the train
     Set<Section> newSectionsOccupied = Sets.newHashSet(getSectionsOccupied());
-    // get the diff
-    newSectionsOccupied.removeAll(previousSections);
+
     // get sections the train just left
-    Set<Section> sectionsTrainLeft = Sets.newHashSet(newSectionsOccupied);
-    sectionsTrainLeft.retainAll(coveredSections);
+    Set<Section> sectionsTrainLeft = Sets.newHashSet(previousSections);
+    sectionsTrainLeft.removeAll(newSectionsOccupied);
     // let the train know which sections it just left
     train.leftSections(sectionsTrainLeft);
+
+    // get the diff (only the new sections occupied)
+    newSectionsOccupied.removeAll(previousSections);
     // remove the old ones
     newSectionsOccupied.removeAll(coveredSections);
     // let the train know which new sections it got over

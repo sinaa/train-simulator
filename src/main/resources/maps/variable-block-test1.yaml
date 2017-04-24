@@ -1,0 +1,68 @@
+---
+journeys:
+  '1':
+    train: 1
+    path: 1
+  '2':
+    train: 2
+    path: 2
+journeyPaths:
+  '1':
+    path:
+    - type: station
+      id: 1
+    - type: track
+      id: 1
+    - type: track
+      id: 2
+    - type: track
+      id: 3
+    - type: track
+      id: 4
+    - type: track
+      id: 5
+    - type: station
+      id: 2
+  '2':
+    path:
+    - type: track
+      id: 1
+    - type: track
+      id: 2
+    - type: track
+      id: 3
+    - type: track
+      id: 4
+    - type: track
+      id: 5
+    - type: station
+      id: 2
+tracks:
+  '1':
+    numSections: 10000
+  '2':
+    numSections: 10000
+  '3':
+    numSections: 10000
+  '4':
+    numSections: 10000
+  '5':
+    numSections: 10000
+placeables:
+trains:
+  '1':
+    numCars: 2
+  '2':
+    numCars: 3
+stations:
+  '1':
+    capacity: 4
+    wait: 5
+  '2':
+    capacity: 2
+    wait: 10
+variableBlocks:
+  distance: 100
+simulation:
+  'mode': "variable_block"
+  'ferromone_distance': 100

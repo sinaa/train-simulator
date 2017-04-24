@@ -105,6 +105,7 @@ public class Train implements Tickable, SignalListener {
           if (p instanceof ActiveBalise) {
             ActiveBalise balise = (ActiveBalise) p;
             balise.update(ecu.getTimer().getTime(), engine.getSpeed(), engine.isBreaking());
+            logger.warn("{} updating balise {}", this, balise);
             //TODO: do something with the balise
           }
         }

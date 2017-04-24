@@ -55,7 +55,12 @@ public class ECU implements Tickable {
     calculateSafeBreakingDistance();
     nextTrainPrediction.predict(timer.getTime(),
         engine.getTotalDistanceTravelled() - totalDistanceTravelledLastBalise);
-    if (nextTrainPrediction.getDistance() < safeBreakingDistance) {
+    double nextDistancePrediction = nextTrainPrediction.getDistance();
+    if (nextDistancePrediction != -1) {
+      logger.info("[{}] Next train is {} meters away. safe distance: {}", train,
+          nextDistancePrediction, safeBreakingDistance);
+    }
+    if (nextDistancePrediction >= 0 && nextDistancePrediction < safeBreakingDistance) {
       engine.emergencyBreak();
       engine.roll();
       engine.setObjective(STOP_AND_ROLL);
@@ -67,7 +72,7 @@ public class ECU implements Tickable {
 
   }
 
-  public double calculateBreakingDistance(){
+  public double calculateBreakingDistance() {
     double currentSpeed = engine.getSpeed();
     double targetSpeed = 0;
     double deceleration = engine.getMaxDeceleration();
