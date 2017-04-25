@@ -450,7 +450,7 @@ public class MapBuilder {
             }
             Placeable balise = new ActiveBalise();
             track.placePlaceableOnSectionIndex(balise, (int) d);
-            logger.info("Palced active balise on track {} position {}", map.getTrackID(track),
+            logger.debug("Palced active balise on track {} position {}", map.getTrackID(track),
                 (int) d);
             length += baliseDistance;
           }

@@ -1,5 +1,6 @@
 package ft.sim.world.connectables;
 
+import ft.sim.train.TrainTrail;
 import ft.sim.world.placeables.Placeable;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -25,9 +26,17 @@ public class Section {
 
   public void addPlaceable(Placeable p){
     placeables.add(p);
+    if(p instanceof TrainTrail){
+      ((TrainTrail) p).nowOnSection(this);
+    }
   }
 
   public List<Placeable> getPlaceables() {
     return new ArrayList<>(placeables);
   }
+
+  public void removePlacebale(Placeable placeable){
+      placeables.remove(placeable);
+  }
+
 }

@@ -16,7 +16,7 @@ public class NextTrainPrediction {
 
   private Deque<ActiveBaliseData> observations = new LinkedList<>();
 
-  private boolean anyTrainsAhead() {
+  public boolean anyTrainsAhead() {
     if (lastData == null || lastData.getTrainSpeed() == -1) {
       return false;
     }

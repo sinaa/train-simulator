@@ -5,6 +5,7 @@ package ft.sim.train;
  */
 public enum TrainObjective {
   STOP_AND_ROLL,
+  STOP_THEN_ROLL,
   STOP,
   PROCEED,
   PROCEED_WITH_CAUTION

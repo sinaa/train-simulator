@@ -45,10 +45,10 @@ public class SocketSession {
       Map<String, String> map = gson.fromJson(message, stringStringMap);
 
       if (map.containsKey("command")) {
-        return processCommand(simulation, map) ? "OK" : "FAIL";
+        return CommandHelper.processCommand(simulation, map, this) ? "OK" : "FAIL";
       }
       if (map.containsKey("type") && map.get("type").equals("set")) {
-        return processSetCommand(simulation, map) ? "OK" : "FAIL";
+        return CommandHelper.processSetCommand(simulation, map) ? "OK" : "FAIL";
       }
     } catch (com.google.gson.JsonSyntaxException ex) {
       // wasn't json
@@ -56,55 +56,6 @@ public class SocketSession {
     }
 
     return "echo: " + message;
-  }
-
-  private boolean processSetCommand(BasicSimulation simulation, Map<String, String> map) {
-    String set = map.get("set");
-    switch (set) {
-      case "trainTargetSpeed":
-        int trainID = Integer.valueOf(map.get("targetID"));
-        double targetSpeed = Double.valueOf(map.get("data"));
-        simulation.getWorld().getTrain(trainID).getEngine()
-            .setTargetSpeed(targetSpeed);
-        return true;
-      case "worldMap":
-        String mapKey = map.get("data");
-        if (simulation == null) {
-          BasicSimulation.getInstance(mapKey);
-        } else {
-          simulation.setWorld(mapKey);
-        }
-        return true;
-    }
-    return false;
-  }
-
-  private boolean processCommand(BasicSimulation simulation, Map<String, String> map) {
-    String command = map.get("command");
-    switch (command) {
-      case "start trains":
-        simulation.startTrains();
-        return true;
-      case "stop simulation":
-        simulation.removeSocketSessions(this);
-        simulation.kill();
-        return true;
-      case "get push data":
-        if (simulation != null) {
-          simulation.setSocketSession(this);
-          return true;
-        }
-        return false;
-      case "start simulation":
-        simulation.startSimulation();
-        simulation.setSocketSession(this);
-        return true;
-      case "toggle interactive":
-        simulation.toggleInteractive();
-        return true;
-
-    }
-    return false;
   }
 
   public WebSocketSession getSession() {

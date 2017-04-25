@@ -36,6 +36,8 @@ public class Train implements Tickable, SignalListener {
   private Engine engine;
   private ECU ecu;
 
+  private TrainTrail trail;
+
   private transient Set<Observable> observablesInSight = new HashSet<>();
 
 
@@ -55,6 +57,7 @@ public class Train implements Tickable, SignalListener {
   public Train(int numCars) {
     buildCars(numCars);
     engine = new Engine(this);
+    trail = new TrainTrail(this);
   }
 
   public void initECU(Journey journey) {
@@ -105,7 +108,6 @@ public class Train implements Tickable, SignalListener {
           if (p instanceof ActiveBalise) {
             ActiveBalise balise = (ActiveBalise) p;
             balise.update(ecu.getTimer().getTime(), engine.getSpeed(), engine.isBreaking());
-            logger.warn("{} updating balise {}", this, balise);
             //TODO: do something with the balise
           }
         }
@@ -129,9 +131,16 @@ public class Train implements Tickable, SignalListener {
         && engine.isStill()) {
       engine.setTargetSpeed(engine.getLastAdvisorySpeed());
     }
-    if (ObservableHelper.allGreen(observablesInSight)
-        && engine.getSpeed() < RealWorldConstants.ROLLING_SPEED
-        && engine.getObjective() == STOP_AND_ROLL) {
+     else if (engine.getObjective() == STOP_AND_ROLL &&
+        ObservableHelper.allGreen(observablesInSight) &&
+        engine.getSpeed() < RealWorldConstants.ROLLING_SPEED) {
+      logger.warn("observables: {}", observablesInSight);
+      proceedWithCaution();
+    }
+    else if (engine.getObjective() == STOP_THEN_ROLL &&
+        !ObservableHelper.anyTrains(observablesInSight) &&
+        ObservableHelper.allGreen(observablesInSight) &&
+        engine.isStopped()) {
       proceedWithCaution();
     }
   }
@@ -157,7 +166,7 @@ public class Train implements Tickable, SignalListener {
   public void proceedWithCaution() {
     engine.roll();
     engine.setObjective(PROCEED_WITH_CAUTION);
-    logger.warn("proceeding with caution!");
+    logger.warn("{} proceeding with caution!", this);
   }
 
   public void see(Set<Observable> observables) {
@@ -182,6 +191,17 @@ public class Train implements Tickable, SignalListener {
         engine.setTargetSpeed(engine.getLastAdvisorySpeed());
         logger.warn("caution no longer needed! proceeding at {}", engine.getLastAdvisorySpeed());
       }
+    }
+
+    if (ObservableHelper.anyTrains(observables)) {
+      if (!engine.isStopped()) {
+        engine.emergencyBreak();
+        logger.error("{} Emergency breaking! There's a train ahead!", this);
+        engine.setObjective(STOP_THEN_ROLL);
+      }
+      ecu.setSeeingTrainsAhead(true);
+    } else {
+      ecu.setSeeingTrainsAhead(false);
     }
 
     // stop listening to observables which we passed, and start listening to the ones we see now
@@ -209,5 +229,9 @@ public class Train implements Tickable, SignalListener {
 
   public ECU getEcu() {
     return ecu;
+  }
+
+  public TrainTrail getTrail() {
+    return trail;
   }
 }

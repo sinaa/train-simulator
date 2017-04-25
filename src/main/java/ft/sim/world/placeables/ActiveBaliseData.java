@@ -30,7 +30,6 @@ public class ActiveBaliseData implements Cloneable{
     this.timeLastTrainPassed = timeLastTrainPassed;
     this.trainSpeed = trainSpeed;
     this.isDecelerating = isDecelerating;
-    logger.info(this.toString());
   }
 
   public double getTimeLastTrainPassed() {

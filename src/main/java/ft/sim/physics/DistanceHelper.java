@@ -20,8 +20,7 @@ public class DistanceHelper {
    * Distance travelled given average speed and time
    */
   public static double distanceTravelled(double speed, double time) {
-    double distance = speed * time;
-    return distance;
+    return speed * time;
   }
 
   public static double distanceTravelled(double speedCurrent, double time, double acceleration) {

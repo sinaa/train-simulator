@@ -6,6 +6,7 @@ import static ft.sim.signalling.SignalType.RED;
 import com.google.common.collect.Sets;
 import ft.sim.signalling.SignalType;
 import ft.sim.signalling.SignalUnit;
+import ft.sim.train.TrainTrail;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -16,6 +17,10 @@ import java.util.stream.Collectors;
  * Created by sina on 11/04/2017.
  */
 public class ObservableHelper {
+
+  public static boolean anyTrains(Set<Observable> observables){
+    return observables.stream().anyMatch(o-> o instanceof TrainTrail);
+  }
 
   public static boolean allGreen(Set<Observable> observables) {
     return getSignals(observables).stream()

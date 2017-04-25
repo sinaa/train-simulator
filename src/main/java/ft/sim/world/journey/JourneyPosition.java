@@ -2,6 +2,7 @@ package ft.sim.world.journey;
 
 import static ft.sim.signalling.SignalType.RED;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import ft.sim.signalling.SignalType;
 import ft.sim.signalling.SignalUnit;
@@ -236,7 +237,12 @@ public class JourneyPosition {
     }
 
     // get new sections occupied by the train
-    Set<Section> newSectionsOccupied = Sets.newHashSet(getSectionsOccupied());
+    List<Section> newSectionsOccupied = getSectionsOccupied();
+
+    if(!newSectionsOccupied.isEmpty()){
+      Section firstSection = newSectionsOccupied.get(0);
+      firstSection.addPlaceable(train.getTrail());
+    }
 
     // get sections the train just left
     Set<Section> sectionsTrainLeft = Sets.newHashSet(previousSections);
@@ -244,14 +250,15 @@ public class JourneyPosition {
     // let the train know which sections it just left
     train.leftSections(sectionsTrainLeft);
 
+    Set<Section> newSectionsOccupiedSet = Sets.newHashSet(newSectionsOccupied);
     // get the diff (only the new sections occupied)
-    newSectionsOccupied.removeAll(previousSections);
+    newSectionsOccupiedSet.removeAll(previousSections);
     // remove the old ones
-    newSectionsOccupied.removeAll(coveredSections);
+    newSectionsOccupiedSet.removeAll(coveredSections);
     // let the train know which new sections it got over
-    train.reachedSections(newSectionsOccupied);
+    train.reachedSections(new HashSet<>(newSectionsOccupied));
     // keep track of sections the train has covered so far
-    coveredSections.addAll(newSectionsOccupied);
+    coveredSections.addAll(newSectionsOccupiedSet);
 
     // tell the train what it's seeing/should be seeing
     Set<Observable> observables = peek(RealWorldConstants.EYE_SIGHT_DISTANCE);

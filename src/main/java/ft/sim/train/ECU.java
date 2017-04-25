@@ -26,6 +26,11 @@ public class ECU implements Tickable {
   private transient Train train;
   private JourneyTimer timer;
   private NextTrainPrediction nextTrainPrediction = new NextTrainPrediction();
+  private boolean seeingTrainsAhead = false;
+
+  public void setSeeingTrainsAhead(boolean seeingTrainsAhead) {
+    this.seeingTrainsAhead = seeingTrainsAhead;
+  }
 
   // safe breaking distance, in meters
   private double safeBreakingDistance;
@@ -53,23 +58,31 @@ public class ECU implements Tickable {
 
   public void tick(double time) {
     calculateSafeBreakingDistance();
+    if (!nextTrainPrediction.anyTrainsAhead()) {
+      return;
+    }
+
     nextTrainPrediction.predict(timer.getTime(),
         engine.getTotalDistanceTravelled() - totalDistanceTravelledLastBalise);
     double nextDistancePrediction = nextTrainPrediction.getDistance();
-    if (nextDistancePrediction != -1) {
+    /*if (nextDistancePrediction != -1) {
       logger.info("[{}] Next train is {} meters away. safe distance: {}", train,
           nextDistancePrediction, safeBreakingDistance);
-    }
-    if (nextDistancePrediction >= 0 && nextDistancePrediction < safeBreakingDistance) {
+    }*/
+    if (engine.getSpeed() > 1 && nextDistancePrediction >= 0
+        && nextDistancePrediction < safeBreakingDistance) {
+      logger.warn("Train {} emergency breaking, there's a train within breaking distance {} ({})",
+          train, nextDistancePrediction, safeBreakingDistance);
       engine.emergencyBreak();
-      engine.roll();
+      //engine.roll();
       engine.setObjective(STOP_AND_ROLL);
     } else {
-      if (engine.getObjective() == STOP_AND_ROLL) {
+      if ((engine.getObjective() == STOP_AND_ROLL || engine.getObjective() == PROCEED_WITH_CAUTION)
+          && !seeingTrainsAhead) {
+        logger.warn("It's probably safe to proceed [{}]", train);
         engine.setObjective(PROCEED);
       }
     }
-
   }
 
   public double calculateBreakingDistance() {
@@ -77,9 +90,7 @@ public class ECU implements Tickable {
     double targetSpeed = 0;
     double deceleration = engine.getMaxDeceleration();
 
-    double distance = DistanceHelper
-        .distanceToReachTargetSpeed(targetSpeed, currentSpeed, deceleration);
-    return distance;
+    return DistanceHelper.distanceToReachTargetSpeed(targetSpeed, currentSpeed, deceleration);
   }
 
   private void calculateSafeBreakingDistance() {
