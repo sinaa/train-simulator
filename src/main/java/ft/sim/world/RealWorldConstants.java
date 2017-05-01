@@ -31,4 +31,7 @@ public class RealWorldConstants {
 
   // Human eye can see this far (m)
   public static final int EYE_SIGHT_DISTANCE = 40;
+
+  // Default inaccuracy rate of trains at estimating distance travelled
+  public static final double TRAIN_DISTANCE_MEASUREMENT_INACCURACY_RATE = 0;
 }

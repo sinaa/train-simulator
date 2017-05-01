@@ -6,6 +6,7 @@ import ft.sim.physics.DistanceHelper;
 import ft.sim.simulation.Tickable;
 import ft.sim.world.journey.Journey;
 import ft.sim.world.journey.JourneyPath;
+import ft.sim.world.journey.JourneyPlan;
 import ft.sim.world.journey.JourneyTimer;
 import ft.sim.world.placeables.ActiveBaliseData;
 import org.slf4j.Logger;
@@ -22,7 +23,7 @@ public class ECU implements Tickable {
   private static final double SAFETY_DISTANCE_MARGIN_COEFFICIENT = 0.5;
 
   private Engine engine;
-  private transient JourneyPath journeyPath;
+  private transient JourneyPlan journeyPlan;
   private transient Train train;
   private JourneyTimer timer;
   private NextTrainPrediction nextTrainPrediction = new NextTrainPrediction();
@@ -49,10 +50,10 @@ public class ECU implements Tickable {
   }
 
   private void createWorldModel(Journey journey) {
-    this.journeyPath = journey.getJourneyPath();
+    this.journeyPlan = new JourneyPlan(journey);
     this.train = journey.getTrain();
 
-    this.safeBreakingDistance = journeyPath.getLength();
+    this.safeBreakingDistance = journeyPlan.getJourneyPath().getLength();
     this.timer = journey.getJourneyTimer();
   }
 
@@ -62,8 +63,7 @@ public class ECU implements Tickable {
       return;
     }
 
-    nextTrainPrediction.predict(timer.getTime(),
-        engine.getTotalDistanceTravelled() - totalDistanceTravelledLastBalise);
+    nextTrainPrediction.predict(timer.getTime(), getEstimatedDistanceTravelledSinceLastBalise());
     double nextDistancePrediction = nextTrainPrediction.getDistance();
     /*if (nextDistancePrediction != -1) {
       logger.info("[{}] Next train is {} meters away. safe distance: {}", train,
@@ -75,7 +75,7 @@ public class ECU implements Tickable {
           train, nextDistancePrediction, safeBreakingDistance);
       engine.emergencyBreak();
       //engine.roll();
-      engine.setObjective(STOP_AND_ROLL);
+      engine.setObjective(STOP_THEN_ROLL);
     } else {
       if ((engine.getObjective() == STOP_AND_ROLL || engine.getObjective() == PROCEED_WITH_CAUTION)
           && !seeingTrainsAhead) {
@@ -83,6 +83,20 @@ public class ECU implements Tickable {
         engine.setObjective(PROCEED);
       }
     }
+  }
+
+  /**
+   * Get train's idea of how far it's travelled since last balise
+   *
+   * Use engine's setInaccuracyRate() to set the train's inaccuracy at estimating distance travelled
+   *
+   * @return distance travelled since last balise in meters
+   */
+  private double getEstimatedDistanceTravelledSinceLastBalise() {
+    //TODO: add inaccuracies
+    double realTravelled = engine.getTotalDistanceTravelled() - totalDistanceTravelledLastBalise;
+    double inaccuracy = engine.getInaccuracyRate() * realTravelled;
+    return realTravelled + inaccuracy;
   }
 
   public double calculateBreakingDistance() {
@@ -103,5 +117,9 @@ public class ECU implements Tickable {
 
   public JourneyTimer getTimer() {
     return timer;
+  }
+
+  public JourneyPlan getJourneyPlan() {
+    return journeyPlan;
   }
 }

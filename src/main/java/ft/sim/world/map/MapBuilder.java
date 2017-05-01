@@ -189,7 +189,19 @@ public class MapBuilder {
       setStationSignals();
     } else {
       for (Station station : map.getStations().values()) {
-        station.setNextBlockSignalController(new SignalController(station));
+        for (Connectable c : map.getGraph().getChildren(station)) {
+          if (c == null) {
+            continue;
+          }
+          if (!(c instanceof Track)) {
+            throw new IllegalStateException("a station cannot be connected to non-tracks");
+          }
+          Track nextTrack = (Track) c;
+          SignalController signalController = new SignalController(nextTrack);
+          SignalUnit mainSignal = signalController.getMainSignal();
+          nextTrack.addBlockSignal(mainSignal, 0);
+          station.setNextBlockSignalController(signalController, (Track) nextTrack);
+        }
       }
     }
   }
@@ -217,7 +229,7 @@ public class MapBuilder {
         if (MapBuilderHelper.hasTrain(map, nextTrack)) {
           signalController.setStatus(SignalType.RED);
         }
-        station.setNextBlockSignalController(signalController);
+        station.setNextBlockSignalController(signalController, nextTrack);
         nextTrack.addSignalController(signalController);
         logger.warn("added new signal controller");
       }

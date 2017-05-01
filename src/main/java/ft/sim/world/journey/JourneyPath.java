@@ -5,15 +5,20 @@ import com.google.common.collect.HashBiMap;
 import ft.sim.world.connectables.Connectable;
 import ft.sim.world.connectables.Observable;
 import ft.sim.world.connectables.Section;
+import ft.sim.world.connectables.Station;
 import ft.sim.world.connectables.Track;
 import ft.sim.world.map.MapGraph;
 import ft.sim.world.placeables.Balise;
 import ft.sim.world.placeables.Placeable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +53,10 @@ public class JourneyPath {
 
   public MapGraph getPathGraph() {
     return pathGraph;
+  }
+
+  public Track getTrackAfterStation(Station station) {
+    return (Track) pathGraph.getNexTConnectable(station);
   }
 
   private double length = 0;
@@ -95,6 +104,8 @@ public class JourneyPath {
       length += c.getLength();
       //logger.debug("Connectable length: {}", c.getLength());
     }
+
+    buildGraph();
   }
 
   public double getPlaceablePosition(Placeable placeable) {

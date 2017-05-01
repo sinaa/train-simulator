@@ -6,6 +6,12 @@ package ft.sim.world.journey;
 public class JourneyPlan {
 
   JourneyPath journeyPath;
-  
 
+  public JourneyPlan(Journey journey){
+    journeyPath = journey.getJourneyPath();
+  }
+
+  public JourneyPath getJourneyPath() {
+    return journeyPath;
+  }
 }

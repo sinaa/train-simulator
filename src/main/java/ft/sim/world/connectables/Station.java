@@ -36,15 +36,11 @@ public class Station implements Connectable, Tickable {
   Set<Train> trainsLeaving = new HashSet<>();
   Set<Train> trainsEntering = new HashSet<>();
 
-  SignalController nextBlockSignalController;
+  Map<Track, SignalController> nextBlockSignalController = new HashMap<>();
 
-  public void setNextBlockSignalController(SignalController nextBlockSignalController) {
-    this.nextBlockSignalController = nextBlockSignalController;
-  }
-
-  @Override
-  public double getLength() {
-    return length;
+  public void setNextBlockSignalController(SignalController nextBlockSignalController,
+      Track nextTrack) {
+    this.nextBlockSignalController.put(nextTrack, nextBlockSignalController);
   }
 
   public Station(int capacity, int delay) {
@@ -80,16 +76,22 @@ public class Station implements Connectable, Tickable {
   public void tick(double time) {
     for (Entry<Train, Double> trainElement : trains.entrySet()) {
       Train t = trainElement.getKey();
-      if (nextBlockSignalController == null) {
+      SignalController signalController = nextBlockSignalController
+          .get(t.getEcu().getJourneyPlan().getJourneyPath().getTrackAfterStation(this));
+      if (signalController == null) {
         continue;
       }
       double delay = trainElement.getValue();
       if (trainsLeaving.contains(t)) {
         continue; // ignore them, they're leaving
       }
+      if (trainsLeaving.size() > 0) {
+        // if there are other trains leaving, wait for them to leave
+        continue;
+      }
       delay -= time;
       if (delay <= 0) {
-        if (nextBlockSignalController.getStatus() != GREEN) {
+        if (signalController.getStatus() != GREEN) {
           delay += 5; // wait for 5 more seconds
         } else {
           t.signalChange(SignalType.GREEN);
@@ -104,15 +106,24 @@ public class Station implements Connectable, Tickable {
     return capacity - usedCapacity() > 0;
   }
 
-  public boolean reserveCapacity(Train train) {
-    if (trainsEntering.contains(train)) {
-      return true;
-    }
-    if (!hasCapacity()) {
-      return false;
-    }
-    trainsEntering.add(train);
-    return true;
+  public int usedCapacity() {
+    Set<Train> union = new HashSet<>(trains.keySet());
+    union.addAll(trainsEntering);
+    union.addAll(trainsLeaving);
+    return union.size();
+  }
+
+  public int getCapacity() {
+    return capacity;
+  }
+
+  @Override
+  public double getLength() {
+    return length;
+  }
+
+  public void setLength(int length) {
+    this.length = length;
   }
 
   @Override
@@ -124,14 +135,17 @@ public class Station implements Connectable, Tickable {
     }
   }
 
-  public int usedCapacity() {
-    Set<Train> union = new HashSet<>(trains.keySet());
-    union.addAll(trainsEntering);
-    union.addAll(trainsLeaving);
-    return union.size();
-  }
-
-  public int getCapacity() {
-    return capacity;
+  /**
+   * @deprecated
+   */
+  public boolean reserveCapacity(Train train) {
+    if (trainsEntering.contains(train)) {
+      return true;
+    }
+    if (!hasCapacity()) {
+      return false;
+    }
+    trainsEntering.add(train);
+    return true;
   }
 }

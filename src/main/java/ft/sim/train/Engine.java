@@ -34,7 +34,7 @@ public class Engine implements Tickable {
   // temporary variable to store the last distance travelled
   private double lastDistanceTravelled = 0;
 
-
+  // What was the train told to do last time?
   private TrainObjective lastObjective = PROCEED;
 
   // total distance travelled
@@ -42,6 +42,11 @@ public class Engine implements Tickable {
 
   // Last advisory train speed
   private double lastAdvisorySpeed = RealWorldConstants.DEFAULT_SET_OFF_SPEED;
+
+  // a positive rate indicates an over-estimation of distance travelled,
+  // a negative rate indicates an under-estimation
+  private double inaccuracyRate = RealWorldConstants.TRAIN_DISTANCE_MEASUREMENT_INACCURACY_RATE;
+
   /*
    * Get current speed (m/s), m is metres
    */
@@ -191,5 +196,13 @@ public class Engine implements Tickable {
 
   public void setLastAdvisorySpeed(double lastAdvisorySpeed) {
     this.lastAdvisorySpeed = lastAdvisorySpeed;
+  }
+
+  public void setInaccuracyRate(double inaccuracyRate) {
+    this.inaccuracyRate = inaccuracyRate;
+  }
+
+  public double getInaccuracyRate() {
+    return inaccuracyRate;
   }
 }

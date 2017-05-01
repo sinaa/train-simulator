@@ -11,10 +11,13 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +38,16 @@ public class MapGraph {
 
   public Collection<Connectable> getChildren(Connectable connectable) {
     return graph.get(connectable);
+  }
+
+  public Connectable getNexTConnectable(Connectable connectable) {
+    Collection<Connectable> next = graph.get(connectable);
+    if (next.stream().filter(Objects::nonNull).count() > 1) {
+      throw new IllegalStateException("The next item shouldn't have multiple children");
+    }
+    return next.stream().map(Optional::ofNullable).findFirst()
+        .flatMap(Function.identity())
+        .orElse(null);
   }
 
   public Collection<Connectable> getParents(Connectable connectable) {
