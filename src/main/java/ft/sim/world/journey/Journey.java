@@ -141,11 +141,15 @@ public class Journey implements Tickable {
   @Override
   public String toString() {
     String journey = "";
-    journey +=
-        "train: {speed: " + train.getEngine().getSpeed() + ", acceleration: " + train.getEngine()
-            .getAcceleration() + ", targetSpeed: " + train.getEngine().getTargetSpeed() + "}, ";
-    journey += "journey: {headPosition: " + headPosition + ", tailPOsition: " + tailPosition
-        + ", isForward:" + directionForward + "}";
-    return journey;
+    try {
+      return "Journey-" + WorldHandler.getInstance().getWorld().getJourneyID(this);
+    } catch (Exception e) {
+      journey +=
+          "train: {speed: " + train.getEngine().getSpeed() + ", acceleration: " + train.getEngine()
+              .getAcceleration() + ", targetSpeed: " + train.getEngine().getTargetSpeed() + "}, ";
+      journey += "journey: {headPosition: " + headPosition + ", tailPOsition: " + tailPosition
+          + ", isForward:" + directionForward + "}";
+      return journey;
+    }
   }
 }

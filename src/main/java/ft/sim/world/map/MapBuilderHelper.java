@@ -60,7 +60,7 @@ public class MapBuilderHelper {
     double j1Distance =
         j1.getJourneyPosition().getHeadPosition() + j1.getJourneyPath().getDistanceFromGraphRoot();
     double j2Distance =
-        j1.getJourneyPosition().getHeadPosition() + j1.getJourneyPath().getDistanceFromGraphRoot();
+        j2.getJourneyPosition().getHeadPosition() + j2.getJourneyPath().getDistanceFromGraphRoot();
     return Math.abs(j2Distance - j1Distance);
   }
 

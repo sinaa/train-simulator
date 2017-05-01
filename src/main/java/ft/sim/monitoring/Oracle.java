@@ -5,6 +5,7 @@ import static ft.sim.monitoring.ViolationSeverity.CRITICAL;
 import ft.sim.train.Train;
 import ft.sim.world.connectables.Connectable;
 import ft.sim.world.connectables.Section;
+import ft.sim.world.connectables.Station;
 import ft.sim.world.connectables.Switch;
 import ft.sim.world.connectables.Track;
 import ft.sim.world.journey.Journey;
@@ -61,10 +62,18 @@ public class Oracle {
     for (Entry<Journey, Journey> pair : trainMap.entrySet()) {
       Journey j1 = pair.getKey();
       Journey j2 = pair.getValue();
+      if (j1.getJourneyPosition().getConnectablesOccupied().stream()
+          .anyMatch(c -> c instanceof Station)
+          || j2.getJourneyPosition().getConnectablesOccupied().stream()
+          .anyMatch(c -> c instanceof Station)) {
+        continue;
+      }
       double distance = MapBuilderHelper.getJourneyDistance(j2, j1);
 
       double breakingDistance = j1.getTrain().getEcu().calculateBreakingDistance();
-      if (breakingDistance < distance) {
+      logger.info("{} and {}, distance: {} , breaking distance:{}", j1, j2, breakingDistance,
+          distance);
+      if (breakingDistance > distance) {
         ViolationBuilder.createVariableBlockViolation(this, j1.getTrain(), j2.getTrain(), distance);
       }
     }
