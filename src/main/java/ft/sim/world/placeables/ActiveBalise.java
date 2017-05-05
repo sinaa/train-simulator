@@ -9,10 +9,15 @@ public class ActiveBalise extends Balise implements Disruptable {
 
   private ActiveBaliseData data = new ActiveBaliseData();
 
+  // data brought over by a train on the opposite side
+  private ActiveBaliseData upAheadData;
+
+  private ActiveBalise dualTrackPair = null;
+
   private boolean isBroken = false;
 
-  public void update(double timePassing, double speed, boolean isDecelerating){
-    data.setData(timePassing, speed, isDecelerating);
+  public void update(int lastTrainID, double timePassing, double speed, boolean isDecelerating){
+    data.setData(lastTrainID, timePassing, speed, isDecelerating);
   }
 
   public ActiveBaliseData getData() {
@@ -27,5 +32,17 @@ public class ActiveBalise extends Balise implements Disruptable {
   @Override
   public void setIsBroken(boolean isBroken) {
     this.isBroken = isBroken;
+  }
+
+  public void setDualTrackPair(ActiveBalise dualTrackPair) {
+    this.dualTrackPair = dualTrackPair;
+  }
+
+  public ActiveBaliseData getOtherSideData() {
+    return dualTrackPair.getData();
+  }
+
+  public void setUpAheadData(ActiveBaliseData broughtForwardData) {
+    this.upAheadData = broughtForwardData;
   }
 }

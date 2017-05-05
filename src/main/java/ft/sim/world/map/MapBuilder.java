@@ -126,9 +126,18 @@ public class MapBuilder {
     buildGraph();
     setSignals();
     if (map.isConfiguration("mode", "variable_block")) {
+      //FIXME: infinite loop in this method and the one below when tracks branch from a station
       createActiveBalises();
     }
     initBalisePositions();
+
+    // If list of paired tracks is empty, it doesn't pair any tracks
+    pairTracks();
+  }
+
+  private void pairTracks() {
+    map.getTrackPairs()
+        .forEach((key, value) -> DualLineHelper.pairTracks(map.getTrack(key), map.getTrack(value)));
   }
 
   private void initBalisePositions() {
@@ -417,6 +426,11 @@ public class MapBuilder {
 
       map.addTrack(trackID, t);
       map.registerSectionsForTrack(t.getSections(), trackID);
+
+      int pairID = trackData.getOrDefault("pairID", 0);
+      if (pairID > 0) {
+        map.addTrackPair(trackID, pairID);
+      }
     }
   }
 
@@ -483,6 +497,7 @@ public class MapBuilder {
       Train t = new Train((int) trainData.get("numCars"));
 
       map.addTrain(trainID, t);
+      t.setTrainID(trainID);
     }
   }
 

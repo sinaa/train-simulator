@@ -1,6 +1,5 @@
 package ft.sim.world.placeables;
 
-import ft.sim.world.map.MapBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,6 +9,8 @@ import org.slf4j.LoggerFactory;
 public class ActiveBaliseData implements Cloneable{
 
   protected transient static final Logger logger = LoggerFactory.getLogger(ActiveBaliseData.class);
+
+  private int lastTrainID = -1;
 
   private double timeLastTrainPassed = -1;
 
@@ -21,12 +22,14 @@ public class ActiveBaliseData implements Cloneable{
 
   }
 
-  public ActiveBaliseData(double timeLastTrainPassed, double trainSpeed, boolean isDecelerating) {
-    setData(timeLastTrainPassed, trainSpeed, isDecelerating);
+  public ActiveBaliseData(int lastTrainID, double timeLastTrainPassed, double trainSpeed, boolean isDecelerating) {
+    setData(lastTrainID, timeLastTrainPassed, trainSpeed, isDecelerating);
 
   }
 
-  public void setData(double timeLastTrainPassed, double trainSpeed, boolean isDecelerating) {
+  public void setData(int lastTrainID, double timeLastTrainPassed, double trainSpeed,
+      boolean isDecelerating) {
+    this.lastTrainID = lastTrainID;
     this.timeLastTrainPassed = timeLastTrainPassed;
     this.trainSpeed = trainSpeed;
     this.isDecelerating = isDecelerating;
@@ -46,7 +49,7 @@ public class ActiveBaliseData implements Cloneable{
 
   @Override
   public ActiveBaliseData clone() {
-    return new ActiveBaliseData(timeLastTrainPassed, trainSpeed, isDecelerating);
+    return new ActiveBaliseData(lastTrainID, timeLastTrainPassed, trainSpeed, isDecelerating);
   }
 
   @Override

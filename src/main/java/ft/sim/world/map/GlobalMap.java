@@ -38,6 +38,7 @@ public class GlobalMap {
   private BiMap<Integer, Switch> switchMap = HashBiMap.create();
   private BiMap<Integer, Train> trainMap = HashBiMap.create();
   private BiMap<Integer, Station> stationMap = HashBiMap.create();
+  private BiMap<Integer,Integer> trackPairMap = HashBiMap.create();
 
   private HashMap<String, Object> configurationsMap = new HashMap<>();
 
@@ -76,6 +77,10 @@ public class GlobalMap {
   public boolean isConfiguration(String key, Object value) {
     Object conf = configurationsMap.get(key);
     return conf != null && conf.toString().equals(value.toString());
+  }
+
+  public void addTrackPair(int fromTrackID, int toTrackID){
+    trackPairMap.put(fromTrackID, toTrackID);
   }
 
   public void addStation(int id, Station station) {
@@ -212,6 +217,14 @@ public class GlobalMap {
 
   public int getStationID(Station s) {
     return stationMap.inverse().get(s);
+  }
+
+  /*
+   * Track pair getters
+   */
+
+  public BiMap<Integer, Integer> getTrackPairs() {
+    return trackPairMap;
   }
 
   public String getName() {

@@ -38,6 +38,9 @@ public class Train implements Tickable, SignalListener {
 
   private TrainTrail trail;
 
+  // train ID
+  private int tID = -1;
+
   private transient Set<Observable> observablesInSight = new HashSet<>();
 
 
@@ -107,7 +110,7 @@ public class Train implements Tickable, SignalListener {
         if (p instanceof Balise) {
           if (p instanceof ActiveBalise) {
             ActiveBalise balise = (ActiveBalise) p;
-            balise.update(ecu.getTimer().getTime(), engine.getSpeed(), engine.isBreaking());
+            balise.update(tID, ecu.getTimer().getTime(), engine.getSpeed(), engine.isBreaking());
             //TODO: do something with the balise
           }
         }
@@ -130,14 +133,12 @@ public class Train implements Tickable, SignalListener {
     if (engine.getObjective() == PROCEED && ObservableHelper.allGreen(observablesInSight)
         && engine.isStill()) {
       engine.setTargetSpeed(engine.getLastAdvisorySpeed());
-    }
-     else if (engine.getObjective() == STOP_AND_ROLL &&
+    } else if (engine.getObjective() == STOP_AND_ROLL &&
         ObservableHelper.allGreen(observablesInSight) &&
         engine.getSpeed() < RealWorldConstants.ROLLING_SPEED) {
       logger.warn("observables: {}", observablesInSight);
       proceedWithCaution();
-    }
-    else if (engine.getObjective() == STOP_THEN_ROLL &&
+    } else if (engine.getObjective() == STOP_THEN_ROLL &&
         !ObservableHelper.anyTrains(observablesInSight) &&
         ObservableHelper.allGreen(observablesInSight) &&
         engine.isStopped()) {
@@ -221,7 +222,8 @@ public class Train implements Tickable, SignalListener {
   @Override
   public String toString() {
     try {
-      return "Train-" + WorldHandler.getInstance().getWorld().getTrainID(this);
+      return "Train-" + ((tID != -1) ? tID
+          : WorldHandler.getInstance().getWorld().getTrainID(this));
     } catch (Exception e) {
       return super.toString();
     }
@@ -233,5 +235,13 @@ public class Train implements Tickable, SignalListener {
 
   public TrainTrail getTrail() {
     return trail;
+  }
+
+  public void setTrainID(int trainID) {
+    this.tID = trainID;
+  }
+
+  public Integer getTrainID() {
+    return tID;
   }
 }
