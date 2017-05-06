@@ -35,6 +35,9 @@ public class JourneyPath {
   // root connectable
   private Connectable graphRootConnectable;
 
+  // configuration for map graphbuilder dual path
+  private boolean isDualed = false;
+
   private List<Connectable> path = new ArrayList<>();
   private Map<Connectable, Double> connectablePositions = new HashMap<>();
   private BiMap<Connectable, Integer> connectableIndexes = HashBiMap.create();
@@ -278,5 +281,13 @@ public class JourneyPath {
 
   public Connectable getGraphRootConnectable() {
     return graphRootConnectable;
+  }
+
+  public boolean isDualed() {
+    return isDualed;
+  }
+
+  public void setDualed(boolean dualed) {
+    isDualed = dualed;
   }
 }

@@ -3,6 +3,7 @@ package ft.sim.world.map;
 import static ft.sim.world.RealWorldConstants.BREAK_DISTANCE;
 
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import ft.sim.signalling.SignalController;
 import ft.sim.signalling.SignalType;
 import ft.sim.signalling.SignalUnit;
@@ -23,6 +24,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -394,7 +396,8 @@ public class MapBuilder {
                 "Invalid journeyPath path-element type: " + connectableType);
         }
       }
-      map.addJourneyPath(journeyPathID, connectables);
+      map.addJourneyPath(journeyPathID, connectables,
+          (boolean) jData.getOrDefault("isDual", false));
     }
   }
 
@@ -469,21 +472,43 @@ public class MapBuilder {
 
         if (c instanceof Track && c.getLength() > baliseDistance) {
           Track track = (Track) c;
-          for (double d = 0; d < track.getLength(); d += baliseDistance) {
-            if (length == 0) {
-              length += baliseDistance;
-              continue;
-            }
-            Placeable balise = new ActiveBalise();
-            track.placePlaceableOnSectionIndex(balise, (int) d);
-            logger.debug("Palced active balise on track {} position {}", map.getTrackID(track),
-                (int) d);
-            length += baliseDistance;
+          if (DualLineHelper.isTrackPairActiveBaliseInitialised(map, track)) {
+            length += copyActiveBalises(DualLineHelper.getTrackPair(map, track), track);
+          } else {
+            length = placeActiveBalisesOnTrack(length, track, baliseDistance);
           }
         }
         length += c.getLength();
       }
     }
+  }
+
+  private double placeActiveBalisesOnTrack(double length, Track track, int baliseDistance) {
+    for (double d = 0; d < track.getLength(); d += baliseDistance) {
+      if (length == 0) {
+        length += baliseDistance;
+        continue;
+      }
+      Placeable balise = new ActiveBalise();
+      track.placePlaceableOnSectionIndex(balise, (int) d);
+      logger.debug("Palced active balise on track {} position {}", map.getTrackID(track), (int) d);
+      length += baliseDistance;
+    }
+    return length;
+  }
+
+  private static double copyActiveBalises(Track copyFrom, Track copyTo) {
+    for (Entry<Integer, Placeable> e : copyFrom.getPlaceables().entrySet()) {
+      int position = e.getKey();
+      Placeable placeable = e.getValue();
+      if (!(placeable instanceof ActiveBalise)) {
+        continue;
+      }
+      int newPosition = (int) copyTo.getLength() - 1 - position;
+      Placeable balise = new ActiveBalise();
+      copyTo.placePlaceableOnSectionIndex(balise, newPosition);
+    }
+    return copyTo.getLength();
   }
 
 

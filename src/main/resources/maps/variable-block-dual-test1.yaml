@@ -46,21 +46,21 @@ journeyPaths:
   '2':
     path:
     - type: station
-      id: 2
+      id: 4
     - type: track
-      id: 7
-    - type: track
-      id: 8
-    - type: track
-      id: 9
-    - type: track
-      id: 10
+      id: 12
     - type: track
       id: 11
     - type: track
-      id: 12
+      id: 10
+    - type: track
+      id: 9
+    - type: track
+      id: 8
+    - type: track
+      id: 7
     - type: station
-      id: 1
+      id: 3
 
 tracks:
   '1':
@@ -118,6 +118,12 @@ stations:
     capacity: 4
     wait: 5
   '2':
+    capacity: 4
+    wait: 10
+  '3':
+    capacity: 4
+    wait: 5
+  '4':
     capacity: 4
     wait: 10
 simulation:

@@ -12,7 +12,7 @@ public class ActiveBalise extends Balise implements Disruptable {
   // data brought over by a train on the opposite side
   private ActiveBaliseData upAheadData;
 
-  private ActiveBalise dualTrackPair = null;
+  private transient ActiveBalise dualTrackPair = null;
 
   private boolean isBroken = false;
 

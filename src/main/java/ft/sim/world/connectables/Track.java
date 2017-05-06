@@ -185,4 +185,8 @@ public class Track implements Connectable, SignalLinked {
   public SignalController getSignalController() {
     return signalController;
   }
+
+  public BiMap<Integer, Placeable> getPlaceables() {
+    return placeables;
+  }
 }

@@ -109,8 +109,9 @@ public class GlobalMap {
     journeysMap.put(id, j);
   }
 
-  public void addJourneyPath(int id, List<Connectable> connectables) {
+  public void addJourneyPath(int id, List<Connectable> connectables, boolean isDual) {
     JourneyPath jp = new JourneyPath(connectables);
+    jp.setDualed(isDual);
 
     journeyPathsMap.put(id, jp);
   }

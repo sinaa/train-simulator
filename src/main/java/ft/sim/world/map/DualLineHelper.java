@@ -64,4 +64,30 @@ public class DualLineHelper {
         .flatMap(Function.identity()).orElse(null);
   }
 
+
+  public static Track getTrackPair(GlobalMap map, Track track) {
+    Integer pairID = getTrackPairID(map, track);
+    return (pairID == null) ? null : map.getTrack(pairID);
+  }
+
+  public static boolean isTrackPairActiveBaliseInitialised(GlobalMap map, Track track) {
+    Track pair = getTrackPair(map, track);
+    if (pair == null) {
+      return false;
+    }
+    long n = pair.getPlaceables().values().stream().filter(p -> p instanceof ActiveBalise).count();
+    return n > 0;
+  }
+
+  public static Integer getTrackPairID(GlobalMap map, Track track) {
+    int trackID = map.getTrackID(track);
+    Integer pairID = map.getTrackPairs().get(trackID);
+    if (pairID == null) {
+      pairID = map.getTrackPairs().inverse().get(trackID);
+    }
+    if (pairID == null) {
+      return null;
+    }
+    return pairID;
+  }
 }
