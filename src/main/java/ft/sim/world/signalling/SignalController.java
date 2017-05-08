@@ -1,4 +1,4 @@
-package ft.sim.signalling;
+package ft.sim.world.signalling;
 
 import ft.sim.world.connectables.Connectable;
 import java.util.HashSet;
@@ -13,17 +13,18 @@ import org.slf4j.LoggerFactory;
  */
 public class SignalController {
 
-  protected static Logger logger = LoggerFactory.getLogger(SignalController.class);
-
+  protected static transient Logger logger = LoggerFactory.getLogger(SignalController.class);
+  transient Connectable belongsTo;
   private SignalType status = SignalType.GREEN;
-
   private Set<SignalUnit> signalSet = new HashSet<>();
   private Set<SignalListener> signalListeners = new HashSet<>();
 
-  transient Connectable belongsTo;
-
-  public SignalController(Connectable belongsTo){
+  public SignalController(Connectable belongsTo) {
     this.belongsTo = belongsTo;
+  }
+
+  public SignalType getStatus() {
+    return status;
   }
 
   public void setStatus(SignalType status) {
@@ -31,10 +32,6 @@ public class SignalController {
     logger.info("{} signal controller set to {}", belongsTo, status);
     signalSet.forEach(signal -> signal.setStatus(status));
     //signalListeners.forEach(listener -> listener.signalChange(status, this));
-  }
-
-  public SignalType getStatus() {
-    return status;
   }
 
   @Deprecated

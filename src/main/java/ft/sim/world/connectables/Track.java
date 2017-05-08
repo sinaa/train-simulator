@@ -1,15 +1,15 @@
 package ft.sim.world.connectables;
 
-import static ft.sim.signalling.SignalType.GREEN;
-import static ft.sim.signalling.SignalType.RED;
+import static ft.sim.world.signalling.SignalType.GREEN;
+import static ft.sim.world.signalling.SignalType.RED;
 import static java.util.stream.Collectors.toList;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import ft.sim.signalling.SignalController;
-import ft.sim.signalling.SignalLinked;
-import ft.sim.signalling.SignalUnit;
-import ft.sim.train.Train;
+import ft.sim.world.signalling.SignalController;
+import ft.sim.world.signalling.SignalLinked;
+import ft.sim.world.signalling.SignalUnit;
+import ft.sim.world.train.Train;
 import ft.sim.world.WorldHandler;
 import ft.sim.world.placeables.Balise;
 import ft.sim.world.placeables.Placeable;
@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 public class Track implements Connectable, SignalLinked {
 
   private static final transient int DEFAULT_LENGTH = 20;
-  protected transient final Logger logger = LoggerFactory.getLogger(Track.class);
+  protected static transient final Logger logger = LoggerFactory.getLogger(Track.class);
   private final ConnectableType type = ConnectableType.TRACK;
   private transient List<Section> sections;
   private int length = DEFAULT_LENGTH;

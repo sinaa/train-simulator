@@ -1,4 +1,4 @@
-package ft.sim.signalling;
+package ft.sim.world.signalling;
 
 import ft.sim.world.connectables.Observable;
 import ft.sim.world.placeables.Placeable;
@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
  */
 public class SignalUnit implements Placeable, Observable {
 
-  protected static Logger logger = LoggerFactory.getLogger(SignalUnit.class);
+  protected static transient final Logger logger = LoggerFactory.getLogger(SignalUnit.class);
 
   private SignalType status = SignalType.GREEN;
 

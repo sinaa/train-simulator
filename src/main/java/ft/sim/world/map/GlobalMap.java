@@ -2,7 +2,7 @@ package ft.sim.world.map;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import ft.sim.train.Train;
+import ft.sim.world.train.Train;
 import ft.sim.world.connectables.Connectable;
 import ft.sim.world.connectables.Section;
 import ft.sim.world.connectables.Station;
@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
  */
 public class GlobalMap {
 
-  protected transient final Logger logger = LoggerFactory.getLogger(GlobalMap.class);
+  protected static transient final Logger logger = LoggerFactory.getLogger(GlobalMap.class);
 
   private final String name;
 

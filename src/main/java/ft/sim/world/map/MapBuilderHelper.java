@@ -1,14 +1,11 @@
 package ft.sim.world.map;
 
-import ft.sim.train.Train;
 import ft.sim.world.connectables.Connectable;
 import ft.sim.world.connectables.Track;
 import ft.sim.world.journey.Journey;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.TreeMap;
 
 /**
@@ -33,8 +30,7 @@ public class MapBuilderHelper {
           + journey.getJourneyPath().getDistanceFromGraphRoot();
       Connectable rootKey = journey.getJourneyPath().getGraphRootConnectable();
       TreeMap<Double, Journey> distanceTree = graphRootJourneys
-          .computeIfAbsent(rootKey,
-              k -> new TreeMap<>());
+          .computeIfAbsent(rootKey, k -> new TreeMap<>());
       distanceTree.put(distance, journey);
       graphRootJourneys.put(rootKey, distanceTree);
     }

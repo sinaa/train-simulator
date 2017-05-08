@@ -25,7 +25,6 @@ public class ActiveBaliseData implements Cloneable {
   public ActiveBaliseData(int lastTrainID, double timeLastTrainPassed, double trainSpeed,
       boolean isDecelerating) {
     setData(lastTrainID, timeLastTrainPassed, trainSpeed, isDecelerating);
-
   }
 
   public void setData(int lastTrainID, double timeLastTrainPassed, double trainSpeed,

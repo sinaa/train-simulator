@@ -4,9 +4,8 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.sun.org.apache.xpath.internal.operations.Or;
 import ft.sim.monitoring.CriticalViolationException;
-import ft.sim.train.Train;
+import ft.sim.world.train.Train;
 import ft.sim.web.SocketSession;
 import ft.sim.world.WorldHandler;
 import ft.sim.world.map.GlobalMap;
@@ -17,7 +16,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +27,7 @@ import org.springframework.web.socket.TextMessage;
  */
 public class BasicSimulation {
 
-  protected Logger logger = LoggerFactory.getLogger(BasicSimulation.class);
+  protected static transient final Logger logger = LoggerFactory.getLogger(BasicSimulation.class);
 
   // random seed for disruptor's random generation
   public static int RANDOM_SEED = 0;

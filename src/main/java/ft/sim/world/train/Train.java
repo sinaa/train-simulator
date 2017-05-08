@@ -1,10 +1,10 @@
-package ft.sim.train;
+package ft.sim.world.train;
 
-import static ft.sim.train.TrainObjective.*;
+import static ft.sim.world.train.TrainObjective.*;
 
-import ft.sim.signalling.SignalListener;
-import ft.sim.signalling.SignalType;
-import ft.sim.signalling.SignalUnit;
+import ft.sim.world.signalling.SignalListener;
+import ft.sim.world.signalling.SignalType;
+import ft.sim.world.signalling.SignalUnit;
 import ft.sim.simulation.Tickable;
 import ft.sim.world.RealWorldConstants;
 import ft.sim.world.WorldHandler;

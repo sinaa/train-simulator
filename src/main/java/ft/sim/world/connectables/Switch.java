@@ -1,13 +1,12 @@
 package ft.sim.world.connectables;
 
-import static ft.sim.signalling.SignalType.GREEN;
-import static ft.sim.signalling.SignalType.RED;
+import static ft.sim.world.signalling.SignalType.GREEN;
+import static ft.sim.world.signalling.SignalType.RED;
 
-import ft.sim.signalling.SignalController;
-import ft.sim.signalling.SignalLinked;
-import ft.sim.simulation.BasicSimulation;
+import ft.sim.world.signalling.SignalController;
+import ft.sim.world.signalling.SignalLinked;
 import ft.sim.simulation.Tickable;
-import ft.sim.train.Train;
+import ft.sim.world.train.Train;
 import ft.sim.world.WorldHandler;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,7 +20,7 @@ import org.slf4j.LoggerFactory;
  */
 public class Switch implements Connectable, Tickable, SignalLinked {
 
-  protected transient final Logger logger = LoggerFactory.getLogger(Switch.class);
+  protected static transient final Logger logger = LoggerFactory.getLogger(Switch.class);
 
   private final ConnectableType type = ConnectableType.SWITCH;
 

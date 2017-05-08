@@ -1,4 +1,4 @@
-package ft.sim.train;
+package ft.sim.world.train;
 
 import ft.sim.world.connectables.Observable;
 import ft.sim.world.connectables.Section;

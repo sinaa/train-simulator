@@ -1,4 +1,4 @@
-package ft.sim.train;
+package ft.sim.world.train;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
  */
 public class Car {
 
-  protected Logger logger = LoggerFactory.getLogger(Car.class);
+  protected static transient final Logger logger = LoggerFactory.getLogger(Car.class);
 
   private boolean isFirst = false;
   private boolean isLast = false;

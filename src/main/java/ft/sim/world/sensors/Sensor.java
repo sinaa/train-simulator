@@ -1,6 +1,6 @@
 package ft.sim.world.sensors;
 
-import ft.sim.train.Train;
+import ft.sim.world.train.Train;
 
 /**
  * Created by sina on 10/04/2017.

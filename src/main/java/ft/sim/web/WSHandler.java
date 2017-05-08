@@ -11,6 +11,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -18,7 +20,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 public class WSHandler extends TextWebSocketHandler {
 
-  protected Log logger = LogFactory.getLog(WSHandler.class);
+  private static final transient Logger logger = LoggerFactory.getLogger(WSHandler.class);
 
   //private final CountDownLatch latch = new CountDownLatch(5);
 

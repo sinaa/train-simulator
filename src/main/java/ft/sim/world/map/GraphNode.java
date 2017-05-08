@@ -12,7 +12,7 @@ import java.util.Set;
 public class GraphNode {
 
   private Connectable connectable;
-  private Set<GraphNode> edges = new LinkedHashSet<>();
+  private transient Set<GraphNode> edges = new LinkedHashSet<>();
 
   GraphNode(Connectable connectable) {
     this.connectable = connectable;
@@ -67,7 +67,7 @@ public class GraphNode {
       for (GraphNode childNode : this.edges) {
         boolean childAdded = childNode.addEdge(parent, child, covered);
         covered.add(childNode);
-        if (added) {
+        if (childAdded) {
           added = true;
           break;
         }

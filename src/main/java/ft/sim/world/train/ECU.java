@@ -1,6 +1,6 @@
-package ft.sim.train;
+package ft.sim.world.train;
 
-import static ft.sim.train.TrainObjective.*;
+import static ft.sim.world.train.TrainObjective.*;
 
 import ft.sim.physics.DistanceHelper;
 import ft.sim.simulation.Tickable;

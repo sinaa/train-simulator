@@ -3,7 +3,7 @@ package ft.sim.monitoring;
 import static ft.sim.monitoring.ViolationSeverity.*;
 import static ft.sim.monitoring.ViolationType.*;
 
-import ft.sim.train.Train;
+import ft.sim.world.train.Train;
 import ft.sim.world.connectables.Connectable;
 import ft.sim.world.connectables.Section;
 import ft.sim.world.connectables.Station;

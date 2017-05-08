@@ -1,12 +1,7 @@
 package ft.sim.world.journey;
 
-import static ft.sim.signalling.SignalType.RED;
-
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import ft.sim.signalling.SignalType;
-import ft.sim.signalling.SignalUnit;
-import ft.sim.train.Train;
+import ft.sim.world.train.Train;
 import ft.sim.world.RealWorldConstants;
 import ft.sim.world.connectables.Connectable;
 import ft.sim.world.connectables.Observable;
@@ -15,7 +10,6 @@ import ft.sim.world.connectables.Station;
 import ft.sim.world.connectables.Track;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;

@@ -21,7 +21,7 @@ import ft.sim.world.map.MapBuilder;
 @Controller
 public class BaseController {
 
-  private Logger logger = LoggerFactory.getLogger(BaseController.class);
+  private static final transient Logger logger = LoggerFactory.getLogger(BaseController.class);
 
   @RequestMapping("/")
   public String index(Model model) {

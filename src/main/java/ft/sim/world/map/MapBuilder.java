@@ -3,12 +3,11 @@ package ft.sim.world.map;
 import static ft.sim.world.RealWorldConstants.BREAK_DISTANCE;
 
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import ft.sim.signalling.SignalController;
-import ft.sim.signalling.SignalType;
-import ft.sim.signalling.SignalUnit;
-import ft.sim.train.Train;
-import ft.sim.train.TrainObjective;
+import ft.sim.world.signalling.SignalController;
+import ft.sim.world.signalling.SignalType;
+import ft.sim.world.signalling.SignalUnit;
+import ft.sim.world.train.Train;
+import ft.sim.world.train.TrainObjective;
 import ft.sim.world.connectables.Connectable;
 import ft.sim.world.connectables.Station;
 import ft.sim.world.connectables.Track;

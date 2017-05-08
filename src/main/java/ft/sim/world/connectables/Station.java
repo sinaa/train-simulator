@@ -1,13 +1,11 @@
 package ft.sim.world.connectables;
 
-import static ft.sim.signalling.SignalType.GREEN;
+import static ft.sim.world.signalling.SignalType.GREEN;
 
-import ft.sim.monitoring.Oracle;
-import ft.sim.signalling.SignalController;
-import ft.sim.signalling.SignalType;
-import ft.sim.simulation.BasicSimulation;
+import ft.sim.world.signalling.SignalController;
+import ft.sim.world.signalling.SignalType;
 import ft.sim.simulation.Tickable;
-import ft.sim.train.Train;
+import ft.sim.world.train.Train;
 import ft.sim.world.WorldHandler;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,7 +20,7 @@ import org.slf4j.LoggerFactory;
  */
 public class Station implements Connectable, Tickable {
 
-  protected transient final Logger logger = LoggerFactory.getLogger(Station.class);
+  protected static transient final Logger logger = LoggerFactory.getLogger(Station.class);
 
   ConnectableType type = ConnectableType.STATION;
   // in meters

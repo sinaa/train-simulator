@@ -1,4 +1,4 @@
-package ft.sim.train;
+package ft.sim.world.train;
 
 /**
  * Created by sina on 11/04/2017.

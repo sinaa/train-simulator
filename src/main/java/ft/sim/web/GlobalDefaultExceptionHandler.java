@@ -14,8 +14,10 @@ import org.springframework.web.servlet.ModelAndView;
  */
 @ControllerAdvice
 class GlobalDefaultExceptionHandler {
+
   public static final String DEFAULT_ERROR_VIEW = "error";
-  private Logger logger = LoggerFactory.getLogger(GlobalDefaultExceptionHandler.class);
+  private static final transient Logger logger = LoggerFactory
+      .getLogger(GlobalDefaultExceptionHandler.class);
 
   @ExceptionHandler(value = Exception.class)
   public ModelAndView
@@ -26,8 +28,9 @@ class GlobalDefaultExceptionHandler {
     // AnnotationUtils is a Spring Framework utility class.
     logger.error("exception: {}", e);
     if (AnnotationUtils.findAnnotation
-        (e.getClass(), ResponseStatus.class) != null)
+        (e.getClass(), ResponseStatus.class) != null) {
       throw e;
+    }
 
     // Otherwise setup and send the user to a default error-view.
     ModelAndView mav = new ModelAndView();

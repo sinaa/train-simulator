@@ -1,7 +1,7 @@
 package ft.sim.world.journey;
 
 import ft.sim.simulation.Tickable;
-import ft.sim.train.Train;
+import ft.sim.world.train.Train;
 import ft.sim.world.WorldHandler;
 import ft.sim.world.map.GlobalMap;
 import org.slf4j.Logger;
@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
  */
 public class Journey implements Tickable {
 
-  protected transient final Logger logger = LoggerFactory.getLogger(Journey.class);
+  protected static transient final Logger logger = LoggerFactory.getLogger(Journey.class);
 
   private double headPosition = 0;
   private double tailPosition = 0;

@@ -2,7 +2,7 @@ package ft.sim.world.map;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import ft.sim.train.Train;
+import ft.sim.world.train.Train;
 import ft.sim.world.connectables.Connectable;
 import ft.sim.world.connectables.Switch;
 import ft.sim.world.connectables.Track;

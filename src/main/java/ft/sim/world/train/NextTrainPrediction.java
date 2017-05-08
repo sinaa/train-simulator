@@ -1,4 +1,4 @@
-package ft.sim.train;
+package ft.sim.world.train;
 
 import ft.sim.physics.DistanceHelper;
 import ft.sim.world.RealWorldConstants;

@@ -2,7 +2,7 @@ package ft.sim.world;
 
 import static org.junit.Assert.*;
 
-import ft.sim.train.Train;
+import ft.sim.world.train.Train;
 import ft.sim.world.connectables.Connectable;
 import ft.sim.world.connectables.Section;
 import ft.sim.world.connectables.Switch;

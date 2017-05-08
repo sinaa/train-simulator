@@ -1,10 +1,9 @@
 package ft.sim.web;
 
-import static ft.sim.train.TrainObjective.PROCEED;
-import static ft.sim.train.TrainObjective.STOP;
+import static ft.sim.world.train.TrainObjective.PROCEED;
+import static ft.sim.world.train.TrainObjective.STOP;
 
 import ft.sim.simulation.BasicSimulation;
-import ft.sim.train.TrainObjective;
 import java.util.Map;
 
 /**

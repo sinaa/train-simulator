@@ -1,16 +1,13 @@
 package ft.sim.world.connectables;
 
-import static ft.sim.signalling.SignalType.GREEN;
-import static ft.sim.signalling.SignalType.RED;
+import static ft.sim.world.signalling.SignalType.GREEN;
+import static ft.sim.world.signalling.SignalType.RED;
 
 import com.google.common.collect.Sets;
-import ft.sim.signalling.SignalType;
-import ft.sim.signalling.SignalUnit;
-import ft.sim.train.TrainTrail;
-import java.util.HashMap;
-import java.util.HashSet;
+import ft.sim.world.signalling.SignalType;
+import ft.sim.world.signalling.SignalUnit;
+import ft.sim.world.train.TrainTrail;
 import java.util.Set;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**

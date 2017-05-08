@@ -1,9 +1,9 @@
 package ft.sim.world.sensors;
 
-import static ft.sim.signalling.SignalType.RED;
+import static ft.sim.world.signalling.SignalType.RED;
 
-import ft.sim.signalling.SignalController;
-import ft.sim.train.Train;
+import ft.sim.world.signalling.SignalController;
+import ft.sim.world.train.Train;
 import ft.sim.world.placeables.Placeable;
 
 /**

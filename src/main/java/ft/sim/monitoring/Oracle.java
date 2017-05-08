@@ -2,7 +2,7 @@ package ft.sim.monitoring;
 
 import static ft.sim.monitoring.ViolationSeverity.CRITICAL;
 
-import ft.sim.train.Train;
+import ft.sim.world.train.Train;
 import ft.sim.world.connectables.Connectable;
 import ft.sim.world.connectables.Section;
 import ft.sim.world.connectables.Station;
@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
  */
 public class Oracle {
 
-  protected static Logger logger = LoggerFactory.getLogger(Oracle.class);
+  protected static transient Logger logger = LoggerFactory.getLogger(Oracle.class);
 
   private GlobalMap world;
   private long tick;

@@ -20,7 +20,7 @@ public class SocketSession {
 
   private static final Gson gson = new Gson();
 
-  private Logger logger = LoggerFactory.getLogger(SocketSession.class);
+  private static final transient Logger logger = LoggerFactory.getLogger(SocketSession.class);
 
   public SocketSession(WebSocketSession session) {
     this.session = session;

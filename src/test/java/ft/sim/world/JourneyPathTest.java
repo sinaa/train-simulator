@@ -2,7 +2,7 @@ package ft.sim.world;
 
 import static org.junit.Assert.*;
 
-import ft.sim.signalling.SignalUnit;
+import ft.sim.world.signalling.SignalUnit;
 import ft.sim.world.connectables.Connectable;
 import ft.sim.world.connectables.Observable;
 import ft.sim.world.connectables.Section;

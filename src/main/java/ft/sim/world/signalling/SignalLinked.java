@@ -1,4 +1,4 @@
-package ft.sim.signalling;
+package ft.sim.world.signalling;
 
 /**
  * Created by Sina on 04/04/2017.

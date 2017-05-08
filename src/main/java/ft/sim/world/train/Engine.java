@@ -1,9 +1,8 @@
-package ft.sim.train;
+package ft.sim.world.train;
 
-import static ft.sim.train.TrainObjective.PROCEED;
+import static ft.sim.world.train.TrainObjective.PROCEED;
 import static ft.sim.world.RealWorldConstants.*;
 
-import ft.sim.simulation.BasicSimulation;
 import ft.sim.simulation.Tickable;
 import ft.sim.world.RealWorldConstants;
 

@@ -1,4 +1,4 @@
-package ft.sim.train;
+package ft.sim.world.train;
 
 import static org.junit.Assert.*;
 

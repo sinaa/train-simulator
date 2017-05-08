@@ -1,6 +1,6 @@
 package ft.sim.world.connectables;
 
-import ft.sim.train.TrainTrail;
+import ft.sim.world.train.TrainTrail;
 import ft.sim.world.placeables.Placeable;
 import java.util.ArrayList;
 import java.util.HashSet;
