@@ -186,7 +186,7 @@ public class JourneyPosition {
     return length - distanceAlreadyPassed;
   }
 
-  private Set<Section> coveredSections = new HashSet<>();
+  private transient Set<Section> coveredSections = new HashSet<>();
 
   public void update(Journey journey, double lastDistanceTravelled) {
     // get old sections occupied

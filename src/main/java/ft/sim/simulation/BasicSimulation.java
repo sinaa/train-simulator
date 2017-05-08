@@ -84,8 +84,8 @@ public class BasicSimulation {
     return instance;
   }
 
-  public static BasicSimulation getInstance(){
-   return instance;
+  public static BasicSimulation getInstance() {
+    return instance;
   }
 
   public void toggleInteractive() {
@@ -123,8 +123,9 @@ public class BasicSimulation {
           && ticksElapsed * secondsPerTick < simulationDuration
           && !simulationCompleted) {
         long startTime = System.nanoTime();
-        if(world.getJourneys().values().stream().allMatch(Journey::isJourneyFinished))
+        if (world.getJourneys().values().stream().allMatch(Journey::isJourneyFinished)) {
           simulationCompleted = true;
+        }
         tick();
         long elapsed = System.nanoTime() - startTime;
         nanosElapsed += elapsed;
@@ -181,7 +182,9 @@ public class BasicSimulation {
     WorldHandler.getInstance(world).tick(secondsPerTick);
     ticksElapsed++;
     try {
-      oracle.checkState(world, ticksElapsed);
+      if (ticksElapsed % 1000 == 0) {
+        oracle.checkState(world, ticksElapsed);
+      }
     } catch (CriticalViolationException e) {
       logger.error("Critical Violation detected: {}", e.getMessage());
       sendStatistics();

@@ -14,10 +14,8 @@ import ft.sim.world.WorldHandler;
 import ft.sim.world.placeables.Balise;
 import ft.sim.world.placeables.Placeable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,26 +25,14 @@ import org.slf4j.LoggerFactory;
  */
 public class Track implements Connectable, SignalLinked {
 
-  protected transient final Logger logger = LoggerFactory.getLogger(Track.class);
-
-  private final ConnectableType type = ConnectableType.TRACK;
-
-  private transient List<Section> sections;
-
-  private int length = DEFAULT_LENGTH;
   private static final transient int DEFAULT_LENGTH = 20;
-
+  protected transient final Logger logger = LoggerFactory.getLogger(Track.class);
+  private final ConnectableType type = ConnectableType.TRACK;
+  private transient List<Section> sections;
+  private int length = DEFAULT_LENGTH;
   private Set<SignalUnit> blockSignals = new HashSet<>();
   private SignalController signalController = null;
-
-  public void addBlockSignal(SignalUnit blockSignal, int position) {
-    placePlaceableOnSectionIndex(blockSignal, position);
-    blockSignals.add(blockSignal);
-  }
-
-  public Set<SignalUnit> getBlockSignals() {
-    return blockSignals;
-  }
+  private transient BiMap<Integer, Placeable> placeables = HashBiMap.create();
 
   public Track(List<Section> sections) {
     this.sections = sections;
@@ -67,6 +53,15 @@ public class Track implements Connectable, SignalLinked {
       sections.add(trainSection);
       length += trainSection.getLength();
     }
+  }
+
+  public void addBlockSignal(SignalUnit blockSignal, int position) {
+    placePlaceableOnSectionIndex(blockSignal, position);
+    blockSignals.add(blockSignal);
+  }
+
+  public Set<SignalUnit> getBlockSignals() {
+    return blockSignals;
   }
 
   /**
@@ -107,8 +102,6 @@ public class Track implements Connectable, SignalLinked {
 
     return sectionsBetween;
   }
-
-  private BiMap<Integer, Placeable> placeables = HashBiMap.create();
 
   public void placePlaceableOnSectionIndex(Placeable placeable, int sectionIndex) {
     if (sectionIndex >= sections.size()) {

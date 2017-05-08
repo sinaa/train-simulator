@@ -71,9 +71,9 @@ public class Oracle {
       double distance = MapBuilderHelper.getJourneyDistance(j2, j1);
 
       double breakingDistance = j1.getTrain().getEcu().calculateBreakingDistance();
-      logger.info("{} and {}, distance: {} , breaking distance:{}", j1, j2, breakingDistance,
-          distance);
+
       if (breakingDistance > distance) {
+        logger.info("{} and {}, distance: {} , breaking distance:{}", j1, j2, distance, breakingDistance);
         ViolationBuilder.createVariableBlockViolation(this, j1.getTrain(), j2.getTrain(), distance);
       }
     }

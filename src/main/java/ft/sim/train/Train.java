@@ -10,6 +10,7 @@ import ft.sim.world.RealWorldConstants;
 import ft.sim.world.WorldHandler;
 import ft.sim.world.connectables.Observable;
 import ft.sim.world.connectables.ObservableHelper;
+import ft.sim.world.placeables.ActiveBaliseData;
 import ft.sim.world.placeables.Balise;
 import ft.sim.world.placeables.PassiveBalise;
 import ft.sim.world.journey.Journey;
@@ -37,6 +38,8 @@ public class Train implements Tickable, SignalListener {
   private ECU ecu;
 
   private TrainTrail trail;
+
+  private ActiveBaliseData otherSideData = null;
 
   // train ID
   private int tID = -1;
@@ -73,7 +76,7 @@ public class Train implements Tickable, SignalListener {
   }
 
   private void buildCars(int numCars) {
-    cars = new ArrayList<Car>(numCars);
+    cars = new ArrayList<>(numCars);
     for (int i = 0; i < numCars; i++) {
       boolean isFirst = (i == 0);
       boolean isLast = (i == numCars - 1);
@@ -96,7 +99,16 @@ public class Train implements Tickable, SignalListener {
             }
             logger.info("{} Reached Balise, target: {}", this, engine.getLastAdvisorySpeed());
           } else if (p instanceof ActiveBalise) {
-            ecu.updateNextTrainPrediction(((ActiveBalise) p).getData());
+            ActiveBalise activeBalise = (ActiveBalise) p;
+            ecu.updateNextTrainPrediction(activeBalise.getData());
+            ecu.updateUpAheadData(activeBalise.getUpAheadData());
+            if (otherSideData != null) {
+              activeBalise.setUpAheadData(otherSideData);
+            }
+
+            if (activeBalise.getOtherSideData() != null) {
+              otherSideData = activeBalise.getOtherSideData();
+            }
           }
         }
       }
@@ -111,7 +123,6 @@ public class Train implements Tickable, SignalListener {
           if (p instanceof ActiveBalise) {
             ActiveBalise balise = (ActiveBalise) p;
             balise.update(tID, ecu.getTimer().getTime(), engine.getSpeed(), engine.isBreaking());
-            //TODO: do something with the balise
           }
         }
       }
@@ -130,19 +141,31 @@ public class Train implements Tickable, SignalListener {
     engine.tick(time);
     ecu.tick(time);
 
-    if (engine.getObjective() == PROCEED && ObservableHelper.allGreen(observablesInSight)
-        && engine.isStill()) {
-      engine.setTargetSpeed(engine.getLastAdvisorySpeed());
-    } else if (engine.getObjective() == STOP_AND_ROLL &&
-        ObservableHelper.allGreen(observablesInSight) &&
-        engine.getSpeed() < RealWorldConstants.ROLLING_SPEED) {
-      logger.warn("observables: {}", observablesInSight);
-      proceedWithCaution();
-    } else if (engine.getObjective() == STOP_THEN_ROLL &&
-        !ObservableHelper.anyTrains(observablesInSight) &&
-        ObservableHelper.allGreen(observablesInSight) &&
-        engine.isStopped()) {
-      proceedWithCaution();
+    evaluateObjectives();
+  }
+
+  private void evaluateObjectives() {
+    switch (engine.getObjective()) {
+      case PROCEED:
+        if (engine.isStill() &&
+            ObservableHelper.allGreen(observablesInSight)) {
+          engine.setTargetSpeed(engine.getLastAdvisorySpeed());
+        }
+        break;
+      case STOP_AND_ROLL:
+        if (engine.getSpeed() < RealWorldConstants.ROLLING_SPEED &&
+            ObservableHelper.allGreen(observablesInSight)) {
+          logger.warn("observables: {}", observablesInSight);
+          proceedWithCaution();
+        }
+        break;
+      case STOP_THEN_ROLL:
+        if (engine.isStopped() &&
+            !ObservableHelper.anyTrains(observablesInSight) &&
+            ObservableHelper.allGreen(observablesInSight)) {
+          proceedWithCaution();
+        }
+        break;
     }
   }
 
@@ -172,37 +195,39 @@ public class Train implements Tickable, SignalListener {
 
   public void see(Set<Observable> observables) {
     // handle signals
-    if (!ObservableHelper.allGreen(observables)) {
-      if (engine.getObjective() != STOP && engine.getObjective() != STOP_AND_ROLL) {
-        if (ObservableHelper.hasBlockSignal(observables)) {
-          engine.emergencyBreak();
-          logger.error("{} Emergency breaking!", this);
-          engine.setObjective(STOP);
-        } else {
-          engine.setTargetSpeed(0);
-          engine.setObjective(STOP_AND_ROLL);
-          logger.error("{} normal breaking!", this);
+    if(observables.size()>0) {
+      if (!ObservableHelper.allGreen(observables)) {
+        if (engine.getObjective() != STOP && engine.getObjective() != STOP_AND_ROLL) {
+          if (ObservableHelper.hasBlockSignal(observables)) {
+            engine.emergencyBreak();
+            logger.error("{} Emergency breaking!", this);
+            engine.setObjective(STOP);
+          } else {
+            engine.setTargetSpeed(0);
+            engine.setObjective(STOP_AND_ROLL);
+            logger.error("{} normal breaking!", this);
+          }
+          ObservableHelper.getRedSignals(observables).forEach(s -> s.addListener(this));
         }
-        ObservableHelper.getRedSignals(observables).forEach(s -> s.addListener(this));
+      } else {
+        boolean sawGreenBlockSignal = ObservableHelper.getGreenSignals(observables).stream()
+            .anyMatch(s -> !s.isDistantSignal());
+        if (sawGreenBlockSignal && engine.getObjective() == PROCEED_WITH_CAUTION) {
+          engine.setTargetSpeed(engine.getLastAdvisorySpeed());
+          logger.warn("caution no longer needed! proceeding at {}", engine.getLastAdvisorySpeed());
+        }
       }
-    } else {
-      boolean sawGreenBlockSignal = ObservableHelper.getGreenSignals(observables).stream()
-          .anyMatch(s -> !s.isDistantSignal());
-      if (sawGreenBlockSignal && engine.getObjective() == PROCEED_WITH_CAUTION) {
-        engine.setTargetSpeed(engine.getLastAdvisorySpeed());
-        logger.warn("caution no longer needed! proceeding at {}", engine.getLastAdvisorySpeed());
-      }
-    }
 
-    if (ObservableHelper.anyTrains(observables)) {
-      if (!engine.isStopped()) {
-        engine.emergencyBreak();
-        logger.error("{} Emergency breaking! There's a train ahead!", this);
-        engine.setObjective(STOP_THEN_ROLL);
+      if (ObservableHelper.anyTrains(observables)) {
+        if (!engine.isStopped()) {
+          engine.emergencyBreak();
+          logger.error("{} Emergency breaking! There's a train ahead!", this);
+          engine.setObjective(STOP_THEN_ROLL);
+        }
+        ecu.setSeeingTrainsAhead(true);
+      } else {
+        ecu.setSeeingTrainsAhead(false);
       }
-      ecu.setSeeingTrainsAhead(true);
-    } else {
-      ecu.setSeeingTrainsAhead(false);
     }
 
     // stop listening to observables which we passed, and start listening to the ones we see now
@@ -212,8 +237,8 @@ public class Train implements Tickable, SignalListener {
     Set<Observable> newObservables = ObservableHelper
         .getNewObservables(observablesInSight, observables);
     ObservableHelper.getSignals(newObservables).forEach(s -> s.addListener(this));*/
-    ObservableHelper.getSignals(observablesInSight).stream().forEach(s -> s.stopListening(this));
-    ObservableHelper.getSignals(observables).stream().forEach(s -> s.addListener(this));
+    ObservableHelper.getSignals(observablesInSight).forEach(s -> s.stopListening(this));
+    ObservableHelper.getSignals(observables).forEach(s -> s.addListener(this));
 
     observablesInSight.clear();
     observablesInSight.addAll(observables);

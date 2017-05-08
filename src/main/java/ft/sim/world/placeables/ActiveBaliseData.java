@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Created by sina on 19/04/2017.
  */
-public class ActiveBaliseData implements Cloneable{
+public class ActiveBaliseData implements Cloneable {
 
   protected transient static final Logger logger = LoggerFactory.getLogger(ActiveBaliseData.class);
 
@@ -18,11 +18,12 @@ public class ActiveBaliseData implements Cloneable{
 
   private boolean isDecelerating = false;
 
-  public ActiveBaliseData(){
+  public ActiveBaliseData() {
 
   }
 
-  public ActiveBaliseData(int lastTrainID, double timeLastTrainPassed, double trainSpeed, boolean isDecelerating) {
+  public ActiveBaliseData(int lastTrainID, double timeLastTrainPassed, double trainSpeed,
+      boolean isDecelerating) {
     setData(lastTrainID, timeLastTrainPassed, trainSpeed, isDecelerating);
 
   }
@@ -37,6 +38,10 @@ public class ActiveBaliseData implements Cloneable{
 
   public double getTimeLastTrainPassed() {
     return timeLastTrainPassed;
+  }
+
+  public int getLastTrainID() {
+    return lastTrainID;
   }
 
   public double getTrainSpeed() {
@@ -54,6 +59,18 @@ public class ActiveBaliseData implements Cloneable{
 
   @Override
   public String toString() {
-    return String.format("[FerrmoneBalise] LastTime: %s, Speed: %s, isDecelrating: %s", timeLastTrainPassed, trainSpeed, isDecelerating);
+    return String
+        .format("[FerrmoneBalise] LastTime: %s, Speed: %s, isDecelrating: %s", timeLastTrainPassed,
+            trainSpeed, isDecelerating);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof ActiveBaliseData)) {
+      return false;
+    }
+    ActiveBaliseData abd = (ActiveBaliseData) obj;
+    return (lastTrainID == abd.lastTrainID && timeLastTrainPassed == abd.timeLastTrainPassed
+        && trainSpeed == abd.trainSpeed && isDecelerating == abd.isDecelerating);
   }
 }

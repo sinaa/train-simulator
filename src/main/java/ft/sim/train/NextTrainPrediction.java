@@ -5,6 +5,7 @@ import ft.sim.world.RealWorldConstants;
 import ft.sim.world.placeables.ActiveBaliseData;
 import java.util.Deque;
 import java.util.LinkedList;
+import java.util.Objects;
 
 /**
  * Created by sina on 19/04/2017.
@@ -13,22 +14,44 @@ public class NextTrainPrediction {
 
   private double distance = -1;
   private ActiveBaliseData lastData;
+  private ActiveBaliseData upAheadData;
+  private double howFarUpAhead = 0;
 
-  private Deque<ActiveBaliseData> observations = new LinkedList<>();
+  private transient Deque<ActiveBaliseData> observations = new LinkedList<>();
 
-  public boolean anyTrainsAhead() {
-    if (lastData == null || lastData.getTrainSpeed() == -1) {
+  public boolean anyTrainsAhead(ActiveBaliseData data) {
+    if (data == null || data.getTrainSpeed() == -1) {
       return false;
     }
 
     return true;
   }
 
+  public boolean anyTrainsAhead() {
+    return anyTrainsAhead(lastData);
+  }
+
+  public void setUpAheadData(ActiveBaliseData upAheadData, double howFarAhead) {
+    if (anyTrainsAhead(upAheadData)) {
+      this.upAheadData = upAheadData;
+      this.howFarUpAhead = howFarAhead;
+    }
+  }
+
   public void setLastData(ActiveBaliseData lastData) {
     if (this.lastData != null) {
-      this.observations.addFirst(this.lastData);
+      if (!Objects.equals(observations.peekFirst(), this.lastData)) {
+        this.observations.addFirst(this.lastData);
+      }
     }
     this.lastData = lastData;
+  }
+
+  private boolean isSameTrainUpAhead() {
+    if (!anyTrainsAhead(upAheadData)) {
+      return false;
+    }
+    return lastData.getLastTrainID() == upAheadData.getLastTrainID();
   }
 
   public void predict(double time, double distanceTravelledSinceLastBalise) {
@@ -36,6 +59,7 @@ public class NextTrainPrediction {
       distance = -1;
       return;
     }
+    boolean sameTrainAhead = isSameTrainUpAhead();
 
     double timeDelta = time - lastData.getTimeLastTrainPassed();
 
@@ -47,7 +71,7 @@ public class NextTrainPrediction {
 
     double acceleration = guessNextTrainAcceleration();
 
-    if (lastData.isDecelerating()) {
+    if (lastData.isDecelerating() && !sameTrainAhead) {
       distance = worstCaseDistance;
     } else {
       if (acceleration > 0) {
@@ -56,6 +80,15 @@ public class NextTrainPrediction {
             .distanceTravelled(lastData.getTrainSpeed(), timeDelta, acceleration);
       } else {
         distance = potentialDistance;
+      }
+    }
+    if (sameTrainAhead) {
+      double distanceToStopUpAheadTrain = DistanceHelper
+          .distanceToReachTargetSpeed(0, upAheadData.getTrainSpeed(),
+              RealWorldConstants.MAX_TRAIN_DECELERATION);
+      distanceToStopUpAheadTrain += howFarUpAhead;
+      if (distance < distanceToStopUpAheadTrain) {
+        distance = distanceToStopUpAheadTrain;
       }
     }
     if (distance < 0) {

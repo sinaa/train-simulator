@@ -5,7 +5,6 @@ import static ft.sim.train.TrainObjective.*;
 import ft.sim.physics.DistanceHelper;
 import ft.sim.simulation.Tickable;
 import ft.sim.world.journey.Journey;
-import ft.sim.world.journey.JourneyPath;
 import ft.sim.world.journey.JourneyPlan;
 import ft.sim.world.journey.JourneyTimer;
 import ft.sim.world.placeables.ActiveBaliseData;
@@ -37,6 +36,7 @@ public class ECU implements Tickable {
   private double safeBreakingDistance;
 
   private double totalDistanceTravelledLastBalise = 0;
+  private double totalDistanceLastUpAhead = 0;
 
   public ECU(Journey journey, Engine engine) {
     this.engine = engine;
@@ -47,6 +47,12 @@ public class ECU implements Tickable {
     nextTrainPrediction.setLastData(lastBaliseData);
     totalDistanceTravelledLastBalise = engine.getTotalDistanceTravelled();
     //TODO: update prediction ?
+  }
+
+  public void updateUpAheadData(ActiveBaliseData upAhead){
+    double howFarAhead = engine.getTotalDistanceTravelled() - totalDistanceLastUpAhead;
+    nextTrainPrediction.setUpAheadData(upAhead, howFarAhead);
+    totalDistanceLastUpAhead = engine.getTotalDistanceTravelled();
   }
 
   private void createWorldModel(Journey journey) {
