@@ -14,6 +14,7 @@ public class PassiveBalise extends Balise {
 
   private int baliseID = 0;
 
+  private boolean isBroken = false;
 
   public PassiveBalise(double advisorySpeed, int baliseID) {
     this.advisorySpeed = advisorySpeed;
@@ -37,4 +38,13 @@ public class PassiveBalise extends Balise {
   }
 
 
+  @Override
+  public boolean isBroken() {
+    return false;
+  }
+
+  @Override
+  public void setIsBroken(boolean isBroken) {
+    this.isBroken = isBroken;
+  }
 }

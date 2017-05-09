@@ -3,6 +3,7 @@ package ft.sim.world.map;
 import static ft.sim.world.RealWorldConstants.BREAK_DISTANCE;
 
 import com.google.common.collect.Iterables;
+import ft.sim.world.gsm.RadioMast;
 import ft.sim.world.signalling.SignalController;
 import ft.sim.world.signalling.SignalType;
 import ft.sim.world.signalling.SignalUnit;
@@ -134,6 +135,14 @@ public class MapBuilder {
 
     // If list of paired tracks is empty, it doesn't pair any tracks
     pairTracks();
+
+    setRadioMasts();
+  }
+
+  private void setRadioMasts() {
+    for(Train train: map.getTrains().values()){
+      train.getEcu().setRadioMast(RadioMast.getInstance(map));
+    }
   }
 
   private void pairTracks() {

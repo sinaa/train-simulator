@@ -1,22 +1,27 @@
 package ft.sim.world.train;
 
-import static ft.sim.world.train.TrainObjective.*;
+import static ft.sim.world.train.TrainObjective.PROCEED;
+import static ft.sim.world.train.TrainObjective.PROCEED_WITH_CAUTION;
+import static ft.sim.world.train.TrainObjective.STOP;
+import static ft.sim.world.train.TrainObjective.STOP_AND_ROLL;
+import static ft.sim.world.train.TrainObjective.STOP_THEN_ROLL;
 
-import ft.sim.world.signalling.SignalListener;
-import ft.sim.world.signalling.SignalType;
-import ft.sim.world.signalling.SignalUnit;
 import ft.sim.simulation.Tickable;
 import ft.sim.world.RealWorldConstants;
 import ft.sim.world.WorldHandler;
 import ft.sim.world.connectables.Observable;
 import ft.sim.world.connectables.ObservableHelper;
+import ft.sim.world.connectables.Section;
+import ft.sim.world.gsm.RadioSignal;
+import ft.sim.world.journey.Journey;
+import ft.sim.world.placeables.ActiveBalise;
 import ft.sim.world.placeables.ActiveBaliseData;
 import ft.sim.world.placeables.Balise;
 import ft.sim.world.placeables.PassiveBalise;
-import ft.sim.world.journey.Journey;
 import ft.sim.world.placeables.Placeable;
-import ft.sim.world.connectables.Section;
-import ft.sim.world.placeables.ActiveBalise;
+import ft.sim.world.signalling.SignalListener;
+import ft.sim.world.signalling.SignalType;
+import ft.sim.world.signalling.SignalUnit;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -49,6 +54,19 @@ public class Train implements Tickable, SignalListener {
 
   private transient Set<SignalUnit> signalsListeningTo = new HashSet<>();
 
+  private double timeLastSquawkSent = 0;
+
+
+  public Train(int numCars) {
+    buildCars(numCars);
+    engine = new Engine(this);
+    trail = new TrainTrail(this);
+  }
+
+  public Train(ArrayList<Car> cars) {
+    this.cars = cars;
+    engine = new Engine(this);
+  }
 
   public void startListeningTo(SignalUnit signalUnit) {
     signalsListeningTo.add(signalUnit);
@@ -60,19 +78,8 @@ public class Train implements Tickable, SignalListener {
     //logger.warn("stopped listening to {}", signalUnit);
   }
 
-  public Train(int numCars) {
-    buildCars(numCars);
-    engine = new Engine(this);
-    trail = new TrainTrail(this);
-  }
-
   public void initECU(Journey journey) {
     ecu = new ECU(journey, engine);
-  }
-
-  public Train(ArrayList<Car> cars) {
-    this.cars = cars;
-    engine = new Engine(this);
   }
 
   private void buildCars(int numCars) {
@@ -142,6 +149,13 @@ public class Train implements Tickable, SignalListener {
     ecu.tick(time);
 
     evaluateObjectives();
+
+    // send OK squawk down the line
+    if (engine.getObjective() == PROCEED || engine.getObjective() == PROCEED_WITH_CAUTION) {
+      if (timeLastSquawkSent + 60 < ecu.getTimer().getTime()) {
+        sendSquawkDownTheLine(RadioSignal.OK);
+      }
+    }
   }
 
   private void evaluateObjectives() {
@@ -195,7 +209,7 @@ public class Train implements Tickable, SignalListener {
 
   public void see(Set<Observable> observables) {
     // handle signals
-    if(observables.size()>0) {
+    if (observables.size() > 0) {
       if (!ObservableHelper.allGreen(observables)) {
         if (engine.getObjective() != STOP && engine.getObjective() != STOP_AND_ROLL) {
           if (ObservableHelper.hasBlockSignal(observables)) {
@@ -262,11 +276,20 @@ public class Train implements Tickable, SignalListener {
     return trail;
   }
 
+  public Integer getTrainID() {
+    return tID;
+  }
+
   public void setTrainID(int trainID) {
     this.tID = trainID;
   }
 
-  public Integer getTrainID() {
-    return tID;
+  public void ping(RadioSignal signal) {
+    ecu.ping(signal);
+  }
+
+  private void sendSquawkDownTheLine(RadioSignal signal) {
+    timeLastSquawkSent = ecu.getTimer().getTime();
+    ecu.getRadioMast().passMessageToTrainBehind(this, signal);
   }
 }

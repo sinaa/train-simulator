@@ -5,7 +5,7 @@ import ft.sim.simulation.Disruptable;
 /**
  * Created by Sina on 06/03/2017.
  */
-public class ActiveBalise extends Balise implements Disruptable {
+public class ActiveBalise extends Balise {
 
   private ActiveBaliseData data = new ActiveBaliseData();
 

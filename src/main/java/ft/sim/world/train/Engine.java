@@ -5,6 +5,7 @@ import static ft.sim.world.RealWorldConstants.*;
 
 import ft.sim.simulation.Tickable;
 import ft.sim.world.RealWorldConstants;
+import ft.sim.world.gsm.RadioMast;
 
 /**
  * Created by Sina on 21/02/2017.
@@ -70,7 +71,7 @@ public class Engine implements Tickable {
     updateAcceleration();
   }
 
-  public void roll() {
+  void roll() {
     setTargetSpeed(ROLLING_SPEED);
   }
 
@@ -204,4 +205,6 @@ public class Engine implements Tickable {
   public double getInaccuracyRate() {
     return inaccuracyRate;
   }
+
+
 }

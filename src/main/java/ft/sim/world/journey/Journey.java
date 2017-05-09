@@ -129,6 +129,15 @@ public class Journey implements Tickable {
     return directionForward;
   }
 
+  public double getHeadPositionFromRoot(){
+    return journeyPosition.getHeadPosition() + path.getDistanceFromGraphRoot();
+  }
+
+  public double getTailPositionFromRoot(){
+    return journeyPosition.getTailPosition() + path.getDistanceFromGraphRoot();
+  }
+
+
   public GlobalMap getWorld(){
     logger.error("Friendly advice: try not to use journey.getWorld()!");
     return WorldHandler.getWorldForJourney(this);

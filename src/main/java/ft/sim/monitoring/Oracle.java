@@ -2,15 +2,15 @@ package ft.sim.monitoring;
 
 import static ft.sim.monitoring.ViolationSeverity.CRITICAL;
 
-import ft.sim.world.train.Train;
 import ft.sim.world.connectables.Connectable;
 import ft.sim.world.connectables.Section;
 import ft.sim.world.connectables.Station;
 import ft.sim.world.connectables.Switch;
 import ft.sim.world.connectables.Track;
 import ft.sim.world.journey.Journey;
+import ft.sim.world.journey.JourneyHelper;
 import ft.sim.world.map.GlobalMap;
-import ft.sim.world.map.MapBuilderHelper;
+import ft.sim.world.train.Train;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -58,7 +58,8 @@ public class Oracle {
   }
 
   private void ensureTrainsWithinEmergencyBreakingDistance() {
-    Map<Journey, Journey> trainMap = MapBuilderHelper.getJourneysFollowingEachOther(world);
+    Map<Journey, Journey> trainMap = JourneyHelper.getInstance(world)
+        .getJourneysFollowingEachOther();
     for (Entry<Journey, Journey> pair : trainMap.entrySet()) {
       Journey j1 = pair.getKey();
       Journey j2 = pair.getValue();
@@ -68,12 +69,13 @@ public class Oracle {
           .anyMatch(c -> c instanceof Station)) {
         continue;
       }
-      double distance = MapBuilderHelper.getJourneyDistance(j2, j1);
+      double distance = JourneyHelper.getJourneyDistanceBetween(j2, j1);
 
       double breakingDistance = j1.getTrain().getEcu().calculateBreakingDistance();
 
       if (breakingDistance > distance) {
-        logger.info("{} and {}, distance: {} , breaking distance:{}", j1, j2, distance, breakingDistance);
+        logger.info("{} and {}, distance: {} , breaking distance:{}", j1, j2, distance,
+            breakingDistance);
         ViolationBuilder.createVariableBlockViolation(this, j1.getTrain(), j2.getTrain(), distance);
       }
     }

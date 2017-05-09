@@ -1,5 +1,6 @@
 package ft.sim.world.placeables;
 
+import ft.sim.simulation.Disruptable;
 import ft.sim.world.journey.JourneyPath;
 import java.util.HashMap;
 import java.util.Map;
@@ -7,7 +8,7 @@ import java.util.Map;
 /**
  * Created by Sina on 21/02/2017.
  */
-public abstract class Balise implements Placeable {
+public abstract class Balise implements Placeable, Disruptable {
 
   private Map<JourneyPath, Double> position = new HashMap<>();
 

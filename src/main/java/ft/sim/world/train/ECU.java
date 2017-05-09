@@ -4,6 +4,8 @@ import static ft.sim.world.train.TrainObjective.*;
 
 import ft.sim.physics.DistanceHelper;
 import ft.sim.simulation.Tickable;
+import ft.sim.world.gsm.RadioMast;
+import ft.sim.world.gsm.RadioSignal;
 import ft.sim.world.journey.Journey;
 import ft.sim.world.journey.JourneyPlan;
 import ft.sim.world.journey.JourneyTimer;
@@ -27,6 +29,11 @@ public class ECU implements Tickable {
   private JourneyTimer timer;
   private NextTrainPrediction nextTrainPrediction = new NextTrainPrediction();
   private boolean seeingTrainsAhead = false;
+
+  private RadioMast radioMast;
+  private RadioSignal lastRadioSignal = null;
+  private double timeReceivedLastSignal = -1;
+
 
   public void setSeeingTrainsAhead(boolean seeingTrainsAhead) {
     this.seeingTrainsAhead = seeingTrainsAhead;
@@ -121,11 +128,24 @@ public class ECU implements Tickable {
     this.safeBreakingDistance = distance + safetyMargin;
   }
 
-  public JourneyTimer getTimer() {
+  JourneyTimer getTimer() {
     return timer;
   }
 
   public JourneyPlan getJourneyPlan() {
     return journeyPlan;
+  }
+
+  void ping(RadioSignal radioSignal){
+    timeReceivedLastSignal = timer.getTime();
+    this.lastRadioSignal = radioSignal;
+  }
+
+  public void setRadioMast(RadioMast radioMast) {
+    this.radioMast = radioMast;
+  }
+
+  public RadioMast getRadioMast() {
+    return radioMast;
   }
 }
