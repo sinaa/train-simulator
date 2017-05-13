@@ -8,6 +8,7 @@ import ft.sim.world.train.Train;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.TreeMap;
 
 /**
@@ -38,8 +39,8 @@ public class JourneyHelper {
     return getTrainsFollowingEachOther().get(train);
   }
 
-  public Train getTrainBehind(Train train){
-    return getTrainsFollowingEachOther().inverse().get(train);
+  public Optional<Train> getTrainBehind(Train train){
+    return Optional.ofNullable(getTrainsFollowingEachOther().inverse().get(train));
   }
 
   public BiMap<Train, Train> getTrainsFollowingEachOther() {

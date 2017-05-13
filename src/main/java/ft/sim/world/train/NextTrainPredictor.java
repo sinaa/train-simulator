@@ -1,7 +1,8 @@
 package ft.sim.world.train;
 
+import static ft.sim.world.RealWorldConstants.MAX_TRAIN_DECELERATION;
+
 import ft.sim.physics.DistanceHelper;
-import ft.sim.world.RealWorldConstants;
 import ft.sim.world.placeables.ActiveBaliseData;
 import java.util.Deque;
 import java.util.LinkedList;
@@ -10,9 +11,10 @@ import java.util.Objects;
 /**
  * Created by sina on 19/04/2017.
  */
-public class NextTrainPrediction {
+public class NextTrainPredictor {
 
   private double distance = -1;
+  private double worstCaseDistance = -1;
   private ActiveBaliseData lastData;
   private ActiveBaliseData upAheadData;
   private double howFarUpAhead = 0;
@@ -20,11 +22,7 @@ public class NextTrainPrediction {
   private transient Deque<ActiveBaliseData> observations = new LinkedList<>();
 
   public boolean anyTrainsAhead(ActiveBaliseData data) {
-    if (data == null || data.getTrainSpeed() == -1) {
-      return false;
-    }
-
-    return true;
+    return (data != null && data.getTrainSpeed() != -1);
   }
 
   public boolean anyTrainsAhead() {
@@ -49,7 +47,7 @@ public class NextTrainPrediction {
 
   private boolean isSameTrainUpAhead() {
     if (!anyTrainsAhead(upAheadData)) {
-      return false;
+      return false; // If we don't know about any train ahead, assume it's the same train ahead
     }
     return lastData.getLastTrainID() == upAheadData.getLastTrainID();
   }
@@ -63,11 +61,12 @@ public class NextTrainPrediction {
 
     double timeDelta = time - lastData.getTimeLastTrainPassed();
 
+    // Potential: if the train ahead continued to travel at the speed it was going
     double potentialDistance = DistanceHelper
         .distanceTravelled(lastData.getTrainSpeed(), timeDelta);
+    // Worst-Case: If the train stopped right after passing this balise
     double worstCaseDistance = DistanceHelper
-        .distanceToReachTargetSpeed(0, lastData.getTrainSpeed(),
-            RealWorldConstants.MAX_TRAIN_DECELERATION);
+        .distanceToStop(lastData.getTrainSpeed(), MAX_TRAIN_DECELERATION);
 
     double acceleration = guessNextTrainAcceleration();
 
@@ -84,8 +83,7 @@ public class NextTrainPrediction {
     }
     if (sameTrainAhead) {
       double distanceToStopUpAheadTrain = DistanceHelper
-          .distanceToReachTargetSpeed(0, upAheadData.getTrainSpeed(),
-              RealWorldConstants.MAX_TRAIN_DECELERATION);
+          .distanceToStop(upAheadData.getTrainSpeed(), MAX_TRAIN_DECELERATION);
       distanceToStopUpAheadTrain += howFarUpAhead;
       if (distance < distanceToStopUpAheadTrain) {
         distance = distanceToStopUpAheadTrain;
@@ -104,6 +102,10 @@ public class NextTrainPrediction {
     return distance;
   }
 
+  /**
+   * If we have more than one datapoint, based on the speed of the train ahead, guess
+   * what the acceleration of the train is
+   */
   private double guessNextTrainAcceleration() {
     ActiveBaliseData lastObservation = observations.peekFirst();
     if (lastObservation == null) {

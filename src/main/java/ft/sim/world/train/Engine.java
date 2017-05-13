@@ -182,6 +182,10 @@ public class Engine implements Tickable {
     return maxDeceleration;
   }
 
+  public double getNormalDeceleration() {
+    return normalDeceleration;
+  }
+
   public void setObjective(TrainObjective objective) {
     this.lastObjective = objective;
   }

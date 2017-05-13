@@ -245,7 +245,7 @@ public class MapBuilder {
 
         SignalUnit mainSignal = signalController.getMainSignal();
         nextTrack.addBlockSignal(mainSignal, 0);
-        if (MapBuilderHelper.hasTrain(map, nextTrack)) {
+        if (MapBuilderHelper.trackHasTrain(map, nextTrack)) {
           signalController.setStatus(SignalType.RED);
         }
         station.setNextBlockSignalController(signalController, nextTrack);
@@ -316,7 +316,7 @@ public class MapBuilder {
     ((Track) nextTrack).addBlockSignal(mainSignal, 0);
     ((Track) nextTrack).addSignalController(signalController);
 
-    if (MapBuilderHelper.hasTrain(map, ((Track) nextTrack))) {
+    if (MapBuilderHelper.trackHasTrain(map, ((Track) nextTrack))) {
       signalController.setStatus(SignalType.RED);
       logger.warn("set track-{}'s signal controller status to RED",
           map.getTrackID(((Track) nextTrack)));

@@ -1,5 +1,6 @@
 package ft.sim.world.train;
 
+import static ft.sim.world.RealWorldConstants.TRAIN_SQUAWK_INTERVAL;
 import static ft.sim.world.train.TrainObjective.PROCEED;
 import static ft.sim.world.train.TrainObjective.PROCEED_WITH_CAUTION;
 import static ft.sim.world.train.TrainObjective.STOP;
@@ -152,7 +153,7 @@ public class Train implements Tickable, SignalListener {
 
     // send OK squawk down the line
     if (engine.getObjective() == PROCEED || engine.getObjective() == PROCEED_WITH_CAUTION) {
-      if (timeLastSquawkSent + 60 < ecu.getTimer().getTime()) {
+      if (timeLastSquawkSent + TRAIN_SQUAWK_INTERVAL < ecu.getTimer().getTime()) {
         sendSquawkDownTheLine(RadioSignal.OK);
       }
     }

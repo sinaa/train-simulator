@@ -11,8 +11,8 @@ import java.util.Map;
  */
 public class RadioMast {
 
-  private GlobalMap world;
   private static Map<GlobalMap, RadioMast> instances = new HashMap<>();
+  private GlobalMap world;
 
   private RadioMast(GlobalMap map) {
     this.world = map;
@@ -22,8 +22,8 @@ public class RadioMast {
     return instances.computeIfAbsent(world, RadioMast::new);
   }
 
-  public void passMessageToTrainBehind(Train train, RadioSignal signal){
-    JourneyHelper.getInstance(world).getTrainBehind(train).ping(signal);
+  public void passMessageToTrainBehind(Train train, RadioSignal signal) {
+    JourneyHelper.getInstance(world).getTrainBehind(train).ifPresent(t -> t.ping(signal));
   }
 
 }

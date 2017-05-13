@@ -15,6 +15,10 @@ public class DistanceHelper {
     return distanceTravelled(speedCurrent, time, acceleration);
   }
 
+  public static double distanceToStop(double speedCurrent, double acceleration){
+    return distanceTravelled(0,speedCurrent, acceleration);
+  }
+
 
   /*
    * Distance travelled given average speed and time

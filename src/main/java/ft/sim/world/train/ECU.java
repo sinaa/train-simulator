@@ -1,9 +1,13 @@
 package ft.sim.world.train;
 
-import static ft.sim.world.train.TrainObjective.*;
+import static ft.sim.world.train.TrainObjective.PROCEED;
+import static ft.sim.world.train.TrainObjective.PROCEED_WITH_CAUTION;
+import static ft.sim.world.train.TrainObjective.STOP_AND_ROLL;
+import static ft.sim.world.train.TrainObjective.STOP_THEN_ROLL;
 
 import ft.sim.physics.DistanceHelper;
 import ft.sim.simulation.Tickable;
+import ft.sim.world.RealWorldConstants;
 import ft.sim.world.gsm.RadioMast;
 import ft.sim.world.gsm.RadioSignal;
 import ft.sim.world.journey.Journey;
@@ -27,21 +31,14 @@ public class ECU implements Tickable {
   private transient JourneyPlan journeyPlan;
   private transient Train train;
   private JourneyTimer timer;
-  private NextTrainPrediction nextTrainPrediction = new NextTrainPrediction();
+  private NextTrainPredictor nextTrainPredictor = new NextTrainPredictor();
   private boolean seeingTrainsAhead = false;
 
-  private RadioMast radioMast;
+  private transient RadioMast radioMast;
   private RadioSignal lastRadioSignal = null;
   private double timeReceivedLastSignal = -1;
-
-
-  public void setSeeingTrainsAhead(boolean seeingTrainsAhead) {
-    this.seeingTrainsAhead = seeingTrainsAhead;
-  }
-
   // safe breaking distance, in meters
   private double safeBreakingDistance;
-
   private double totalDistanceTravelledLastBalise = 0;
   private double totalDistanceLastUpAhead = 0;
 
@@ -50,15 +47,19 @@ public class ECU implements Tickable {
     createWorldModel(journey);
   }
 
+  public void setSeeingTrainsAhead(boolean seeingTrainsAhead) {
+    this.seeingTrainsAhead = seeingTrainsAhead;
+  }
+
   public void updateNextTrainPrediction(ActiveBaliseData lastBaliseData) {
-    nextTrainPrediction.setLastData(lastBaliseData);
+    nextTrainPredictor.setLastData(lastBaliseData);
     totalDistanceTravelledLastBalise = engine.getTotalDistanceTravelled();
     //TODO: update prediction ?
   }
 
-  public void updateUpAheadData(ActiveBaliseData upAhead){
+  public void updateUpAheadData(ActiveBaliseData upAhead) {
     double howFarAhead = engine.getTotalDistanceTravelled() - totalDistanceLastUpAhead;
-    nextTrainPrediction.setUpAheadData(upAhead, howFarAhead);
+    nextTrainPredictor.setUpAheadData(upAhead, howFarAhead);
     totalDistanceLastUpAhead = engine.getTotalDistanceTravelled();
   }
 
@@ -72,28 +73,48 @@ public class ECU implements Tickable {
 
   public void tick(double time) {
     calculateSafeBreakingDistance();
-    if (!nextTrainPrediction.anyTrainsAhead()) {
+    if (!nextTrainPredictor.anyTrainsAhead()) {
       return;
     }
 
-    nextTrainPrediction.predict(timer.getTime(), getEstimatedDistanceTravelledSinceLastBalise());
-    double nextDistancePrediction = nextTrainPrediction.getDistance();
+    if (isTrainAheadBroken()) {
+      engine.emergencyBreak();
+      engine.setObjective(STOP_THEN_ROLL);
+      return;
+    }
+
+    nextTrainPredictor.predict(timer.getTime(), getEstimatedDistanceTravelledSinceLastBalise());
+    double nextDistancePrediction = nextTrainPredictor.getDistance();
     /*if (nextDistancePrediction != -1) {
       logger.info("[{}] Next train is {} meters away. safe distance: {}", train,
           nextDistancePrediction, safeBreakingDistance);
     }*/
     if (engine.getSpeed() > 1 && nextDistancePrediction >= 0
         && nextDistancePrediction < safeBreakingDistance) {
-      logger.warn("Train {} emergency breaking, there's a train within breaking distance {} ({})",
-          train, nextDistancePrediction, safeBreakingDistance);
-      engine.emergencyBreak();
-      //engine.roll();
-      engine.setObjective(STOP_THEN_ROLL);
+      if (nextDistancePrediction > calculateBreakingDistance(engine.getNormalDeceleration())) {
+        engine.setTargetSpeed(0);
+        engine.setObjective(STOP_THEN_ROLL);
+        logger.warn("Train {} normal breaking, there's a train within breaking distance {} ({}) {}",
+            train, nextDistancePrediction, safeBreakingDistance,
+            calculateBreakingDistance(engine.getNormalDeceleration()));
+      } else {
+
+        logger.warn("Train {} emergency breaking, there's a train within breaking distance {} ({})",
+            train, nextDistancePrediction, safeBreakingDistance);
+        engine.emergencyBreak();
+        //engine.roll();
+        engine.setObjective(STOP_THEN_ROLL);
+      }
+      return;
     } else {
       if ((engine.getObjective() == STOP_AND_ROLL || engine.getObjective() == PROCEED_WITH_CAUTION)
           && !seeingTrainsAhead) {
         logger.warn("It's probably safe to proceed [{}]", train);
         engine.setObjective(PROCEED);
+      }
+      if (engine.getObjective() == PROCEED && nextDistancePrediction >= 0 &&
+          engine.getTargetSpeed() <= engine.getLastAdvisorySpeed()) {
+        engine.setTargetSpeed(Math.min(getMaxSpeed(), engine.getLastAdvisorySpeed()));
       }
     }
   }
@@ -120,6 +141,14 @@ public class ECU implements Tickable {
     return DistanceHelper.distanceToReachTargetSpeed(targetSpeed, currentSpeed, deceleration);
   }
 
+  public double calculateBreakingDistance(double decelerationSpeed) {
+    double currentSpeed = engine.getSpeed();
+    double targetSpeed = 0;
+    double deceleration = engine.getMaxDeceleration();
+
+    return DistanceHelper.distanceToReachTargetSpeed(targetSpeed, currentSpeed, deceleration);
+  }
+
   private void calculateSafeBreakingDistance() {
     double distance = calculateBreakingDistance();
 
@@ -128,24 +157,37 @@ public class ECU implements Tickable {
     this.safeBreakingDistance = distance + safetyMargin;
   }
 
+  private double getMaxSpeed() {
+    double acceleration = engine.getNormalDeceleration();
+    double distance = nextTrainPredictor.getDistance();
+    double maxSpeed = Math.sqrt(-2.0 * acceleration * distance);
+
+    return maxSpeed;
+  }
+
   JourneyTimer getTimer() {
     return timer;
+  }
+
+  public boolean isTrainAheadBroken() {
+    return lastRadioSignal == RadioSignal.NOK
+        || timeReceivedLastSignal + 2 * RealWorldConstants.TRAIN_SQUAWK_INTERVAL < timer.getTime();
   }
 
   public JourneyPlan getJourneyPlan() {
     return journeyPlan;
   }
 
-  void ping(RadioSignal radioSignal){
+  void ping(RadioSignal radioSignal) {
     timeReceivedLastSignal = timer.getTime();
     this.lastRadioSignal = radioSignal;
   }
 
-  public void setRadioMast(RadioMast radioMast) {
-    this.radioMast = radioMast;
-  }
-
   public RadioMast getRadioMast() {
     return radioMast;
+  }
+
+  public void setRadioMast(RadioMast radioMast) {
+    this.radioMast = radioMast;
   }
 }

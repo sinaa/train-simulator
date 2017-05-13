@@ -13,7 +13,7 @@ import java.util.TreeMap;
  */
 public class MapBuilderHelper {
 
-  public static boolean hasTrain(GlobalMap map, Track track) {
+  public static boolean trackHasTrain(GlobalMap map, Track track) {
     return map.getJourneys().values().stream()
         .anyMatch(
             j -> j.getJourneyPosition().getConnectablesOccupied().stream().anyMatch(c -> c == track)

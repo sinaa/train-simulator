@@ -34,4 +34,7 @@ public class RealWorldConstants {
 
   // Default inaccuracy rate of trains at estimating distance travelled
   public static final double TRAIN_DISTANCE_MEASUREMENT_INACCURACY_RATE = 0;
+
+  // Train Squawk Interval (seconds)
+  public static final int TRAIN_SQUAWK_INTERVAL = 10;
 }
