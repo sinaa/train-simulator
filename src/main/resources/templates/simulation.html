@@ -109,14 +109,29 @@
             </div>
           </div>
           <ul class="list-group">
-            <li class="list-group-item">Head Position: <span
-                class="head_position"></span></li>
-            <li class="list-group-item">Tail Position: <span
+            <li class="list-group-item">Head: <span
+                class="head_position"></span>, Tail:<span
                 class="tail_position"></span></li>
-            <li class="list-group-item">Path Length: <span class="path_length"></span>m
+            <li class="list-group-item">Speed: <span title="Current speed (m/s)"
+                                                     class="current_speed"></span> (<span
+                class="advisory_speed"
+                title="Last Advisory Speed (m/s)"></span>, <span
+                class="target_speed" title="Target Speed (m/s)"></span>) | A: <span class="acceleration" title="Acceleration (m2/s)"></span></li>
+            <li class="list-group-item">Next Train Distance: <span class="next_distance"
+                                                                   title="Predicted distance to next train (m)"></span>
+              / <span class="actual_distance"
+                      title="Actual distance to next train (m)"></span>
             </li>
-            <li class="list-group-item">Path: <span class="path"></span></li>
-            <li class="list-group-item">Currently On: <span class="current_path"></span>
+            <li class="list-group-item">GSM sent: <span class="last_gsm_sent"
+                                                        title="How long ago train last sent squawk down the line"></span>,
+              received: <span class="last_gsm_received"
+                              title="How long ago train last sent squawk down the line"></span></li>
+            <li class="list-group-item">Train Objective: <span class="objective"
+                                                               title="Train's current objective"></span>
+            </li>
+
+            <li class="list-group-item">Path: <span class="path"></span> (<span
+                class="path_length"></span>m)
             </li>
           </ul>
         </div>
@@ -304,19 +319,40 @@
           $(journeyKey).find('.progress-bar').addClass('active');
         }
         var paths = journey.journeyInformation.path;
+        var occupied = journey.journeyInformation.occupied;
+        var train = journey.train;
+        var ecu = train.ecu;
+
+        $(journeyKey).find('.current_speed').html(train.engine.speed.toFixed(1));
+        $(journeyKey).find('.advisory_speed').html(train.engine.lastAdvisorySpeed.toFixed(0));
+        $(journeyKey).find('.target_speed').html(train.engine.targetSpeed.toFixed(0));
+        $(journeyKey).find('.acceleration').html(train.engine.acceleration.toFixed(1));
+        $(journeyKey).find('.objective').html(train.engine.lastObjective);
+
+        $(journeyKey).find('.last_gsm_sent').html(train.timeLastSquawkSent);
+        $(journeyKey).find('.last_gsm_received').html(train.timeLastSquawkSent);
+
+        var nextTrainDistance = ecu.nextTrainPredictor.distance.toFixed(1);
+        var nextTrainDistanceActual = ecu.actualDistance.toFixed(1);
+        if (nextTrainDistance == -1) {
+          nextTrainDistance = "LEAD";
+        }
+        $(journeyKey).find('.next_distance').html(nextTrainDistance);
+        if (nextTrainDistanceActual == -1) {
+          nextTrainDistanceActual = "-";
+        }
+        $(journeyKey).find('.actual_distance').html(nextTrainDistanceActual);
+
         var pathArray = [];
         for (var pathIndex in paths) {
           var path = paths[pathIndex];
+          if (occupied.includes(path)) {
+            path = "<b>" + path + "</b>";
+          }
           pathArray.push(path);
         }
-        paths = journey.journeyInformation.occupied;
-        var pathArrayOccupied = [];
-        for (var pathIndex in paths) {
-          var path = paths[pathIndex];
-          pathArrayOccupied.push(path);
-        }
         $(journeyKey).find('.path').html(pathArray.join(", "));
-        $(journeyKey).find('.current_path').html(pathArrayOccupied.join(", "));
+
         //$(journeyKey).find('.current_path').html(journeyFinished ? "Yes" : "No");
       }
     }

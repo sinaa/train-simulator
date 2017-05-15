@@ -80,6 +80,16 @@ public class Engine implements Tickable {
     acceleration = maxDeceleration;
   }
 
+  public void fullBreak() {
+    this.targetSpeed = 0;
+    acceleration = FULL_TRAIN_DECELERATION;
+  }
+
+  public void normalBreak(){
+    this.targetSpeed = 0;
+    acceleration = normalDeceleration;
+  }
+
   /*
    * Get the target speed (m/s)
    */
@@ -132,7 +142,7 @@ public class Engine implements Tickable {
     if (speed < 0) {
       speed = 0;
     }
-    if (speed == 0 && acceleration < 0) {
+    if (speed <= 0.01 && acceleration < 0) {
       acceleration = 0;
     }
     updateAcceleration();

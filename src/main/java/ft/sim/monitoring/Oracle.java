@@ -73,6 +73,8 @@ public class Oracle {
 
       double breakingDistance = j1.getTrain().getEcu().calculateBreakingDistance();
 
+      j1.getTrain().getEcu().setActualDistance(distance);
+
       if (breakingDistance > distance) {
         logger.info("{} and {}, distance: {} , breaking distance:{}", j1, j2, distance,
             breakingDistance);

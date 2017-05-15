@@ -14,6 +14,12 @@ public class RealWorldConstants {
   // normal deceleration speed (m/s2)
   public static final double NORMAL_TRAIN_DECELERATION = -0.5;
 
+  // full breaking (deceleration) speed (m/s2)
+  public static final double FULL_TRAIN_DECELERATION = -0.7;
+
+  // minimum breaking (deceleration) speed (m/s2)
+  public static final double MIN_TRAIN_DECELERATION = -0.2;
+
   // normal acceleration speed (m/s2)
   public static final double NORMAL_TRAIN_ACCELERATION = 0.4;
 

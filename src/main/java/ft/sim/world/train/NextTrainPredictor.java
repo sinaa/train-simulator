@@ -1,17 +1,24 @@
 package ft.sim.world.train;
 
+import static ft.sim.world.RealWorldConstants.FULL_TRAIN_DECELERATION;
 import static ft.sim.world.RealWorldConstants.MAX_TRAIN_DECELERATION;
+import static ft.sim.world.RealWorldConstants.NORMAL_TRAIN_DECELERATION;
 
 import ft.sim.physics.DistanceHelper;
 import ft.sim.world.placeables.ActiveBaliseData;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by sina on 19/04/2017.
  */
 public class NextTrainPredictor {
+
+  protected static final transient Logger logger = LoggerFactory
+      .getLogger(NextTrainPredictor.class);
 
   private double distance = -1;
   private double worstCaseDistance = -1;
@@ -65,8 +72,8 @@ public class NextTrainPredictor {
     double potentialDistance = DistanceHelper
         .distanceTravelled(lastData.getTrainSpeed(), timeDelta);
     // Worst-Case: If the train stopped right after passing this balise
-    double worstCaseDistance = DistanceHelper
-        .distanceToStop(lastData.getTrainSpeed(), MAX_TRAIN_DECELERATION);
+    worstCaseDistance = DistanceHelper
+        .distanceToStop(lastData.getTrainSpeed(), NORMAL_TRAIN_DECELERATION);
 
     double acceleration = guessNextTrainAcceleration();
 
@@ -90,7 +97,7 @@ public class NextTrainPredictor {
       }
     }
     if (distance < 0) {
-      throw new IllegalStateException("distance " + distance + " cannot be negative!");
+      logger.error("distance " + distance + " cannot be negative!");
     }
     distance -= distanceTravelledSinceLastBalise;
     if (distance < 0) {

@@ -214,7 +214,7 @@ public class Train implements Tickable, SignalListener {
       if (!ObservableHelper.allGreen(observables)) {
         if (engine.getObjective() != STOP && engine.getObjective() != STOP_AND_ROLL) {
           if (ObservableHelper.hasBlockSignal(observables)) {
-            engine.emergencyBreak();
+            engine.fullBreak();
             logger.error("{} Emergency breaking!", this);
             engine.setObjective(STOP);
           } else {

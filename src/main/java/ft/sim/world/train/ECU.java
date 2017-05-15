@@ -41,6 +41,8 @@ public class ECU implements Tickable {
   private double safeBreakingDistance;
   private double totalDistanceTravelledLastBalise = 0;
   private double totalDistanceLastUpAhead = 0;
+  private double lastDistanceSinceLastBalise = 0; // Only for the UI interface
+  private double actualDistance = -1;
 
   public ECU(Journey journey, Engine engine) {
     this.engine = engine;
@@ -127,8 +129,8 @@ public class ECU implements Tickable {
    * @return distance travelled since last balise in meters
    */
   private double getEstimatedDistanceTravelledSinceLastBalise() {
-    //TODO: add inaccuracies
     double realTravelled = engine.getTotalDistanceTravelled() - totalDistanceTravelledLastBalise;
+    lastDistanceSinceLastBalise = realTravelled;
     double inaccuracy = engine.getInaccuracyRate() * realTravelled;
     return realTravelled + inaccuracy;
   }
@@ -189,5 +191,9 @@ public class ECU implements Tickable {
 
   public void setRadioMast(RadioMast radioMast) {
     this.radioMast = radioMast;
+  }
+
+  public void setActualDistance(double actualDistance) {
+    this.actualDistance = actualDistance;
   }
 }
