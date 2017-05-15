@@ -1,23 +1,26 @@
 package ft.sim.world.map;
 
+import static ft.sim.world.RealWorldConstants.ACCELERATION_COEFFICIENT;
 import static ft.sim.world.RealWorldConstants.BREAK_DISTANCE;
+import static ft.sim.world.RealWorldConstants.DECELERATION_COEFFICIENT;
 
 import com.google.common.collect.Iterables;
-import ft.sim.world.gsm.RadioMast;
-import ft.sim.world.signalling.SignalController;
-import ft.sim.world.signalling.SignalType;
-import ft.sim.world.signalling.SignalUnit;
-import ft.sim.world.train.Train;
-import ft.sim.world.train.TrainObjective;
 import ft.sim.world.connectables.Connectable;
+import ft.sim.world.connectables.LineCondition;
 import ft.sim.world.connectables.Station;
 import ft.sim.world.connectables.Track;
+import ft.sim.world.gsm.RadioMast;
 import ft.sim.world.journey.Journey;
 import ft.sim.world.journey.JourneyPath;
 import ft.sim.world.placeables.ActiveBalise;
 import ft.sim.world.placeables.Balise;
 import ft.sim.world.placeables.PassiveBalise;
 import ft.sim.world.placeables.Placeable;
+import ft.sim.world.signalling.SignalController;
+import ft.sim.world.signalling.SignalType;
+import ft.sim.world.signalling.SignalUnit;
+import ft.sim.world.train.Train;
+import ft.sim.world.train.TrainObjective;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -432,13 +435,17 @@ public class MapBuilder {
     }
     for (Map.Entry<String, Object> track : trackMap.entrySet()) {
       int trackID = Integer.parseInt(track.getKey());
-      Map<String, Integer> trackData = (Map<String, Integer>) track.getValue();
-      Track t = new Track(trackData.get("numSections"));
+      Map<String, Object> trackData = (Map<String, Object>) track.getValue();
+      Track t = new Track((Integer) trackData.get("numSections"));
+
+      double aCoeff = (double) trackData.getOrDefault("acceleration", ACCELERATION_COEFFICIENT);
+      double dCoeff = (double) trackData.getOrDefault("deceleration", DECELERATION_COEFFICIENT);
+      t.setLineCondition(new LineCondition(aCoeff, dCoeff));
 
       map.addTrack(trackID, t);
       map.registerSectionsForTrack(t.getSections(), trackID);
 
-      int pairID = trackData.getOrDefault("pairID", 0);
+      int pairID = (int) trackData.getOrDefault("pairID", 0);
       if (pairID > 0) {
         map.addTrackPair(trackID, pairID);
       }

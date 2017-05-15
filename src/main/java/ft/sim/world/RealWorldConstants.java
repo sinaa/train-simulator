@@ -43,4 +43,8 @@ public class RealWorldConstants {
 
   // Train Squawk Interval (seconds)
   public static final int TRAIN_SQUAWK_INTERVAL = 10;
+
+  // Tracks acceleration/deceleration coefficients
+  public static final double DECELERATION_COEFFICIENT = 1;
+  public static final double ACCELERATION_COEFFICIENT = 1;
 }

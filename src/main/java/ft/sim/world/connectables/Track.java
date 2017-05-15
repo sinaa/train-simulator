@@ -6,6 +6,7 @@ import static java.util.stream.Collectors.toList;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import ft.sim.world.RealWorldConstants;
 import ft.sim.world.signalling.SignalController;
 import ft.sim.world.signalling.SignalLinked;
 import ft.sim.world.signalling.SignalUnit;
@@ -33,6 +34,8 @@ public class Track implements Connectable, SignalLinked {
   private Set<SignalUnit> blockSignals = new HashSet<>();
   private SignalController signalController = null;
   private transient BiMap<Integer, Placeable> placeables = HashBiMap.create();
+
+  private transient LineCondition lineCondition = new LineCondition();
 
   public Track(List<Section> sections) {
     this.sections = sections;
@@ -147,6 +150,7 @@ public class Track implements Connectable, SignalLinked {
     if (signalController != null) {
       signalController.setStatus(RED);
     }
+    train.enteredTrack(this);
   }
 
   @Override
@@ -181,5 +185,13 @@ public class Track implements Connectable, SignalLinked {
 
   public BiMap<Integer, Placeable> getPlaceables() {
     return placeables;
+  }
+
+  public LineCondition getLineCondition() {
+    return lineCondition;
+  }
+
+  public void setLineCondition(LineCondition lineCondition) {
+    this.lineCondition = lineCondition;
   }
 }

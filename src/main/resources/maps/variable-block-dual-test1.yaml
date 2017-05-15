@@ -66,6 +66,8 @@ tracks:
   '1':
     numSections: 2000
     pairID: 7
+    acceleration: 0.8
+    deceleration: 1.2
   '2':
     numSections: 10000
     pairID: 8

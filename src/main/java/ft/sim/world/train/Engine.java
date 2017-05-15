@@ -1,11 +1,15 @@
 package ft.sim.world.train;
 
+import static ft.sim.world.RealWorldConstants.FULL_TRAIN_DECELERATION;
+import static ft.sim.world.RealWorldConstants.MAX_TRAIN_DECELERATION;
+import static ft.sim.world.RealWorldConstants.NORMAL_TRAIN_ACCELERATION;
+import static ft.sim.world.RealWorldConstants.NORMAL_TRAIN_DECELERATION;
+import static ft.sim.world.RealWorldConstants.ROLLING_SPEED;
 import static ft.sim.world.train.TrainObjective.PROCEED;
-import static ft.sim.world.RealWorldConstants.*;
 
 import ft.sim.simulation.Tickable;
 import ft.sim.world.RealWorldConstants;
-import ft.sim.world.gsm.RadioMast;
+import ft.sim.world.connectables.LineCondition;
 
 /**
  * Created by Sina on 21/02/2017.
@@ -47,12 +51,7 @@ public class Engine implements Tickable {
   // a negative rate indicates an under-estimation
   private double inaccuracyRate = RealWorldConstants.TRAIN_DISTANCE_MEASUREMENT_INACCURACY_RATE;
 
-  /*
-   * Get current speed (m/s), m is metres
-   */
-  public double getSpeed() {
-    return speed;
-  }
+  private LineCondition lineCondition = null;
 
   /*
    * Construct an engine, along with the train this engine belongs to
@@ -64,11 +63,10 @@ public class Engine implements Tickable {
   }
 
   /*
-   * Set the target (advisory) speed (m/s)
+   * Get current speed (m/s), m is metres
    */
-  public void setTargetSpeed(double targetSpeed) {
-    this.targetSpeed = targetSpeed;
-    updateAcceleration();
+  public double getSpeed() {
+    return speed;
   }
 
   void roll() {
@@ -85,7 +83,7 @@ public class Engine implements Tickable {
     acceleration = FULL_TRAIN_DECELERATION;
   }
 
-  public void normalBreak(){
+  public void normalBreak() {
     this.targetSpeed = 0;
     acceleration = normalDeceleration;
   }
@@ -98,10 +96,11 @@ public class Engine implements Tickable {
   }
 
   /*
-   * Set the acceleration of this engine
+   * Set the target (advisory) speed (m/s)
    */
-  public void setAcceleration(int acceleration) {
-    this.acceleration = acceleration;
+  public void setTargetSpeed(double targetSpeed) {
+    this.targetSpeed = targetSpeed;
+    updateAcceleration();
   }
 
   /*
@@ -109,6 +108,13 @@ public class Engine implements Tickable {
    */
   public double getAcceleration() {
     return acceleration;
+  }
+
+  /*
+   * Set the acceleration of this engine
+   */
+  public void setAcceleration(int acceleration) {
+    this.acceleration = acceleration;
   }
 
   /*
@@ -134,10 +140,11 @@ public class Engine implements Tickable {
    */
   public void tick(double time) {
     // distance = v1 x t + 1/2 * a * t^2
-    lastDistanceTravelled += speed * time + (acceleration * Math.pow(time, 2) / 2.0);
+    lastDistanceTravelled +=
+        speed * time + (getRealWorldAcceleration(acceleration) * Math.pow(time, 2) / 2.0);
     totalDistanceTravelled += lastDistanceTravelled;
     // v2 = (t2-t1) x a + v1
-    speed = time * acceleration + speed;
+    speed = time * getRealWorldAcceleration(acceleration) + speed;
 
     if (speed < 0) {
       speed = 0;
@@ -146,6 +153,16 @@ public class Engine implements Tickable {
       acceleration = 0;
     }
     updateAcceleration();
+  }
+
+  private double getRealWorldAcceleration(double acceleration) {
+    if (lineCondition == null) {
+      return acceleration;
+    }
+    if (acceleration > 0) {
+      return acceleration * lineCondition.getAccelerationCoefficient();
+    }
+    return acceleration * lineCondition.getDecelerationCoefficient();
   }
 
   private void updateAcceleration() {
@@ -196,12 +213,12 @@ public class Engine implements Tickable {
     return normalDeceleration;
   }
 
-  public void setObjective(TrainObjective objective) {
-    this.lastObjective = objective;
-  }
-
   public TrainObjective getObjective() {
     return lastObjective;
+  }
+
+  public void setObjective(TrainObjective objective) {
+    this.lastObjective = objective;
   }
 
   public double getLastAdvisorySpeed() {
@@ -212,13 +229,15 @@ public class Engine implements Tickable {
     this.lastAdvisorySpeed = lastAdvisorySpeed;
   }
 
-  public void setInaccuracyRate(double inaccuracyRate) {
-    this.inaccuracyRate = inaccuracyRate;
-  }
-
   public double getInaccuracyRate() {
     return inaccuracyRate;
   }
 
+  public void setInaccuracyRate(double inaccuracyRate) {
+    this.inaccuracyRate = inaccuracyRate;
+  }
 
+  public void setLineCondition(LineCondition lineCondition) {
+    this.lineCondition = lineCondition;
+  }
 }

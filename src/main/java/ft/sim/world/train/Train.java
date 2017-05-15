@@ -13,6 +13,7 @@ import ft.sim.world.WorldHandler;
 import ft.sim.world.connectables.Observable;
 import ft.sim.world.connectables.ObservableHelper;
 import ft.sim.world.connectables.Section;
+import ft.sim.world.connectables.Track;
 import ft.sim.world.gsm.RadioSignal;
 import ft.sim.world.journey.Journey;
 import ft.sim.world.placeables.ActiveBalise;
@@ -292,5 +293,12 @@ public class Train implements Tickable, SignalListener {
   private void sendSquawkDownTheLine(RadioSignal signal) {
     timeLastSquawkSent = ecu.getTimer().getTime();
     ecu.getRadioMast().passMessageToTrainBehind(this, signal);
+  }
+
+  /**
+   * Notification event sent by a track the train just entered.
+   */
+  public void enteredTrack(Track track) {
+    engine.setLineCondition(track.getLineCondition());
   }
 }
