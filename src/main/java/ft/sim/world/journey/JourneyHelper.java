@@ -3,6 +3,7 @@ package ft.sim.world.journey;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import ft.sim.world.connectables.Connectable;
+import ft.sim.world.connectables.Station;
 import ft.sim.world.map.GlobalMap;
 import ft.sim.world.train.Train;
 import java.util.HashMap;
@@ -10,6 +11,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.TreeMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by sina on 09/05/2017.
@@ -17,6 +20,7 @@ import java.util.TreeMap;
 public class JourneyHelper {
 
   private static Map<GlobalMap, JourneyHelper> instances = new HashMap<>();
+  protected transient final Logger logger = LoggerFactory.getLogger(JourneyHelper.class);
   private BiMap<Journey, Journey> trailingJourneys = HashBiMap.create();
   private BiMap<Train, Train> trailingTrains = HashBiMap.create();
   private GlobalMap world;
@@ -35,11 +39,11 @@ public class JourneyHelper {
     return Math.abs(j2Distance - j1Distance);
   }
 
-  public Train getTrainFollowing(Train train){
+  public Train getTrainFollowing(Train train) {
     return getTrainsFollowingEachOther().get(train);
   }
 
-  public Optional<Train> getTrainBehind(Train train){
+  public Optional<Train> getTrainBehind(Train train) {
     return Optional.ofNullable(getTrainsFollowingEachOther().inverse().get(train));
   }
 
@@ -50,14 +54,19 @@ public class JourneyHelper {
     trailingTrains.clear();
 
     Map<Journey, Journey> journeyTrail = getJourneysFollowingEachOther();
-    journeyTrail.forEach((key,value) -> trailingTrains.put(key.getTrain(),value.getTrain()));
+    journeyTrail.forEach((key, value) -> trailingTrains.put(key.getTrain(), value.getTrain()));
 
     return trailingTrains;
   }
 
   public Map<Journey, Journey> getJourneysFollowingEachOther() {
     if (trailingJourneys.size() + 1 == world.getJourneys().size()) {
-      return trailingJourneys;
+      // for all journeys, check if none of the trains are at stations
+      if (world.getJourneys().values().stream().allMatch(
+          j -> j.getJourneyPosition().getConnectablesOccupied().stream()
+              .noneMatch(c -> c instanceof Station))){
+        return trailingJourneys;
+      }
     }
     trailingJourneys.clear();
 

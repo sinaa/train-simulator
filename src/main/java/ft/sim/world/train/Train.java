@@ -13,6 +13,7 @@ import ft.sim.world.WorldHandler;
 import ft.sim.world.connectables.Observable;
 import ft.sim.world.connectables.ObservableHelper;
 import ft.sim.world.connectables.Section;
+import ft.sim.world.connectables.Station;
 import ft.sim.world.connectables.Track;
 import ft.sim.world.gsm.RadioSignal;
 import ft.sim.world.journey.Journey;
@@ -105,6 +106,7 @@ public class Train implements Tickable, SignalListener {
             engine.setLastAdvisorySpeed(balise.getAdvisorySpeed());
             if (engine.getObjective() == PROCEED) {
               engine.setTargetSpeed(engine.getLastAdvisorySpeed());
+              logger.info("{} New target speed: {}", this, engine.getLastAdvisorySpeed());
             }
             logger.info("{} Reached Balise, target: {}", this, engine.getLastAdvisorySpeed());
           } else if (p instanceof ActiveBalise) {
@@ -153,7 +155,7 @@ public class Train implements Tickable, SignalListener {
     evaluateObjectives();
 
     // send OK squawk down the line
-    if (engine.getObjective() == PROCEED || engine.getObjective() == PROCEED_WITH_CAUTION) {
+    if (engine.getObjective() != STOP) {
       if (timeLastSquawkSent + TRAIN_SQUAWK_INTERVAL < ecu.getTimer().getTime()) {
         sendSquawkDownTheLine(RadioSignal.OK);
       }
@@ -193,7 +195,7 @@ public class Train implements Tickable, SignalListener {
         engine.setObjective(PROCEED);
         break;
       case RED:
-        logger.warn("{} got RED signal! stopping ...", this);
+        logger.warn("{} got RED signal! stopping ... (speed: {})", this, engine.getSpeed());
         engine.setTargetSpeed(0);
         break;
       case AMBER:
@@ -236,7 +238,7 @@ public class Train implements Tickable, SignalListener {
 
       if (ObservableHelper.anyTrains(observables)) {
         if (!engine.isStopped()) {
-          engine.emergencyBreak();
+          engine.fullBreak();
           logger.error("{} Emergency breaking! There's a train ahead!", this);
           engine.setObjective(STOP_THEN_ROLL);
         }
@@ -292,7 +294,7 @@ public class Train implements Tickable, SignalListener {
 
   private void sendSquawkDownTheLine(RadioSignal signal) {
     timeLastSquawkSent = ecu.getTimer().getTime();
-    ecu.getRadioMast().passMessageToTrainBehind(this, signal);
+    ecu.getRadioMast().ifPresent(mast -> mast.passMessageToTrainBehind(this, signal));
   }
 
   /**
@@ -300,5 +302,18 @@ public class Train implements Tickable, SignalListener {
    */
   public void enteredTrack(Track track) {
     engine.setLineCondition(track.getLineCondition());
+  }
+
+  public void enteredStation(Station station) {
+    sendSquawkDownTheLine(RadioSignal.AT_STATION);
+    engine.fullBreak();
+    engine.setObjective(STOP);
+    logger.warn("{} entered {}, stopping...", this, station);
+  }
+
+  public void crash() {
+    sendSquawkDownTheLine(RadioSignal.NOK);
+    engine.emergencyBreak();
+    engine.setObjective(STOP);
   }
 }

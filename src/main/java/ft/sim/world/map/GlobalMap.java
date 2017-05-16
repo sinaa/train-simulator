@@ -123,8 +123,20 @@ public class GlobalMap {
   }
 
   /*
-   * Journey getters
+   * Placeable getters
    */
+
+  public BiMap<Integer, Placeable> getPlaceablesMap() {
+    return placeablesMap;
+  }
+
+  public Placeable getPlaceable(int placeableID) {
+    return placeablesMap.get(placeableID);
+  }
+
+  /*
+     * Journey getters
+     */
   public int getJourneyID(Journey j) {
     return journeysMap.inverse().get(j);
   }

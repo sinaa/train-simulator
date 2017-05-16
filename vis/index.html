@@ -1,0 +1,177 @@
+<html>
+<head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://code.createjs.com/createjs-2015.11.26.min.js"></script>
+  <script>
+
+    var globalStage;
+    var globalTrains = {};
+    var globalStations = {};
+    var globalTracks = {};
+
+    const baseY = 10;
+    const baseThickness = 50;
+    const trackMarkerWidth = 30;
+
+    function update(data) {
+      updateTrains(data, globalStage);
+
+      globalStage.update();
+    }
+
+    function updateTrains(data, stage){
+      for(const key in data.trains){
+        var tData = data.trains[key];
+        globalTrains[key].train.x = (tData.to + tData.from) / 2 - 25;
+        globalTrains[key].trainBlock.graphics.command.x = tData.from;
+        //globalTrains[key].trainBlock.w = tData.to - tData.from;
+      }
+    }
+
+    function addTrains(data, stage) {
+      for (const key in data.trains) {
+        var tData = data.trains[key];
+
+        var trainBlock = new createjs.Shape();
+        trainBlock.graphics.beginFill("orange").rect(tData.from, baseY,
+            tData.to - tData.from,
+            baseThickness, baseY);
+        stage.addChild(trainBlock);
+        var train = new createjs.Bitmap("assets/train_white.png");
+        train.scaleX = 0.2;
+        train.scaleY = 0.2;
+        train.x = (tData.to + tData.from) / 2 - 25;
+        train.y = 9;
+        train.image.onload = function () {
+          stage.update();
+        };
+        stage.addChild(train);
+
+        globalTrains[key] = {
+          trainBlock: trainBlock,
+          train: train
+        }
+      }
+    }
+    function addStations(data, stage) {
+      for (const key in data.stations) {
+        var sData = data.stations[key];
+        var station = new createjs.Shape();
+        station.graphics.beginFill("yellow").rect(sData.from, -20, sData.to - sData.from, 80);
+        stage.addChild(station);
+
+        // top of track indicator
+        var stationBar = new createjs.Shape();
+
+        stationBar.graphics.beginFill("green").rect(sData.from, -30, sData.to - sData.from,
+            baseY);
+        stage.addChild(stationBar);
+
+        globalStations[key] = {
+          station: station,
+          stationBar: stationBar
+        }
+      }
+    }
+    function addTracks(data, stage) {
+      for (const key in data.tracks) {
+        var t = data.tracks[key];
+        var track = new createjs.Shape();
+        track.graphics.beginFill("DeepSkyBlue").rect(t.from, baseThickness, t.to - t.from,
+            baseY);
+        stage.addChild(track);
+
+        // end of track indicator
+        var endOfTrack = new createjs.Shape();
+
+        endOfTrack.graphics.beginFill("red").rect(t.to - trackMarkerWidth, baseThickness-(baseThickness/2),
+            trackMarkerWidth, baseY*6);
+        stage.addChild(endOfTrack);
+
+        globalTracks[key] = {
+          track: track,
+          endOfTrack: endOfTrack
+        }
+      }
+    }
+    function init(data) {
+      var canvas = document.getElementById("demoCanvas");
+      var stage = new createjs.Stage("demoCanvas");
+      canvas.style.backgroundColor = "#000";
+
+
+      stage.x = 0;
+      stage.y = 100;
+      stage.scaleX = 0.5;
+      stage.scaleY = 0.5;
+
+      addTracks(data, stage);
+
+      addStations(data, stage);
+
+      addTrains(data, stage);
+
+      stage.update();
+
+      canvas.addEventListener("mousewheel", MouseWheelHandler, false);
+      canvas.addEventListener("DOMMouseScroll", MouseWheelHandler, false);
+
+      var zoom;
+
+      function MouseWheelHandler(e) {
+        if (Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail))) > 0) {
+          zoom = 1.1;
+        } else {
+          zoom = 1 / 1.1;
+        }
+        var local = stage.globalToLocal(stage.mouseX, stage.mouseY);
+        stage.regX = local.x;
+        stage.regY = local.y;
+        stage.x = stage.mouseX;
+        stage.y = stage.mouseY;
+        stage.scaleX = stage.scaleY *= zoom;
+
+        stage.update();
+
+      }
+
+      stage.addEventListener("stagemousedown", function (e) {
+        var offset = {x: stage.x - e.stageX, y: stage.y - e.stageY};
+        stage.addEventListener("stagemousemove", function (ev) {
+          stage.x = ev.stageX + offset.x;
+          stage.y = ev.stageY + offset.y;
+          stage.update();
+        });
+        stage.addEventListener("stagemouseup", function () {
+          stage.removeAllEventListeners("stagemousemove");
+        });
+      });
+
+      return stage;
+    }
+
+    $(document).ready(function () {
+      {
+        var data = {
+          tracks: {
+            "Track-1": {from: 0, to: 1000},
+            "Track-2": {from: 1200, to: 2200}
+          },
+          trains: {
+            "Train-1": {from: 1400, to: 1500}
+          },
+          stations: {
+            "Station-1": {from: 1000, to: 1200}
+          }
+        };
+        globalStage = init(data);
+      }
+    })
+  </script>
+</head>
+<body>
+<center>
+  <canvas id="demoCanvas" width="800" height="300" style="border:1px red solid;"></canvas>
+</center>
+</body>
+</html>

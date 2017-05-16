@@ -1,5 +1,7 @@
 package ft.sim.world.train;
 
+import static ft.sim.world.RealWorldConstants.FULL_TRAIN_DECELERATION;
+import static ft.sim.world.RealWorldConstants.ROLLING_SPEED;
 import static ft.sim.world.train.TrainObjective.PROCEED;
 import static ft.sim.world.train.TrainObjective.PROCEED_WITH_CAUTION;
 import static ft.sim.world.train.TrainObjective.STOP_AND_ROLL;
@@ -14,6 +16,7 @@ import ft.sim.world.journey.Journey;
 import ft.sim.world.journey.JourneyPlan;
 import ft.sim.world.journey.JourneyTimer;
 import ft.sim.world.placeables.ActiveBaliseData;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -99,6 +102,15 @@ public class ECU implements Tickable {
         logger.warn("Train {} normal breaking, there's a train within breaking distance {} ({}) {}",
             train, nextDistancePrediction, safeBreakingDistance,
             calculateBreakingDistance(engine.getNormalDeceleration()));
+      } else if (nextDistancePrediction < RealWorldConstants.EYE_SIGHT_DISTANCE) {
+        engine.setObjective(STOP_AND_ROLL);
+        engine.roll();
+        if (engine.getSpeed() > ROLLING_SPEED) {
+          engine.fullBreak();
+        }
+      } else if (nextDistancePrediction < calculateBreakingDistance(FULL_TRAIN_DECELERATION)) {
+        engine.setObjective(STOP_THEN_ROLL);
+        engine.fullBreak();
       } else {
 
         logger.warn("Train {} emergency breaking, there's a train within breaking distance {} ({})",
@@ -115,7 +127,8 @@ public class ECU implements Tickable {
         engine.setObjective(PROCEED);
       }
       if (engine.getObjective() == PROCEED && nextDistancePrediction >= 0 &&
-          engine.getTargetSpeed() <= engine.getLastAdvisorySpeed()) {
+          (engine.getTargetSpeed() <= engine.getLastAdvisorySpeed()
+              || engine.getSpeed() > getMaxSpeed())) {
         engine.setTargetSpeed(Math.min(getMaxSpeed(), engine.getLastAdvisorySpeed()));
       }
     }
@@ -146,7 +159,7 @@ public class ECU implements Tickable {
   public double calculateBreakingDistance(double decelerationSpeed) {
     double currentSpeed = engine.getSpeed();
     double targetSpeed = 0;
-    double deceleration = engine.getMaxDeceleration();
+    double deceleration = engine.getNormalDeceleration();
 
     return DistanceHelper.distanceToReachTargetSpeed(targetSpeed, currentSpeed, deceleration);
   }
@@ -172,8 +185,21 @@ public class ECU implements Tickable {
   }
 
   public boolean isTrainAheadBroken() {
-    return lastRadioSignal == RadioSignal.NOK
-        || timeReceivedLastSignal + 2 * RealWorldConstants.TRAIN_SQUAWK_INTERVAL < timer.getTime();
+    if (lastRadioSignal == null) {
+      return false;
+    }
+    if (lastRadioSignal == RadioSignal.AT_STATION) {
+      return false;
+    }
+    if (lastRadioSignal == RadioSignal.NOK) {
+      logger.warn("train ahead not ok for {}", train);
+      return true;
+    }
+    if (timeReceivedLastSignal + 2 * RealWorldConstants.TRAIN_SQUAWK_INTERVAL < timer.getTime()) {
+      logger.warn("did not hear from next train, likely broken for {}", train);
+      return true;
+    }
+    return false;
   }
 
   public JourneyPlan getJourneyPlan() {
@@ -185,8 +211,8 @@ public class ECU implements Tickable {
     this.lastRadioSignal = radioSignal;
   }
 
-  public RadioMast getRadioMast() {
-    return radioMast;
+  public Optional<RadioMast> getRadioMast() {
+    return Optional.ofNullable(radioMast);
   }
 
   public void setRadioMast(RadioMast radioMast) {

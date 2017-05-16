@@ -250,7 +250,7 @@ public class JourneyPosition {
     // remove the old ones
     newSectionsOccupiedSet.removeAll(coveredSections);
     // let the train know which new sections it got over
-    train.reachedSections(new HashSet<>(newSectionsOccupied));
+    train.reachedSections(new HashSet<>(newSectionsOccupiedSet));
     // keep track of sections the train has covered so far
     coveredSections.addAll(newSectionsOccupiedSet);
 
@@ -263,9 +263,10 @@ public class JourneyPosition {
     if (isEnded) {
       return;
     }
-    if (lastDistanceTravelled == 0) {
+    if (lastDistanceTravelled <= 0.001) {
       if (reachedLastConnectable) {
         isEnded = true;
+        return;
       }
     }
 

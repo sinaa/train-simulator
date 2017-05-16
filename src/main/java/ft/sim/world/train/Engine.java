@@ -10,11 +10,14 @@ import static ft.sim.world.train.TrainObjective.PROCEED;
 import ft.sim.simulation.Tickable;
 import ft.sim.world.RealWorldConstants;
 import ft.sim.world.connectables.LineCondition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by Sina on 21/02/2017.
  */
 public class Engine implements Tickable {
+  protected static final transient Logger logger = LoggerFactory.getLogger(Engine.class);
 
   // 201.6 km/h (56 m/s)
   // 300 km/h
@@ -74,18 +77,26 @@ public class Engine implements Tickable {
   }
 
   public void emergencyBreak() {
-    this.targetSpeed = 0;
-    acceleration = maxDeceleration;
+    if (speed != 0) {
+      logger.warn("Emergency breaking!");
+      this.targetSpeed = 0;
+      acceleration = maxDeceleration;
+    }
   }
 
   public void fullBreak() {
-    this.targetSpeed = 0;
-    acceleration = FULL_TRAIN_DECELERATION;
+    if (speed != 0) {
+      logger.warn("full breaking...");
+      this.targetSpeed = 0;
+      acceleration = FULL_TRAIN_DECELERATION;
+    }
   }
 
   public void normalBreak() {
-    this.targetSpeed = 0;
-    acceleration = normalDeceleration;
+    if (speed != 0) {
+      this.targetSpeed = 0;
+      acceleration = normalDeceleration;
+    }
   }
 
   /*
@@ -146,12 +157,11 @@ public class Engine implements Tickable {
     // v2 = (t2-t1) x a + v1
     speed = time * getRealWorldAcceleration(acceleration) + speed;
 
-    if (speed < 0) {
+    if (speed < 0.0001) {
       speed = 0;
     }
-    if (speed <= 0.01 && acceleration < 0) {
-      acceleration = 0;
-    }
+
+
     updateAcceleration();
   }
 
@@ -176,6 +186,12 @@ public class Engine implements Tickable {
     } else if (speedTargetDifference > 0 && acceleration <= 0) { // if going under target speed
       acceleration = normalAcceleration;
     }
+
+    if (speed <= 0.01 && acceleration < 0) {
+      acceleration = 0;
+    }
+
+
   }
 
   public double getLastDistanceTravelled() {
@@ -202,6 +218,12 @@ public class Engine implements Tickable {
   }
 
   public boolean isStopped() {
+    if (speed < 0.01) {
+      speed = 0;
+    }
+    if (acceleration < 0 & speed == 0) {
+      acceleration = 0;
+    }
     return isStill() && speed == 0;
   }
 

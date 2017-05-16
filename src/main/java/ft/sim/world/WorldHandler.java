@@ -1,14 +1,21 @@
 package ft.sim.world;
 
+import ft.sim.world.connectables.Connectable;
 import ft.sim.world.journey.Journey;
 import ft.sim.world.map.GlobalMap;
+import ft.sim.world.train.Train;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by Sina on 03/04/2017.
  */
 public class WorldHandler {
+
+  protected static final transient Logger logger = LoggerFactory.getLogger(WorldHandler.class);
 
   private GlobalMap world;
   private static Map<Journey, GlobalMap> journeysWorlds = new HashMap<>();

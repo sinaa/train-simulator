@@ -97,7 +97,10 @@ public class NextTrainPredictor {
       }
     }
     if (distance < 0) {
-      logger.error("distance " + distance + " cannot be negative!");
+      logger.error("distance " + distance + " cannot be negative");
+      logger.warn("time: {}, tDelta: {}, distanceSinceLastBalise: {}, sameTrainAhead: {}, lastData: {}",
+          time, timeDelta, distanceTravelledSinceLastBalise, sameTrainAhead, lastData);
+      throw new IllegalStateException("wtf");
     }
     distance -= distanceTravelledSinceLastBalise;
     if (distance < 0) {

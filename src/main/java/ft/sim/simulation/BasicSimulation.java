@@ -5,17 +5,22 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import ft.sim.monitoring.CriticalViolationException;
-import ft.sim.world.train.Train;
+import ft.sim.monitoring.Oracle;
+import ft.sim.visualisation.Point;
 import ft.sim.web.SocketSession;
 import ft.sim.world.WorldHandler;
-import ft.sim.world.map.GlobalMap;
+import ft.sim.world.connectables.Connectable;
+import ft.sim.world.connectables.Station;
 import ft.sim.world.journey.Journey;
+import ft.sim.world.map.GlobalMap;
 import ft.sim.world.map.MapBuilder;
-import ft.sim.monitoring.Oracle;
+import ft.sim.world.train.Train;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,53 +32,45 @@ import org.springframework.web.socket.TextMessage;
  */
 public class BasicSimulation {
 
+  public static final String DEFAULT_MAP = "basic";
   protected static transient final Logger logger = LoggerFactory.getLogger(BasicSimulation.class);
-
   // random seed for disruptor's random generation
   public static int RANDOM_SEED = 0;
-
-  // world instance
-  private GlobalMap world = null;
-
+  private static BasicSimulation instance = null;
   // From the point of view of a user, how many ticks we should do per second
   int ticksPerSecond = 1000;
+  // oracle instance
+  Oracle oracle;
+  // world instance
+  private GlobalMap world = null;
   // From the view of the simulation, how much time passed since last tick (in seconds)
   private double secondsPerTick = 1.0 / 100.0;
-
   // How often to send request to user
-  private int userRefreshRate = 500;
-
+  private int userRefreshRate = 100;
   // elapsed time/tick during the simulation
   private long ticksElapsed = 0;
   private long timeElapsed = 0;
   private long nanosElapsed = 0;
   private int simulationTimeElapsed = 0;
-
   // The simulation thread
   private Thread simThread;
-
   // Is the simulation killed?
   private boolean killed = false;
-
   // Is the simulation running?
   private boolean isRunning = false;
-
   //private SocketSession socketSession = null;
   private Set<SocketSession> socketSessions = new HashSet<>();
-
   private boolean interactiveSimulation = true;
-
-  private static BasicSimulation instance = null;
-
   // how many seconds should the simulation run for (max). Default: 2 days
   private long simulationDuration = 2 * 24 * 60 * 60;
-
   private boolean simulationCompleted = false;
 
-  public static final String DEFAULT_MAP = "basic";
-
-  // oracle instance
-  Oracle oracle;
+  private BasicSimulation(String mapName) {
+    logger.info("starting new simulation");
+    buildWorld(mapName);
+    oracle = new Oracle();
+    setSimulatorThread();
+  }
 
   public static BasicSimulation getInstance(String mapName) {
     if (instance == null) {
@@ -84,6 +81,14 @@ public class BasicSimulation {
 
   public static BasicSimulation getInstance() {
     return instance;
+  }
+
+  public static BasicSimulation newInstance(String mapName) {
+    if (instance != null) {
+      instance.kill();
+      instance = null;
+    }
+    return getInstance(mapName);
   }
 
   public void toggleInteractive() {
@@ -97,21 +102,6 @@ public class BasicSimulation {
 
   public boolean isRunning() {
     return isRunning;
-  }
-
-  public static BasicSimulation newInstance(String mapName) {
-    if (instance != null) {
-      instance.kill();
-      instance = null;
-    }
-    return getInstance(mapName);
-  }
-
-  private BasicSimulation(String mapName) {
-    logger.info("starting new simulation");
-    buildWorld(mapName);
-    oracle = new Oracle();
-    setSimulatorThread();
   }
 
   private void setSimulatorThread() {
@@ -169,13 +159,6 @@ public class BasicSimulation {
     disruptor.disruptTheWorld(world);
   }
 
-  public void setWorld(String mapYaml) {
-    if (isRunning) {
-      throw new UnsupportedOperationException("Cannot set new world when simulation is running");
-    }
-    buildWorld(mapYaml);
-  }
-
   private void tick() {
     WorldHandler.getInstance(world).tick(secondsPerTick);
     ticksElapsed++;
@@ -195,12 +178,52 @@ public class BasicSimulation {
       return;
     }
 
+    Map<String, Map<String, String>> rootConnectables = new LinkedHashMap<>();
+    Map<String, Point> trackPoints = new LinkedHashMap<>();
+    Map<String, Point> stationPoints = new LinkedHashMap<>();
+    for (Connectable c : world.getGraph().getRootConnectables()) {
+      Map<String, String> connectableMap = new LinkedHashMap<>();
+      String root = c.toString();
+      String before = root;
+      Iterator<Connectable> mapIterator = world.getGraph().getIterator(c);
+      double length = 0;
+      if (c instanceof Station) {
+        stationPoints.put(root, new Point(length, c.getLength()));
+      } else {
+        trackPoints.put(root, new Point(length, c.getLength()));
+      }
+      while (mapIterator.hasNext()) {
+        Connectable next = mapIterator.next();
+        if (next instanceof Station) {
+          stationPoints.put(next.toString(), new Point(length, length + next.getLength()));
+        } else {
+          trackPoints.put(next.toString(), new Point(length, length + next.getLength()));
+        }
+        length += next.getLength();
+        connectableMap.put(before, next.toString());
+        before = next.toString();
+      }
+      rootConnectables.put(root, connectableMap);
+    }
+
+    Map<String, Point> trainPoints = new LinkedHashMap<>();
+    for (Journey j : world.getJourneys().values()) {
+      j.getHeadPositionFromRoot();
+      j.getTailPositionFromRoot();
+      j.getTrain();
+      trainPoints.put(j.getTrain().toString(),
+          new Point(j.getTailPositionFromRoot(), j.getHeadPositionFromRoot()));
+    }
+
     Gson gsonBuilder = new Gson();
 
     JsonObject jsonObject = new JsonObject();
     jsonObject.addProperty("type", "journeyMap");
     //jsonObject.add("journeys", gson.toJsonTree(journeysMap));
     jsonObject.add("world", gsonBuilder.toJsonTree(world));
+    jsonObject.add("trainPoints", gsonBuilder.toJsonTree(trainPoints));
+    jsonObject.add("trackPoints", gsonBuilder.toJsonTree(trackPoints));
+    jsonObject.add("stationPoints", gsonBuilder.toJsonTree(stationPoints));
     jsonObject.addProperty("timeElapsedCalculating", timeElapsed);
     jsonObject.addProperty("nanosElapsed", nanosElapsed);
     jsonObject.addProperty("ticksElapsed", ticksElapsed);
@@ -269,5 +292,12 @@ public class BasicSimulation {
 
   public GlobalMap getWorld() {
     return world;
+  }
+
+  public void setWorld(String mapYaml) {
+    if (isRunning) {
+      throw new UnsupportedOperationException("Cannot set new world when simulation is running");
+    }
+    buildWorld(mapYaml);
   }
 }

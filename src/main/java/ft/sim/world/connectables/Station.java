@@ -52,6 +52,7 @@ public class Station implements Connectable, Tickable {
     }
     trains.put(train, (double) delay);
     train.signalChange(SignalType.RED);
+    train.enteredStation(this);
     trainsEntering.remove(train);
   }
 

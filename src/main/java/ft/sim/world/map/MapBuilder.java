@@ -24,6 +24,7 @@ import ft.sim.world.train.TrainObjective;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -44,9 +45,8 @@ import org.yaml.snakeyaml.Yaml;
  */
 public class MapBuilder {
 
-  private GlobalMap map = null;
-
   protected transient static final Logger logger = LoggerFactory.getLogger(MapBuilder.class);
+  private GlobalMap map = null;
 
   /*public static GlobalMap buildNewMap() {
     return buildNewMap(DEFAULT_MAP);
@@ -94,6 +94,20 @@ public class MapBuilder {
     return maps;
   }
 
+  private static double copyActiveBalises(Track copyFrom, Track copyTo) {
+    for (Entry<Integer, Placeable> e : copyFrom.getPlaceables().entrySet()) {
+      int position = e.getKey();
+      Placeable placeable = e.getValue();
+      if (!(placeable instanceof ActiveBalise)) {
+        continue;
+      }
+      int newPosition = (int) copyTo.getLength() - 1 - position;
+      Placeable balise = new ActiveBalise();
+      copyTo.placePlaceableOnSectionIndex(balise, newPosition);
+    }
+    return copyTo.getLength();
+  }
+
   private void importBasicMap(String mapYamlFile) throws IOException {
     Resource resource = new ClassPathResource(mapYamlFile);
     Yaml yaml = new Yaml();
@@ -116,7 +130,6 @@ public class MapBuilder {
     createJourneys((Map<String, Object>) mapYaml.get("journeys"));
 
   }
-
 
   private void importDefaults() throws IOException {
     Resource resource = new ClassPathResource("maps/defaults.yaml");
@@ -143,7 +156,7 @@ public class MapBuilder {
   }
 
   private void setRadioMasts() {
-    for(Train train: map.getTrains().values()){
+    for (Train train : map.getTrains().values()) {
       train.getEcu().setRadioMast(RadioMast.getInstance(map));
     }
   }
@@ -364,7 +377,6 @@ public class MapBuilder {
     }
   }
 
-
   private void createJourneys(Map<String, Object> journeys) {
     if (journeys == null) {
       return;
@@ -372,11 +384,23 @@ public class MapBuilder {
     for (Map.Entry<String, Object> j : journeys.entrySet()) {
       int journeyID = Integer.parseInt(j.getKey());
       Map<String, Object> journeyData = (Map<String, Object>) j.getValue();
-      int trainID = (int) journeyData.get("train");
+
       int jpID = (int) journeyData.get("path");
       boolean isForward = (boolean) journeyData.getOrDefault("isForward", true);
 
-      map.addJourney(journeyID, jpID, trainID, isForward);
+      if (journeyID == 0) {
+        if ((int) journeyData.get("repeat") != 1) {
+          throw new IllegalStateException("Special feature not yet implemented");
+        }
+
+        int numJourneys = map.getJourneys().keySet().size();
+        for (int trainID : map.getTrains().keySet()) {
+          map.addJourney(++numJourneys, jpID, trainID, isForward);
+        }
+      } else {
+        int trainID = (int) journeyData.get("train");
+        map.addJourney(journeyID, jpID, trainID, isForward);
+      }
     }
   }
 
@@ -458,9 +482,12 @@ public class MapBuilder {
     }
     for (Map.Entry<String, Object> placeable : placeablesMap.entrySet()) {
       int placeableID = Integer.parseInt(placeable.getKey());
+      if (placeableID == 0 || map.getPlaceablesMap().get(placeableID) != null) {
+        placeableID = map.getPlaceablesMap().keySet().size() + 1;
+      }
       Map<String, Object> placeableData = (Map<String, Object>) placeable.getValue();
       Placeable p = null;
-      if (placeableData.get("type").equals("fixedBalise")) {
+      if (placeableData.getOrDefault("type", "fixedBalise").equals("fixedBalise")) {
         p = new PassiveBalise(Double.valueOf((int) placeableData.get("advisorySpeed")),
             placeableID);
       }
@@ -512,21 +539,6 @@ public class MapBuilder {
     return length;
   }
 
-  private static double copyActiveBalises(Track copyFrom, Track copyTo) {
-    for (Entry<Integer, Placeable> e : copyFrom.getPlaceables().entrySet()) {
-      int position = e.getKey();
-      Placeable placeable = e.getValue();
-      if (!(placeable instanceof ActiveBalise)) {
-        continue;
-      }
-      int newPosition = (int) copyTo.getLength() - 1 - position;
-      Placeable balise = new ActiveBalise();
-      copyTo.placePlaceableOnSectionIndex(balise, newPosition);
-    }
-    return copyTo.getLength();
-  }
-
-
   private void createTrains(Map<String, Object> trains) {
     if (trains == null) {
       return;
@@ -534,10 +546,20 @@ public class MapBuilder {
     for (Map.Entry<String, Object> train : trains.entrySet()) {
       int trainID = Integer.parseInt(train.getKey());
       Map<String, Object> trainData = (Map<String, Object>) train.getValue();
-      Train t = new Train((int) trainData.get("numCars"));
+      int numCars = (int) trainData.get("numCars");
 
-      map.addTrain(trainID, t);
-      t.setTrainID(trainID);
+      if (trainID < 0) { // Special feature
+        int numTrains = map.getTrains().keySet().size();
+        int count = (int) trainData.get("count");
+        for (int i = 0; i < count; i++) {
+          Train t = new Train(numCars);
+          map.addTrain(++numTrains, t);
+        }
+      } else {
+        Train t = new Train(numCars);
+        map.addTrain(trainID, t);
+        t.setTrainID(trainID);
+      }
     }
   }
 

@@ -15,8 +15,8 @@ public class DistanceHelper {
     return distanceTravelled(speedCurrent, time, acceleration);
   }
 
-  public static double distanceToStop(double speedCurrent, double acceleration){
-    return distanceTravelled(0,speedCurrent, acceleration);
+  public static double distanceToStop(double speedCurrent, double acceleration) {
+    return distanceToReachTargetSpeed(0, speedCurrent, acceleration);
   }
 
 

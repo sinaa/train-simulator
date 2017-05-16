@@ -5,5 +5,6 @@ package ft.sim.world.gsm;
  */
 public enum RadioSignal {
   OK,
-  NOK
+  NOK,
+  AT_STATION
 }
