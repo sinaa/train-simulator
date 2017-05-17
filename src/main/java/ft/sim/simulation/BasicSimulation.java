@@ -208,9 +208,6 @@ public class BasicSimulation {
 
     Map<String, Point> trainPoints = new LinkedHashMap<>();
     for (Journey j : world.getJourneys().values()) {
-      j.getHeadPositionFromRoot();
-      j.getTailPositionFromRoot();
-      j.getTrain();
       trainPoints.put(j.getTrain().toString(),
           new Point(j.getTailPositionFromRoot(), j.getHeadPositionFromRoot()));
     }
