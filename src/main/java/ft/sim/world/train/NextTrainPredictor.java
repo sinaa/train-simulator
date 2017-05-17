@@ -112,6 +112,10 @@ public class NextTrainPredictor {
     return distance;
   }
 
+  public double getWorstCaseDistance() {
+    return worstCaseDistance;
+  }
+
   /**
    * If we have more than one datapoint, based on the speed of the train ahead, guess
    * what the acceleration of the train is

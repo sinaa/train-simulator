@@ -86,7 +86,7 @@ public class Engine implements Tickable {
 
   public void fullBreak() {
     if (speed != 0) {
-      logger.warn("full breaking...");
+      //logger.warn("full breaking...");
       this.targetSpeed = 0;
       acceleration = FULL_TRAIN_DECELERATION;
     }

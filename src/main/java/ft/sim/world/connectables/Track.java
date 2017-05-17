@@ -15,8 +15,10 @@ import ft.sim.world.WorldHandler;
 import ft.sim.world.placeables.Balise;
 import ft.sim.world.placeables.Placeable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +33,7 @@ public class Track implements Connectable, SignalLinked {
   private final ConnectableType type = ConnectableType.TRACK;
   private transient List<Section> sections;
   private int length = DEFAULT_LENGTH;
-  private Set<SignalUnit> blockSignals = new HashSet<>();
+  private Map<Integer, SignalUnit> blockSignals = new HashMap<>();
   private SignalController signalController = null;
   private transient BiMap<Integer, Placeable> placeables = HashBiMap.create();
 
@@ -60,10 +62,10 @@ public class Track implements Connectable, SignalLinked {
 
   public void addBlockSignal(SignalUnit blockSignal, int position) {
     placePlaceableOnSectionIndex(blockSignal, position);
-    blockSignals.add(blockSignal);
+    blockSignals.put(position, blockSignal);
   }
 
-  public Set<SignalUnit> getBlockSignals() {
+  public Map<Integer, SignalUnit> getBlockSignals() {
     return blockSignals;
   }
 

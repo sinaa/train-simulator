@@ -1,13 +1,13 @@
 package ft.sim.world.journey;
 
 import com.google.common.collect.Sets;
-import ft.sim.world.train.Train;
 import ft.sim.world.RealWorldConstants;
 import ft.sim.world.connectables.Connectable;
 import ft.sim.world.connectables.Observable;
 import ft.sim.world.connectables.Section;
 import ft.sim.world.connectables.Station;
 import ft.sim.world.connectables.Track;
+import ft.sim.world.train.Train;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -23,19 +23,15 @@ import org.slf4j.LoggerFactory;
 public class JourneyPosition {
 
   protected transient final Logger logger = LoggerFactory.getLogger(JourneyPosition.class);
-
+  private final boolean isForward;
   private JourneyPath path = null;
   private Train train = null;
-
   private LinkedList<Connectable> position = new LinkedList<>();
   private double positionFromFirstConnectable = 0;
   private double positionFromFirstSection = 0;
-
   private boolean isEnded = false;
-
   private boolean reachedLastConnectable = false;
-
-  private final boolean isForward;
+  private transient Set<Section> coveredSections = new HashSet<>();
 
   public JourneyPosition(JourneyPath path, Train train, boolean isForward) {
     this(path, train, isForward, isForward ? 0 : path.getLength());
@@ -97,9 +93,21 @@ public class JourneyPosition {
   }
 
   public List<Section> getSectionsOccupied() {
+
     List<Section> sections = new ArrayList<>();
     double toSkip = getPositionFromFirstConnectable();
     int trainLength = train.getLength();
+
+    if (position.size() == 1) {
+      Connectable firstConnectable = position.peek();
+      if (firstConnectable instanceof Track) {
+        List<Section> trackSections = ((Track) firstConnectable).getSections();
+        for (int i = (int) toSkip; i <= (int) toSkip + trainLength; i++) {
+          sections.add(trackSections.get(i));
+        }
+        return sections;
+      }
+    }
     double skipped = 0;
     double sectionsLength = 0;
     for (Connectable c : position) {
@@ -151,7 +159,6 @@ public class JourneyPosition {
     return positionFromFirstConnectable;
   }
 
-
   public double getPositionFromLastConnectable() {
     double availableLength = getAvailableLength(positionFromFirstConnectable);
 
@@ -179,8 +186,6 @@ public class JourneyPosition {
     }
     return length - distanceAlreadyPassed;
   }
-
-  private transient Set<Section> coveredSections = new HashSet<>();
 
   public void update(Journey journey, double lastDistanceTravelled) {
     // get old sections occupied
@@ -233,7 +238,7 @@ public class JourneyPosition {
     // get new sections occupied by the train
     List<Section> newSectionsOccupied = getSectionsOccupied();
 
-    if(!newSectionsOccupied.isEmpty()){
+    if (!newSectionsOccupied.isEmpty()) {
       Section firstSection = newSectionsOccupied.get(0);
       firstSection.addPlaceable(train.getTrail());
     }
@@ -429,13 +434,11 @@ public class JourneyPosition {
   }
 
   private double getRelativeTailPosition() {
-    Connectable firstConnectable = position.peekFirst();
-    return path.getConnectableStartingPosition(firstConnectable) + positionFromFirstConnectable;
+    return path.getConnectableStartingPosition(position.peekFirst()) + positionFromFirstConnectable;
   }
 
   private double getRelativeHeadPosition() {
-    Connectable lastConnectable = position.peekLast();
-    return path.getConnectableStartingPosition(lastConnectable) + getPositionFromLastConnectable();
+    return path.getConnectableStartingPosition(position.peekLast()) + getPositionFromLastConnectable();
   }
 
 

@@ -19,8 +19,8 @@
       globalStage.update();
     }
 
-    function updateTrains(data, stage){
-      for(const key in data.trains){
+    function updateTrains(data, stage) {
+      for (const key in data.trains) {
         var tData = data.trains[key];
         globalTrains[key].train.x = (tData.to + tData.from) / 2 - 25;
         globalTrains[key].trainBlock.graphics.command.x = tData.from;
@@ -84,8 +84,9 @@
         // end of track indicator
         var endOfTrack = new createjs.Shape();
 
-        endOfTrack.graphics.beginFill("red").rect(t.to - trackMarkerWidth, baseThickness-(baseThickness/2),
-            trackMarkerWidth, baseY*6);
+        endOfTrack.graphics.beginFill("red").rect(t.to - trackMarkerWidth,
+            baseThickness - (baseThickness / 2),
+            trackMarkerWidth, baseY * 6);
         stage.addChild(endOfTrack);
 
         globalTracks[key] = {
@@ -94,11 +95,39 @@
         }
       }
     }
+
+    function addSignals(data, stage) {
+      data = {
+        signals: [{offset: 100, status: "red", track: 1}],
+        tracks: {
+          "Track-1": {from: 0, to: 1000},
+          "Track-2": {from: 1200, to: 2200}
+        }
+      };
+      for (const key in data.signals) {
+        var sigdata = data.signals[key];
+
+        var signal = new createjs.Container();
+
+        var sigBox = new createjs.Shape();
+        sigBox.graphics.beginFill("white").drawRoundRect(0, 80, 50, baseY * 5,5);
+        signal.addChild(sigBox);
+
+        var sigColor = new createjs.Shape();
+        var signalCommand = sigColor.graphics.beginFill("green").command;
+        sigColor.graphics.drawCircle(25, 105, 20);
+        signal.addChild(sigColor);
+
+        signal.x = data.tracks["Track-" + sigdata.track].from + sigdata.offset;
+
+        stage.addChild(signal);
+      }
+    }
+
     function init(data) {
       var canvas = document.getElementById("demoCanvas");
       var stage = new createjs.Stage("demoCanvas");
       canvas.style.backgroundColor = "#000";
-
 
       stage.x = 0;
       stage.y = 100;
@@ -110,6 +139,8 @@
       addStations(data, stage);
 
       addTrains(data, stage);
+
+      addSignals(data, stage);
 
       stage.update();
 

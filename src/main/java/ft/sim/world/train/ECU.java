@@ -46,13 +46,23 @@ public class ECU implements Tickable {
   private double totalDistanceLastUpAhead = 0;
   private double lastDistanceSinceLastBalise = 0; // Only for the UI interface
   private double actualDistance = -1;
+  private double timeLastSquawkSent = 0;
+  private RadioSignal lastSquawkSent = RadioSignal.OK;
 
   public ECU(Journey journey, Engine engine) {
     this.engine = engine;
     createWorldModel(journey);
   }
 
+  public boolean isSeeingTrainsAhead() {
+    return seeingTrainsAhead;
+  }
+
   public void setSeeingTrainsAhead(boolean seeingTrainsAhead) {
+    if (this.seeingTrainsAhead == seeingTrainsAhead) {
+      return;
+    }
+    logger.warn("{} seeing train ahead: {}", train, seeingTrainsAhead);
     this.seeingTrainsAhead = seeingTrainsAhead;
   }
 
@@ -82,14 +92,23 @@ public class ECU implements Tickable {
       return;
     }
 
-    if (isTrainAheadBroken()) {
-      engine.emergencyBreak();
-      engine.setObjective(STOP_THEN_ROLL);
-      return;
-    }
-
     nextTrainPredictor.predict(timer.getTime(), getEstimatedDistanceTravelledSinceLastBalise());
     double nextDistancePrediction = nextTrainPredictor.getDistance();
+
+    if (isTrainAheadBroken()) {
+      if (nextTrainPredictor.getWorstCaseDistance() < calculateBreakingDistance(
+          engine.getNormalDeceleration())) {
+        engine.normalBreak();
+      } else if (nextTrainPredictor.getWorstCaseDistance() < calculateBreakingDistance(
+          FULL_TRAIN_DECELERATION)) {
+        engine.fullBreak();
+      } else {
+        engine.emergencyBreak();
+      }
+      engine.setObjective(STOP_THEN_ROLL);
+      sendSquawkDownTheLine(RadioSignal.NOK);
+      return;
+    }
     /*if (nextDistancePrediction != -1) {
       logger.info("[{}] Next train is {} meters away. safe distance: {}", train,
           nextDistancePrediction, safeBreakingDistance);
@@ -159,7 +178,7 @@ public class ECU implements Tickable {
   public double calculateBreakingDistance(double decelerationSpeed) {
     double currentSpeed = engine.getSpeed();
     double targetSpeed = 0;
-    double deceleration = engine.getNormalDeceleration();
+    double deceleration = decelerationSpeed;
 
     return DistanceHelper.distanceToReachTargetSpeed(targetSpeed, currentSpeed, deceleration);
   }
@@ -221,5 +240,18 @@ public class ECU implements Tickable {
 
   public void setActualDistance(double actualDistance) {
     this.actualDistance = actualDistance;
+  }
+
+  public void sendSquawkDownTheLine(RadioSignal signal) {
+    if (lastSquawkSent == RadioSignal.NOK) {
+      return;
+    }
+    lastSquawkSent = signal;
+    timeLastSquawkSent = timer.getTime();
+    getRadioMast().ifPresent(mast -> mast.passMessageToTrainBehind(train, signal));
+  }
+
+  public double getTimeLastSquawkSent() {
+    return timeLastSquawkSent;
   }
 }

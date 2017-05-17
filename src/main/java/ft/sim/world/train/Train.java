@@ -57,8 +57,6 @@ public class Train implements Tickable, SignalListener {
 
   private transient Set<SignalUnit> signalsListeningTo = new HashSet<>();
 
-  private double timeLastSquawkSent = 0;
-
 
   public Train(int numCars) {
     buildCars(numCars);
@@ -156,8 +154,8 @@ public class Train implements Tickable, SignalListener {
 
     // send OK squawk down the line
     if (engine.getObjective() != STOP) {
-      if (timeLastSquawkSent + TRAIN_SQUAWK_INTERVAL < ecu.getTimer().getTime()) {
-        sendSquawkDownTheLine(RadioSignal.OK);
+      if (ecu.getTimeLastSquawkSent() + TRAIN_SQUAWK_INTERVAL < ecu.getTimer().getTime()) {
+        ecu.sendSquawkDownTheLine(RadioSignal.OK);
       }
     }
   }
@@ -218,28 +216,31 @@ public class Train implements Tickable, SignalListener {
         if (engine.getObjective() != STOP && engine.getObjective() != STOP_AND_ROLL) {
           if (ObservableHelper.hasBlockSignal(observables)) {
             engine.fullBreak();
-            logger.error("{} Emergency breaking!", this);
+            logger.error("{} Full breaking, for red signal!", this);
             engine.setObjective(STOP);
           } else {
             engine.setTargetSpeed(0);
             engine.setObjective(STOP_AND_ROLL);
-            logger.error("{} normal breaking!", this);
+            logger.error("{} normal breaking, for red signal!", this);
           }
           ObservableHelper.getRedSignals(observables).forEach(s -> s.addListener(this));
         }
       } else {
-        boolean sawGreenBlockSignal = ObservableHelper.getGreenSignals(observables).stream()
-            .anyMatch(s -> !s.isDistantSignal());
-        if (sawGreenBlockSignal && engine.getObjective() == PROCEED_WITH_CAUTION) {
-          engine.setTargetSpeed(engine.getLastAdvisorySpeed());
-          logger.warn("caution no longer needed! proceeding at {}", engine.getLastAdvisorySpeed());
+        Set<SignalUnit> greenSignals = ObservableHelper.getGreenSignals(observables);
+        if (greenSignals.size() > 0) {
+          boolean sawGreenBlockSignal = greenSignals.stream().anyMatch(s -> !s.isDistantSignal());
+          if (sawGreenBlockSignal && engine.getObjective() == PROCEED_WITH_CAUTION) {
+            engine.setTargetSpeed(engine.getLastAdvisorySpeed());
+            engine.setObjective(PROCEED);
+            logger.warn("Saw green Block Signal. Proceeding at {}", engine.getLastAdvisorySpeed());
+          }
         }
       }
 
       if (ObservableHelper.anyTrains(observables)) {
         if (!engine.isStopped()) {
           engine.fullBreak();
-          logger.error("{} Emergency breaking! There's a train ahead!", this);
+          logger.error("{} Full breaking! There's a train ahead!", this);
           engine.setObjective(STOP_THEN_ROLL);
         }
         ecu.setSeeingTrainsAhead(true);
@@ -292,10 +293,6 @@ public class Train implements Tickable, SignalListener {
     ecu.ping(signal);
   }
 
-  private void sendSquawkDownTheLine(RadioSignal signal) {
-    timeLastSquawkSent = ecu.getTimer().getTime();
-    ecu.getRadioMast().ifPresent(mast -> mast.passMessageToTrainBehind(this, signal));
-  }
 
   /**
    * Notification event sent by a track the train just entered.
@@ -305,14 +302,14 @@ public class Train implements Tickable, SignalListener {
   }
 
   public void enteredStation(Station station) {
-    sendSquawkDownTheLine(RadioSignal.AT_STATION);
+    ecu.sendSquawkDownTheLine(RadioSignal.AT_STATION);
     engine.fullBreak();
     engine.setObjective(STOP);
     logger.warn("{} entered {}, stopping...", this, station);
   }
 
   public void crash() {
-    sendSquawkDownTheLine(RadioSignal.NOK);
+    ecu.sendSquawkDownTheLine(RadioSignal.NOK);
     engine.emergencyBreak();
     engine.setObjective(STOP);
   }

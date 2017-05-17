@@ -48,7 +48,7 @@ public class ViolationBuilder {
         "Train %s and Train %s were within less than breaking distance from each other (%s)",
         o.getWorld().getTrainID(t1), o.getWorld().getTrainID(t2), distance);
 
-    o.addViolation(new Violation(VARIABLE_BLOCK, CRITICAL, o.getTick(), violationDescription));
+    o.addViolation(new Violation(VARIABLE_BLOCK, HIGH, o.getTick(), violationDescription));
   }
 
   public static void createOverfullStationViolation(Oracle o, Station station) {

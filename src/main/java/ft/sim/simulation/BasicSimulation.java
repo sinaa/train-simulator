@@ -7,13 +7,16 @@ import com.google.gson.JsonObject;
 import ft.sim.monitoring.CriticalViolationException;
 import ft.sim.monitoring.Oracle;
 import ft.sim.visualisation.Point;
+import ft.sim.visualisation.SignalPoint;
 import ft.sim.web.SocketSession;
 import ft.sim.world.WorldHandler;
 import ft.sim.world.connectables.Connectable;
 import ft.sim.world.connectables.Station;
+import ft.sim.world.connectables.Track;
 import ft.sim.world.journey.Journey;
 import ft.sim.world.map.GlobalMap;
 import ft.sim.world.map.MapBuilder;
+import ft.sim.world.signalling.SignalUnit;
 import ft.sim.world.train.Train;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -181,6 +184,7 @@ public class BasicSimulation {
     Map<String, Map<String, String>> rootConnectables = new LinkedHashMap<>();
     Map<String, Point> trackPoints = new LinkedHashMap<>();
     Map<String, Point> stationPoints = new LinkedHashMap<>();
+    List<SignalPoint> signalPoints = new ArrayList<>();
     for (Connectable c : world.getGraph().getRootConnectables()) {
       Map<String, String> connectableMap = new LinkedHashMap<>();
       String root = c.toString();
@@ -191,6 +195,9 @@ public class BasicSimulation {
         stationPoints.put(root, new Point(length, c.getLength()));
       } else {
         trackPoints.put(root, new Point(length, c.getLength()));
+        Map<Integer, SignalUnit> signals = ((Track) c).getBlockSignals();
+        signals.forEach((offset, signalUnit) -> signalPoints.add(
+            new SignalPoint(offset, world.getTrackID((Track) c), signalUnit.getStatus())));
       }
       while (mapIterator.hasNext()) {
         Connectable next = mapIterator.next();
@@ -198,6 +205,9 @@ public class BasicSimulation {
           stationPoints.put(next.toString(), new Point(length, length + next.getLength()));
         } else {
           trackPoints.put(next.toString(), new Point(length, length + next.getLength()));
+          Map<Integer, SignalUnit> signals = ((Track) next).getBlockSignals();
+          signals.forEach((offset, signalUnit) -> signalPoints.add(
+              new SignalPoint(offset, world.getTrackID((Track) next), signalUnit.getStatus())));
         }
         length += next.getLength();
         connectableMap.put(before, next.toString());
@@ -221,6 +231,7 @@ public class BasicSimulation {
     jsonObject.add("trainPoints", gsonBuilder.toJsonTree(trainPoints));
     jsonObject.add("trackPoints", gsonBuilder.toJsonTree(trackPoints));
     jsonObject.add("stationPoints", gsonBuilder.toJsonTree(stationPoints));
+    jsonObject.add("signalPoints", gsonBuilder.toJsonTree(signalPoints));
     jsonObject.addProperty("timeElapsedCalculating", timeElapsed);
     jsonObject.addProperty("nanosElapsed", nanosElapsed);
     jsonObject.addProperty("ticksElapsed", ticksElapsed);
