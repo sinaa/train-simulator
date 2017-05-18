@@ -483,10 +483,11 @@
       "accelerating": "green",
       "decelerating": "red",
       "still": "orange",
+      "station": "white",
       "": "yellow"
     };
 
-    function  updateSignals(data, stage){
+    function updateSignals(data, stage) {
       for (const key in data.signalPoints) {
         var tData = data.signalPoints[key];
 
@@ -512,6 +513,9 @@
             status = "decelerating";
           }
         }
+        if (data.world.journeysMap[trainKey].train.atStation) {
+          status = "station";
+        }
         //console.log(key + " is " + status)
         //console.log(data.world.trainMap[trainKey])
         globalTrains[key].trainStatusCommand.style = colorMap[status];
@@ -528,7 +532,7 @@
         var signal = new createjs.Container();
 
         var sigBox = new createjs.Shape();
-        sigBox.graphics.beginFill("white").drawRoundRect(0, 80, 50, baseY * 5,5);
+        sigBox.graphics.beginFill("white").drawRoundRect(0, 80, 50, baseY * 5, 5);
         signal.addChild(sigBox);
 
         var sigColor = new createjs.Shape();
@@ -587,17 +591,17 @@
         trainObjective.y = baseThickness + 50;
         trainObjective.x = tData.from - (tData.to + tData.from) / 2;
 
-        trainContainer.addChild(trainBlock, train, trainIdentifier,trainObjective);
+        trainContainer.addChild(trainBlock, train, trainIdentifier, trainObjective);
         trainContainer.x = (tData.to + tData.from) / 2 - 25;
 
         stage.addChild(trainContainer);
 
         globalTrains[key] = {
-         // trainBlock: trainBlock,
-         // train: train,
+          // trainBlock: trainBlock,
+          // train: train,
           trainContainer: trainContainer,
           trainStatusCommand: trainStatusCommand,
-          trainObjective:trainObjective
+          trainObjective: trainObjective
         }
       }
     }

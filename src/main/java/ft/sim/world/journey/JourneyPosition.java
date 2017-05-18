@@ -414,7 +414,7 @@ public class JourneyPosition {
     }
 
     if (headPosition >= to) {
-      logger.error("train falling from the end!");
+      logger.error("{} falling from the end! speed: {}", train, train.getEngine().getSpeed());
       return new HashSet<>();
     }
 
@@ -438,7 +438,8 @@ public class JourneyPosition {
   }
 
   private double getRelativeHeadPosition() {
-    return path.getConnectableStartingPosition(position.peekLast()) + getPositionFromLastConnectable();
+    return path.getConnectableStartingPosition(position.peekLast())
+        + getPositionFromLastConnectable();
   }
 
 

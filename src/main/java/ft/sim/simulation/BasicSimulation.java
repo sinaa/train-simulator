@@ -126,7 +126,7 @@ public class BasicSimulation {
         if (interactiveSimulation) {
           // wait for the remaining time (to match ticksPerSecond)
           int waitTime = (int) Math.floor((userRefreshRate / ticksPerSecond) - ms);
-          if (waitTime > 0) {
+          if (false && waitTime > 0) {
             try {
               Thread.sleep(waitTime);
             } catch (InterruptedException e) {

@@ -1,5 +1,6 @@
 package ft.sim.world.train;
 
+import static ft.sim.world.RealWorldConstants.EYE_SIGHT_DISTANCE;
 import static ft.sim.world.RealWorldConstants.FULL_TRAIN_DECELERATION;
 import static ft.sim.world.RealWorldConstants.ROLLING_SPEED;
 import static ft.sim.world.train.TrainObjective.PROCEED;
@@ -87,13 +88,18 @@ public class ECU implements Tickable {
   }
 
   public void tick(double time) {
-    calculateSafeBreakingDistance();
+    calculateSafeBreakingDistance(engine.getNormalDeceleration());
     if (!nextTrainPredictor.anyTrainsAhead()) {
       return;
     }
 
     nextTrainPredictor.predict(timer.getTime(), getEstimatedDistanceTravelledSinceLastBalise());
     double nextDistancePrediction = nextTrainPredictor.getDistance();
+
+    int arbitaryCloseDistance = 5;
+    if (seeingTrainsAhead && nextDistancePrediction > arbitaryCloseDistance) {
+      nextDistancePrediction = arbitaryCloseDistance;
+    }
 
     if (isTrainAheadBroken()) {
       if (nextTrainPredictor.getWorstCaseDistance() < calculateBreakingDistance(
@@ -104,6 +110,7 @@ public class ECU implements Tickable {
         engine.fullBreak();
       } else {
         engine.emergencyBreak();
+        sendSquawkDownTheLine(RadioSignal.NOK);
       }
       engine.setObjective(STOP_THEN_ROLL);
       sendSquawkDownTheLine(RadioSignal.NOK);
@@ -117,11 +124,12 @@ public class ECU implements Tickable {
         && nextDistancePrediction < safeBreakingDistance) {
       if (nextDistancePrediction > calculateBreakingDistance(engine.getNormalDeceleration())) {
         engine.setTargetSpeed(0);
-        engine.setObjective(STOP_THEN_ROLL);
-        logger.warn("Train {} normal breaking, there's a train within breaking distance {} ({}) {}",
+        engine.setObjective(STOP_AND_ROLL);
+        logger.warn("{} normal breaking, there's a train within breaking distance {} ({}) {}",
             train, nextDistancePrediction, safeBreakingDistance,
             calculateBreakingDistance(engine.getNormalDeceleration()));
-      } else if (nextDistancePrediction < RealWorldConstants.EYE_SIGHT_DISTANCE) {
+      } else if (nextDistancePrediction < EYE_SIGHT_DISTANCE) {
+        logger.warn("{} rolling, {}, {}", nextDistancePrediction, EYE_SIGHT_DISTANCE);
         engine.setObjective(STOP_AND_ROLL);
         engine.roll();
         if (engine.getSpeed() > ROLLING_SPEED) {
@@ -129,19 +137,27 @@ public class ECU implements Tickable {
         }
       } else if (nextDistancePrediction < calculateBreakingDistance(FULL_TRAIN_DECELERATION)) {
         engine.setObjective(STOP_THEN_ROLL);
+        logger.warn("{} stop then roll, {}, {}", nextDistancePrediction, calculateBreakingDistance(FULL_TRAIN_DECELERATION));
         engine.fullBreak();
       } else {
 
-        logger.warn("Train {} emergency breaking, there's a train within breaking distance {} ({})",
-            train, nextDistancePrediction, safeBreakingDistance);
+        logger.warn("{} emergency breaking, there's a train within breaking distance {} ({}) full breaking distance: {}",
+            train, nextDistancePrediction, safeBreakingDistance, calculateBreakingDistance(FULL_TRAIN_DECELERATION));
         engine.emergencyBreak();
+        sendSquawkDownTheLine(RadioSignal.NOK);
         //engine.roll();
         engine.setObjective(STOP_THEN_ROLL);
       }
-      return;
     } else {
-      if ((engine.getObjective() == STOP_AND_ROLL || engine.getObjective() == PROCEED_WITH_CAUTION)
-          && !seeingTrainsAhead) {
+      if(engine.getObjective() == STOP_AND_ROLL){
+        if(nextDistancePrediction+arbitaryCloseDistance >= safeBreakingDistance){
+          return;
+        }
+        logger.warn("Keeping a distance [{}]", train);
+        engine.setObjective(PROCEED);
+      }
+
+      if (engine.getObjective() == PROCEED_WITH_CAUTION && !seeingTrainsAhead) {
         logger.warn("It's probably safe to proceed [{}]", train);
         engine.setObjective(PROCEED);
       }
@@ -183,12 +199,16 @@ public class ECU implements Tickable {
     return DistanceHelper.distanceToReachTargetSpeed(targetSpeed, currentSpeed, deceleration);
   }
 
-  private void calculateSafeBreakingDistance() {
-    double distance = calculateBreakingDistance();
+  private void calculateSafeBreakingDistance(double decelerationSpeed) {
+    double distance = calculateBreakingDistance(decelerationSpeed);
 
     double safetyMargin = SAFETY_DISTANCE_MARGIN_COEFFICIENT * distance;
 
     this.safeBreakingDistance = distance + safetyMargin;
+  }
+
+  private void calculateSafeBreakingDistance() {
+    calculateSafeBreakingDistance(engine.getMaxDeceleration());
   }
 
   private double getMaxSpeed() {
@@ -243,6 +263,9 @@ public class ECU implements Tickable {
   }
 
   public void sendSquawkDownTheLine(RadioSignal signal) {
+    if(signal==RadioSignal.NOK){
+      logger.error("{} squawked NOK :-(", train);
+    }
     if (lastSquawkSent == RadioSignal.NOK) {
       return;
     }

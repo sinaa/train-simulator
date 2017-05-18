@@ -236,6 +236,7 @@ public class MapBuilder {
           SignalUnit mainSignal = signalController.getMainSignal();
           nextTrack.addBlockSignal(mainSignal, 0);
           station.setNextBlockSignalController(signalController, (Track) nextTrack);
+          nextTrack.addSignalController(signalController);
         }
       }
     }

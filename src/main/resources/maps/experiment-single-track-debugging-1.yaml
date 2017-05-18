@@ -36,6 +36,8 @@ journeyPaths:
       id: 12
     - type: track
       id: 13
+    - type: track
+      id: 14
     - type: station
       id: 3
 
@@ -49,22 +51,32 @@ tracks:
   '4':
     numSections: 20000
   '5':
-    numSections: 10000
+    numSections: 2000
   '6':
     numSections: 10000
   '7':
     numSections: 10000
   '8':
     numSections: 10000
+    acceleration: 0.8
+    deceleration: 1.2
   '9':
     numSections: 10000
+    acceleration: 0.8
+    deceleration: 1.2
   '10':
     numSections: 10000
+    acceleration: 1.2
+    deceleration: 0.8
   '11':
     numSections: 10000
+    acceleration: 1.2
+    deceleration: 0.8
   '12':
-    numSections: 20000
+    numSections: 10000
   '13':
+    numSections: 20000
+  '14':
     numSections: 2000
 
 placeables:
@@ -91,18 +103,23 @@ placeables:
   '5':
     advisorySpeed: 35
     placeOn:
-      track: 5
+      track: 6
       section: 0
   '6':
     advisorySpeed: 130
     placeOn:
-      track: 6
+      track: 7
       section: 1
   '7':
     advisorySpeed: 10
     placeOn:
-      track: 12
+      track: 13
       section: 3000
+  '8':
+    advisorySpeed: 20
+    placeOn:
+      track: 5
+      section: 5
 trains:
   # Negative values indicate special definitions
   '-3':

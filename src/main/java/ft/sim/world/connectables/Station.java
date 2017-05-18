@@ -69,6 +69,7 @@ public class Station implements Connectable, Tickable {
   public void left(Train train) {
     trains.remove(train);
     trainsLeaving.remove(train);
+    train.leftStation(this);
     logger.warn("{} left {}", train, this);
   }
 

@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
  * Created by Sina on 21/02/2017.
  */
 public class Engine implements Tickable {
+
   protected static final transient Logger logger = LoggerFactory.getLogger(Engine.class);
 
   // 201.6 km/h (56 m/s)
@@ -72,12 +73,16 @@ public class Engine implements Tickable {
     return speed;
   }
 
+  public boolean isRolling() {
+    return speed <= ROLLING_SPEED;
+  }
+
   void roll() {
     setTargetSpeed(ROLLING_SPEED);
   }
 
   public void emergencyBreak() {
-    if (speed != 0) {
+    if (speed != 0 && acceleration != maxDeceleration) {
       logger.warn("Emergency breaking!");
       this.targetSpeed = 0;
       acceleration = maxDeceleration;
@@ -160,7 +165,6 @@ public class Engine implements Tickable {
     if (speed < 0.0001) {
       speed = 0;
     }
-
 
     updateAcceleration();
   }

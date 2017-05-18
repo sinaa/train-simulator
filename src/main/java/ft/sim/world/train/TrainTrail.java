@@ -26,4 +26,13 @@ public class TrainTrail implements Observable, Placeable {
     }
     section = newSection;
   }
+
+  public void atStation(){
+    nowOnSection(null);
+  }
+
+  @Override
+  public String toString() {
+    return "Trail for: " + train.toString();
+  }
 }

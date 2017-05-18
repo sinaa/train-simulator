@@ -49,6 +49,8 @@ public class Train implements Tickable, SignalListener {
 
   private ActiveBaliseData otherSideData = null;
 
+  private boolean atStation = false;
+
   // train ID
   private int tID = -1;
 
@@ -153,11 +155,11 @@ public class Train implements Tickable, SignalListener {
     evaluateObjectives();
 
     // send OK squawk down the line
-    if (engine.getObjective() != STOP) {
+    //if (engine.getObjective() != STOP) {
       if (ecu.getTimeLastSquawkSent() + TRAIN_SQUAWK_INTERVAL < ecu.getTimer().getTime()) {
         ecu.sendSquawkDownTheLine(RadioSignal.OK);
       }
-    }
+    //}
   }
 
   private void evaluateObjectives() {
@@ -171,7 +173,7 @@ public class Train implements Tickable, SignalListener {
       case STOP_AND_ROLL:
         if (engine.getSpeed() < RealWorldConstants.ROLLING_SPEED &&
             ObservableHelper.allGreen(observablesInSight)) {
-          logger.warn("observables: {}", observablesInSight);
+          logger.warn("{} observables: {}", this, observablesInSight);
           proceedWithCaution();
         }
         break;
@@ -179,6 +181,7 @@ public class Train implements Tickable, SignalListener {
         if (engine.isStopped() &&
             !ObservableHelper.anyTrains(observablesInSight) &&
             ObservableHelper.allGreen(observablesInSight)) {
+          logger.warn("{} stopped and apparently no trains in sight, so proceeding...", this);
           proceedWithCaution();
         }
         break;
@@ -238,7 +241,11 @@ public class Train implements Tickable, SignalListener {
       }
 
       if (ObservableHelper.anyTrains(observables)) {
+
         if (!engine.isStopped()) {
+          // give a fake estimate to the train to not start running like crazy.
+          ecu.updateNextTrainPrediction(
+              new ActiveBaliseData(-1, ecu.getTimer().getTime(), 1, true));
           engine.fullBreak();
           logger.error("{} Full breaking! There's a train ahead!", this);
           engine.setObjective(STOP_THEN_ROLL);
@@ -305,7 +312,13 @@ public class Train implements Tickable, SignalListener {
     ecu.sendSquawkDownTheLine(RadioSignal.AT_STATION);
     engine.fullBreak();
     engine.setObjective(STOP);
+    trail.atStation();
+    atStation = true;
     logger.warn("{} entered {}, stopping...", this, station);
+  }
+
+  public void leftStation(Station station){
+    atStation = false;
   }
 
   public void crash() {
