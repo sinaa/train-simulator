@@ -1,0 +1,146 @@
+---
+journeys:
+  '0': # special feature
+    repeat: 1
+    path: 1
+journeyPaths:
+  '1':
+    path:
+    - type: station
+      id: 1
+    - type: track
+      id: 1
+    - type: track
+      id: 2
+    - type: track
+      id: 3
+    - type: track
+      id: 4
+    - type: station
+      id: 2
+    - type: track
+      id: 5
+    - type: track
+      id: 6
+    - type: track
+      id: 7
+    - type: track
+      id: 8
+    - type: track
+      id: 9
+    - type: track
+      id: 10
+    - type: track
+      id: 11
+    - type: track
+      id: 12
+    - type: track
+      id: 13
+    - type: track
+      id: 14
+    - type: station
+      id: 3
+
+tracks:
+  '1':
+    numSections: 10000
+  '2':
+    numSections: 10000
+  '3':
+    numSections: 10000
+  '4':
+    numSections: 20000
+  '5':
+    numSections: 10000
+  '6':
+    numSections: 10000
+  '7':
+    numSections: 10000
+  '8':
+    numSections: 10000
+    acceleration: 0.8
+    deceleration: 1.2
+  '9':
+    numSections: 10000
+    acceleration: 0.8
+    deceleration: 1.2
+  '10':
+    numSections: 10000
+    acceleration: 1.2
+    deceleration: 0.8
+  '11':
+    numSections: 10000
+    acceleration: 1.2
+    deceleration: 0.8
+  '12':
+    numSections: 10000
+  '13':
+    numSections: 20000
+  '14':
+    numSections: 10000
+
+placeables:
+  '1':
+    advisorySpeed: 130
+    placeOn:
+      track: 2
+      section: 10
+  '2':
+    advisorySpeed: 13
+    placeOn:
+      track: 4
+      section: 3000
+  '3':
+    advisorySpeed: 10
+    placeOn:
+      track: 4
+      section: 18000
+  '4':
+    advisorySpeed: 5
+    placeOn:
+      track: 4
+      section: 19500
+  '5':
+    advisorySpeed: 35
+    placeOn:
+      track: 6
+      section: 0
+  '6':
+    advisorySpeed: 130
+    placeOn:
+      track: 7
+      section: 1
+  '7':
+    advisorySpeed: 10
+    placeOn:
+      track: 13
+      section: 3000
+  '8':
+    advisorySpeed: 20
+    placeOn:
+      track: 5
+      section: 5
+trains:
+  # Negative values indicate special definitions
+  '-1':
+    numCars: 2
+    count: 20
+  '-2':
+    numCars: 3
+    count: 20
+  '-3':
+    numCars: 4
+    count: 20
+stations:
+  '1':
+    capacity: 100
+    wait: 5
+  '2':
+    capacity: 100
+    wait: 60
+  '3':
+    capacity: 100
+    wait: 5
+simulation:
+  'mode': "fixed_block"
+  'ferromone_distance': 50

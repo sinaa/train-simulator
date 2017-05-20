@@ -4,6 +4,7 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import ft.sim.experiment.Experiment;
 import ft.sim.monitoring.CriticalViolationException;
 import ft.sim.monitoring.Oracle;
 import ft.sim.visualisation.Point;
@@ -34,17 +35,19 @@ import org.springframework.web.socket.TextMessage;
 /**
  * Created by Sina on 21/02/2017.
  */
-public class BasicSimulation {
+public class SimulationController {
 
   public static final String DEFAULT_MAP = "basic";
-  protected static transient final Logger logger = LoggerFactory.getLogger(BasicSimulation.class);
+  protected static transient final Logger logger = LoggerFactory
+      .getLogger(SimulationController.class);
   // random seed for disruptor's random generation
   public static int RANDOM_SEED = 0;
-  private static BasicSimulation instance = null;
+  private static SimulationController instance = null;
   // From the point of view of a user, how many ticks we should do per second
   int ticksPerSecond = 1000;
   // oracle instance
   Oracle oracle;
+  Experiment experiment = null;
   // world instance
   private GlobalMap world = null;
   // From the view of the simulation, how much time passed since last tick (in seconds)
@@ -68,26 +71,25 @@ public class BasicSimulation {
   // how many seconds should the simulation run for (max). Default: 2 days
   private long simulationDuration = 2 * 24 * 60 * 60;
   private boolean simulationCompleted = false;
-
-  private BasicSimulation(String mapName) {
+  private SimulationController(String mapName) {
     logger.info("starting new simulation");
     buildWorld(mapName);
     oracle = new Oracle();
     setSimulatorThread();
   }
 
-  public static BasicSimulation getInstance(String mapName) {
+  public static SimulationController getInstance(String mapName) {
     if (instance == null) {
-      instance = new BasicSimulation(mapName);
+      instance = new SimulationController(mapName);
     }
     return instance;
   }
 
-  public static BasicSimulation getInstance() {
+  public static SimulationController getInstance() {
     return instance;
   }
 
-  public static BasicSimulation newInstance(String mapName) {
+  public static SimulationController newInstance(String mapName) {
     if (instance != null) {
       instance.kill();
       instance = null;
@@ -95,9 +97,17 @@ public class BasicSimulation {
     return getInstance(mapName);
   }
 
+  public void setExperiment(Experiment experiment) {
+    this.experiment = experiment;
+  }
+
   public void toggleInteractive() {
     interactiveSimulation = !interactiveSimulation;
     logger.info("Interactive Simulation: {}", interactiveSimulation ? "On" : "Off");
+  }
+
+  public void setNonInteractve() {
+    interactiveSimulation = false;
   }
 
   public boolean isKilled() {
@@ -147,8 +157,16 @@ public class BasicSimulation {
       isRunning = false;
       logger.info("Simulation completed!");
       sendStatistics();
-      kill();
+      finish();
     });
+  }
+
+  private void finish() {
+    if (experiment != null) {
+      experiment.finished();
+    } else {
+      kill();
+    }
   }
 
   private void buildWorld(String mapYaml) {
@@ -206,9 +224,10 @@ public class BasicSimulation {
       while (mapIterator.hasNext()) {
         Connectable next = mapIterator.next();
         if (next instanceof Station) {
-          stationPoints.put(next.toString(), new Point(length, length + next.getLength(), rootIndex));
+          stationPoints
+              .put(next.toString(), new Point(length, length + next.getLength(), rootIndex));
         } else {
-          trackPoints.put(next.toString(), new Point(length, length + next.getLength(),rootIndex));
+          trackPoints.put(next.toString(), new Point(length, length + next.getLength(), rootIndex));
           Map<Integer, SignalUnit> signals = ((Track) next).getBlockSignals();
           signals.forEach((offset, signalUnit) -> signalPoints.add(
               new SignalPoint(offset, world.getTrackID((Track) next), signalUnit.getStatus())));
@@ -267,8 +286,8 @@ public class BasicSimulation {
   }
 
   public void kill() {
-    simThread.interrupt();
     sendStatistics();
+    simThread.interrupt();
     isRunning = false;
     killed = true;
     socketSessions.clear();

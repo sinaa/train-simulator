@@ -61,8 +61,8 @@ public class Engine implements Tickable {
    * Construct an engine, along with the train this engine belongs to
    */
   public Engine(Train train) {
-    /*if (BasicSimulation.world != null) {
-      this.belongsToTrainID = BasicSimulation.world.getTrainID(train);
+    /*if (SimulationController.world != null) {
+      this.belongsToTrainID = SimulationController.world.getTrainID(train);
     }*/
   }
 

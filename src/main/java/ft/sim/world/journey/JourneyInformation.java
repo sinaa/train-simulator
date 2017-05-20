@@ -1,6 +1,5 @@
 package ft.sim.world.journey;
 
-import ft.sim.simulation.BasicSimulation;
 import ft.sim.world.WorldHandler;
 import ft.sim.world.connectables.Connectable;
 import ft.sim.world.connectables.Station;

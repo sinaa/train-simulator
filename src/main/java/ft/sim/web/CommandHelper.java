@@ -3,7 +3,7 @@ package ft.sim.web;
 import static ft.sim.world.train.TrainObjective.PROCEED;
 import static ft.sim.world.train.TrainObjective.STOP;
 
-import ft.sim.simulation.BasicSimulation;
+import ft.sim.simulation.SimulationController;
 import java.util.Map;
 
 /**
@@ -11,7 +11,7 @@ import java.util.Map;
  */
 public class CommandHelper {
 
-  static boolean processSetCommand(BasicSimulation simulation, Map<String, String> map) {
+  static boolean processSetCommand(SimulationController simulation, Map<String, String> map) {
     String set = map.get("set");
     switch (set) {
       case "trainTargetSpeed": {
@@ -34,7 +34,7 @@ public class CommandHelper {
       case "worldMap": {
         String mapKey = map.get("data");
         if (simulation == null) {
-          BasicSimulation.getInstance(mapKey);
+          SimulationController.getInstance(mapKey);
         } else {
           simulation.setWorld(mapKey);
         }
@@ -44,7 +44,7 @@ public class CommandHelper {
     return false;
   }
 
-  static boolean processCommand(BasicSimulation simulation, Map<String, String> map,
+  static boolean processCommand(SimulationController simulation, Map<String, String> map,
       SocketSession socketSession) {
     String command = map.get("command");
     switch (command) {

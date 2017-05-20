@@ -2,10 +2,10 @@ package ft.sim.world;
 
 import com.google.gson.Gson;
 
+import ft.sim.simulation.SimulationController;
 import org.junit.Test;
 
 import java.util.List;
-import ft.sim.simulation.BasicSimulation;
 import ft.sim.world.map.GlobalMap;
 import ft.sim.world.map.MapBuilder;
 import ft.sim.world.map.OriginalMapBuilder;
@@ -27,7 +27,7 @@ public class GlobalMapTest {
 
   @Test
   public void testGlobalMap() {
-    GlobalMap gm = MapBuilder.buildNewMap(BasicSimulation.DEFAULT_MAP);
+    GlobalMap gm = MapBuilder.buildNewMap(SimulationController.DEFAULT_MAP);
     WorldHandler.getInstance(gm);
     Gson gson = new Gson();
     //Gson gson = new GsonBuilder().setPrettyPrinting().create();
