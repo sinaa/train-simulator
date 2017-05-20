@@ -53,8 +53,8 @@ public class App implements ApplicationRunner {
   }
 
   public static void experimentCompleted() {
-
     context.close();
+    //SpringApplication.exit(context, () -> 0);
   }
 
   /*@Override

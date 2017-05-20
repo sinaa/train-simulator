@@ -1,28 +1,31 @@
 package ft.sim.experiment;
 
 import ft.sim.simulation.SimulationController;
-import ft.sim.world.map.MapBuilder;
 
 /**
  * Created by sina on 20/05/2017.
  */
 public class Experiment {
 
-  SimulationController simulation;
-  ExperimentListenerInterface experimentListener = null;
+  String map;
+  private SimulationController simulation;
+  private ExperimentListenerInterface experimentListener;
 
-  public Experiment(){
-    simulation = SimulationController.getInstance(SimulationController.DEFAULT_MAP);
+  public Experiment(String map) {
+    this.map = map;
+  }
+
+  void runFor(ExperimentListenerInterface experimentController) {
+    this.experimentListener = experimentController;
+
+    simulation = SimulationController.getInstance(map);
     simulation.setNonInteractve();
     simulation.setExperiment(this);
-  }
-
-  void run(ExperimentListenerInterface experimentController) {
     simulation.startSimulation();
-    this.experimentListener = experimentController;
   }
 
-  public void finished(){
+  public void finished() {
+    simulation.kill();
     experimentListener.experimentFinishedEvent(this);
   }
 }

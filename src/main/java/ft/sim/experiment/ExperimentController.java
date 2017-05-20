@@ -16,16 +16,18 @@ public class ExperimentController implements ExperimentListenerInterface {
 
   private App app;
 
+  private ExperimentController() {
+    Experiment experiment = new Experiment("basic");
+    experiments.add(experiment);
+    Experiment e2 = new Experiment("experiment-single-track-debugging-1");
+    experiments.add(e2);
+  }
+
   public static ExperimentController getInstance() {
     if (instance == null) {
       instance = new ExperimentController();
     }
     return instance;
-  }
-
-  private ExperimentController(){
-    Experiment experiment = new Experiment();
-    experiments.add(experiment);
   }
 
   public void start() {
@@ -40,14 +42,14 @@ public class ExperimentController implements ExperimentListenerInterface {
 
   private void runNext() {
     if (experiments.iterator().hasNext()) {
-      experiments.iterator().next().run(this);
+      experiments.iterator().next().runFor(this);
     } else {
       finished();
     }
   }
 
   private void finished() {
-    App.experimentCompleted();
+    new Thread(App::experimentCompleted).start();
   }
 
 }

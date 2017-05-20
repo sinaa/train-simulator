@@ -473,6 +473,8 @@
     const baseThickness = 50;
     const trackMarkerWidth = 30;
 
+    const zOffset = 500;
+
     function updateVis() {
       updateTrainsVisual(data, globalStage);
       updateSignals(data, globalStage);
@@ -541,6 +543,7 @@
         signal.addChild(sigColor);
 
         signal.x = data.trackPoints["Track-" + sigdata.trackID].from + sigdata.offset;
+        signal.y = data.trackPoints["Track-" + sigdata.trackID].z * zOffset;
 
         stage.addChild(signal);
 
@@ -563,9 +566,9 @@
             "orange").command;
         trainBlock.graphics.rect(0, 0,
             tData.to - tData.from,
-            baseThickness, baseY);
+            baseThickness, baseY + zOffset*tData.z);
 //                trainBlock.x = (tData.to + tData.from) / 2;
-        trainBlock.y = -80;
+        trainBlock.y = -80 + zOffset * tData.z;
         trainBlock.snapToPixel = true;
         trainBlock.on("click", function (e) {
           swal(key);
@@ -577,18 +580,18 @@
         train.scaleX = 0.2;
         train.scaleY = 0.2;
         train.x = tData.from - (tData.to + tData.from) / 2;
-        train.y = 9;
+        train.y = 9 + zOffset * tData.z;
         train.image.onload = function () {
           stage.update();
         };
         train.snapToPixel = true;
 
         var trainIdentifier = new createjs.Text(key, "20px Arial", "#fff");
-        trainIdentifier.y = baseThickness + 20;
+        trainIdentifier.y = baseThickness + 20 + zOffset * tData.z;
         trainIdentifier.x = tData.from - (tData.to + tData.from) / 2;
 
         var trainObjective = new createjs.Text("", "20px Arial", "#fff");
-        trainObjective.y = baseThickness + 50;
+        trainObjective.y = baseThickness + 50 + zOffset * tData.z;
         trainObjective.x = tData.from - (tData.to + tData.from) / 2;
 
         trainContainer.addChild(trainBlock, train, trainIdentifier, trainObjective);
@@ -612,19 +615,19 @@
         var station = new createjs.Shape();
 
         station.graphics.beginFill("#6eb741")
-        .rect(sData.from, -stationHeight + 60, sData.to - sData.from, stationHeight);
+        .rect(sData.from, -stationHeight + 60 + zOffset * sData.z, sData.to - sData.from, stationHeight);
         stage.addChild(station);
 
         // top of track indicator
         var stationBar = new createjs.Shape();
 
-        stationBar.graphics.beginFill("#fff").rect(sData.from, -stationHeight + 60 - 10,
+        stationBar.graphics.beginFill("#fff").rect(sData.from, -stationHeight + 60 - 10 + zOffset * sData.z,
             sData.to - sData.from,
             baseY);
         stage.addChild(stationBar);
 
         var stationIdentifier = new createjs.Text(key, "30px Arial", "#fff");
-        stationIdentifier.y = -stationHeight;
+        stationIdentifier.y = -stationHeight + zOffset * sData.z;
         stationIdentifier.x = sData.from + (sData.to - sData.from) / 5;
         stage.addChild(stationIdentifier);
 
@@ -638,7 +641,7 @@
       for (const key in data.trackPoints) {
         var t = data.trackPoints[key];
         var track = new createjs.Shape();
-        track.graphics.beginFill("DeepSkyBlue").rect(t.from, baseThickness, t.to - t.from,
+        track.graphics.beginFill("DeepSkyBlue").rect(t.from, baseThickness + zOffset * t.z, t.to - t.from,
             baseY);
         stage.addChild(track);
 
@@ -646,7 +649,7 @@
         var endOfTrack = new createjs.Shape();
 
         endOfTrack.graphics.beginFill("red")
-        .rect(t.to - trackMarkerWidth, baseThickness - (baseThickness / 2),
+        .rect(t.to - trackMarkerWidth, baseThickness - (baseThickness / 2) + zOffset * t.z,
             trackMarkerWidth, baseY * 6);
         stage.addChild(endOfTrack);
 
