@@ -94,20 +94,19 @@ public class JourneyPosition {
 
   public List<Section> getSectionsOccupied() {
 
-    List<Section> sections = new ArrayList<>();
     double toSkip = getPositionFromFirstConnectable();
     int trainLength = train.getLength();
 
-    if (position.size() == 1) {
+    // Fast lookup
+    if (position.size() == 1 && isForward) {
       Connectable firstConnectable = position.peek();
       if (firstConnectable instanceof Track) {
-        List<Section> trackSections = ((Track) firstConnectable).getSections();
-        for (int i = (int) toSkip; i <= (int) toSkip + trainLength; i++) {
-          sections.add(trackSections.get(i));
-        }
-        return sections;
+        return ((Track) firstConnectable).getSections()
+            .subList((int) toSkip, (int) Math.ceil(toSkip) + trainLength);
       }
     }
+
+    List<Section> sections = new ArrayList<>();
     double skipped = 0;
     double sectionsLength = 0;
     for (Connectable c : position) {

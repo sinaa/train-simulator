@@ -71,26 +71,8 @@ public class Journey implements Tickable {
 
     totalDistanceTravelled += distanceTravelled;
 
-    if (directionForward) {
-      headPosition += distanceTravelled;
-      tailPosition += distanceTravelled;
-    } else {
-      headPosition -= distanceTravelled;
-      tailPosition -= distanceTravelled;
-    }
-
-    double altHeadPosition = journeyPosition.getHeadPosition();
-    double altTailPosition = journeyPosition.getTailPosition();
-
-    if (altHeadPosition != headPosition && Math.abs(altHeadPosition - headPosition) > 0.0000001) {
-      logger.warn("Alt head not the same | head: {}, altHead: {}", headPosition, altHeadPosition);
-    }
-    if (altTailPosition != tailPosition && Math.abs(altTailPosition - tailPosition) > 0.0000001) {
-      logger.warn("Alt tail not the same | head: {}, altHead: {}", tailPosition, altTailPosition);
-    }
-
-    headPosition = altHeadPosition;
-    tailPosition = altTailPosition;
+    headPosition = journeyPosition.getHeadPosition();
+    tailPosition = journeyPosition.getTailPosition();
 
     if (journeyPosition.isEnded()) {
       journeyFinished = true;
