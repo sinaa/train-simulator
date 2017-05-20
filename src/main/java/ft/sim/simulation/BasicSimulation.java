@@ -19,6 +19,7 @@ import ft.sim.world.map.MapBuilder;
 import ft.sim.world.signalling.SignalUnit;
 import ft.sim.world.train.Train;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -47,9 +48,9 @@ public class BasicSimulation {
   // world instance
   private GlobalMap world = null;
   // From the view of the simulation, how much time passed since last tick (in seconds)
-  private double secondsPerTick = 1.0 / 100.0;
+  private double secondsPerTick = 1.0 / 10.0;
   // How often to send request to user
-  private int userRefreshRate = 100;
+  private int userRefreshRate = 50;
   // elapsed time/tick during the simulation
   private long ticksElapsed = 0;
   private long timeElapsed = 0;
@@ -126,7 +127,7 @@ public class BasicSimulation {
         if (interactiveSimulation) {
           // wait for the remaining time (to match ticksPerSecond)
           int waitTime = (int) Math.floor((userRefreshRate / ticksPerSecond) - ms);
-          if (false && waitTime > 0) {
+          if (waitTime > 0) {
             try {
               Thread.sleep(waitTime);
             } catch (InterruptedException e) {
@@ -185,16 +186,19 @@ public class BasicSimulation {
     Map<String, Point> trackPoints = new LinkedHashMap<>();
     Map<String, Point> stationPoints = new LinkedHashMap<>();
     List<SignalPoint> signalPoints = new ArrayList<>();
+    Map<Connectable, Integer> rootIndexes = new HashMap<>();
+    int rootIndex = 0;
     for (Connectable c : world.getGraph().getRootConnectables()) {
+      rootIndexes.put(c, rootIndex);
       Map<String, String> connectableMap = new LinkedHashMap<>();
       String root = c.toString();
       String before = root;
       Iterator<Connectable> mapIterator = world.getGraph().getIterator(c);
       double length = 0;
       if (c instanceof Station) {
-        stationPoints.put(root, new Point(length, c.getLength()));
+        stationPoints.put(root, new Point(length, c.getLength(), rootIndex));
       } else {
-        trackPoints.put(root, new Point(length, c.getLength()));
+        trackPoints.put(root, new Point(length, c.getLength(), rootIndex));
         Map<Integer, SignalUnit> signals = ((Track) c).getBlockSignals();
         signals.forEach((offset, signalUnit) -> signalPoints.add(
             new SignalPoint(offset, world.getTrackID((Track) c), signalUnit.getStatus())));
@@ -202,9 +206,9 @@ public class BasicSimulation {
       while (mapIterator.hasNext()) {
         Connectable next = mapIterator.next();
         if (next instanceof Station) {
-          stationPoints.put(next.toString(), new Point(length, length + next.getLength()));
+          stationPoints.put(next.toString(), new Point(length, length + next.getLength(), rootIndex));
         } else {
-          trackPoints.put(next.toString(), new Point(length, length + next.getLength()));
+          trackPoints.put(next.toString(), new Point(length, length + next.getLength(),rootIndex));
           Map<Integer, SignalUnit> signals = ((Track) next).getBlockSignals();
           signals.forEach((offset, signalUnit) -> signalPoints.add(
               new SignalPoint(offset, world.getTrackID((Track) next), signalUnit.getStatus())));
@@ -214,12 +218,15 @@ public class BasicSimulation {
         before = next.toString();
       }
       rootConnectables.put(root, connectableMap);
+
+      rootIndex++;
     }
 
     Map<String, Point> trainPoints = new LinkedHashMap<>();
     for (Journey j : world.getJourneys().values()) {
       trainPoints.put(j.getTrain().toString(),
-          new Point(j.getTailPositionFromRoot(), j.getHeadPositionFromRoot()));
+          new Point(j.getTailPositionFromRoot(), j.getHeadPositionFromRoot(),
+              rootIndexes.get(j.getJourneyPath().getGraphRootConnectable())));
     }
 
     Gson gsonBuilder = new Gson();

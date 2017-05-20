@@ -156,7 +156,7 @@ public class Train implements Tickable, SignalListener {
 
     // send OK squawk down the line
     //if (engine.getObjective() != STOP) {
-      if (ecu.getTimeLastSquawkSent() + TRAIN_SQUAWK_INTERVAL < ecu.getTimer().getTime()) {
+      if (ecu.getTimeLastSquawkSent() + TRAIN_SQUAWK_INTERVAL < ecu.getTimer().getTime() && !atStation) {
         ecu.sendSquawkDownTheLine(RadioSignal.OK);
       }
     //}
@@ -173,7 +173,7 @@ public class Train implements Tickable, SignalListener {
       case STOP_AND_ROLL:
         if (engine.getSpeed() < RealWorldConstants.ROLLING_SPEED &&
             ObservableHelper.allGreen(observablesInSight)) {
-          logger.warn("{} observables: {}", this, observablesInSight);
+          logger.debug("{} observables: {}", this, observablesInSight);
           proceedWithCaution();
         }
         break;
@@ -181,7 +181,7 @@ public class Train implements Tickable, SignalListener {
         if (engine.isStopped() &&
             !ObservableHelper.anyTrains(observablesInSight) &&
             ObservableHelper.allGreen(observablesInSight)) {
-          logger.warn("{} stopped and apparently no trains in sight, so proceeding...", this);
+          logger.debug("{} stopped and apparently no trains in sight, so proceeding...", this);
           proceedWithCaution();
         }
         break;

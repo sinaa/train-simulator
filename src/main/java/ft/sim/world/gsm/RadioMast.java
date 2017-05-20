@@ -3,7 +3,9 @@ package ft.sim.world.gsm;
 import ft.sim.world.journey.JourneyHelper;
 import ft.sim.world.map.GlobalMap;
 import ft.sim.world.train.Train;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -13,6 +15,7 @@ public class RadioMast {
 
   private static Map<GlobalMap, RadioMast> instances = new HashMap<>();
   private GlobalMap world;
+  private List<String> messagesSent = new ArrayList<>();
 
   private RadioMast(GlobalMap map) {
     this.world = map;
@@ -23,7 +26,10 @@ public class RadioMast {
   }
 
   public void passMessageToTrainBehind(Train train, RadioSignal signal) {
-    JourneyHelper.getInstance(world).getTrainBehind(train).ifPresent(t -> t.ping(signal));
+    JourneyHelper.getInstance(world).getTrainBehind(train).ifPresent(t -> {
+      t.ping(signal);
+      messagesSent.add(String.format("%s sent %s to %s",train, signal, t));
+    });
   }
 
 }

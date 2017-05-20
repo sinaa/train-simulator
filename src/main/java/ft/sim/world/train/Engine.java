@@ -82,11 +82,15 @@ public class Engine implements Tickable {
   }
 
   public void emergencyBreak() {
-    if (speed != 0 && acceleration != maxDeceleration) {
+    if (!isEmergencyBreaking()) {
       logger.warn("Emergency breaking!");
       this.targetSpeed = 0;
       acceleration = maxDeceleration;
     }
+  }
+
+  public boolean isEmergencyBreaking() {
+    return (speed == 0 && acceleration == maxDeceleration);
   }
 
   public void fullBreak() {

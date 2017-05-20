@@ -125,11 +125,11 @@ public class ECU implements Tickable {
       if (nextDistancePrediction > calculateBreakingDistance(engine.getNormalDeceleration())) {
         engine.setTargetSpeed(0);
         engine.setObjective(STOP_AND_ROLL);
-        logger.warn("{} normal breaking, there's a train within breaking distance {} ({}) {}",
+        logger.debug("{} normal breaking, there's a train within breaking distance {} ({}) {}",
             train, nextDistancePrediction, safeBreakingDistance,
             calculateBreakingDistance(engine.getNormalDeceleration()));
       } else if (nextDistancePrediction < EYE_SIGHT_DISTANCE) {
-        logger.warn("{} rolling, {}, {}", nextDistancePrediction, EYE_SIGHT_DISTANCE);
+        logger.debug("{} rolling, {}, {}", nextDistancePrediction, EYE_SIGHT_DISTANCE);
         engine.setObjective(STOP_AND_ROLL);
         engine.roll();
         if (engine.getSpeed() > ROLLING_SPEED) {
@@ -137,20 +137,26 @@ public class ECU implements Tickable {
         }
       } else if (nextDistancePrediction < calculateBreakingDistance(FULL_TRAIN_DECELERATION)) {
         engine.setObjective(STOP_THEN_ROLL);
-        logger.warn("{} stop then roll, {}, {}", nextDistancePrediction, calculateBreakingDistance(FULL_TRAIN_DECELERATION));
+        logger.debug("{} stop then roll, {}, {}", nextDistancePrediction,
+            calculateBreakingDistance(FULL_TRAIN_DECELERATION));
         engine.fullBreak();
       } else {
 
-        logger.warn("{} emergency breaking, there's a train within breaking distance {} ({}) full breaking distance: {}",
-            train, nextDistancePrediction, safeBreakingDistance, calculateBreakingDistance(FULL_TRAIN_DECELERATION));
-        engine.emergencyBreak();
-        sendSquawkDownTheLine(RadioSignal.NOK);
-        //engine.roll();
-        engine.setObjective(STOP_THEN_ROLL);
+        if (!engine.isEmergencyBreaking() && engine.getObjective() != STOP_THEN_ROLL) {
+          logger.debug(
+              "{} FULL breaking, there's a train within breaking distance {} ({}) full breaking distance: {}",
+              train, nextDistancePrediction, safeBreakingDistance,
+              calculateBreakingDistance(FULL_TRAIN_DECELERATION));
+          //engine.emergencyBreak();
+          engine.fullBreak();
+          //sendSquawkDownTheLine(RadioSignal.NOK);
+          //engine.roll();
+          engine.setObjective(STOP_THEN_ROLL);
+        }
       }
     } else {
-      if(engine.getObjective() == STOP_AND_ROLL){
-        if(nextDistancePrediction+arbitaryCloseDistance >= safeBreakingDistance){
+      if (engine.getObjective() == STOP_AND_ROLL) {
+        if (nextDistancePrediction + arbitaryCloseDistance >= safeBreakingDistance) {
           return;
         }
         logger.warn("Keeping a distance [{}]", train);
@@ -263,7 +269,7 @@ public class ECU implements Tickable {
   }
 
   public void sendSquawkDownTheLine(RadioSignal signal) {
-    if(signal==RadioSignal.NOK){
+    if (signal == RadioSignal.NOK) {
       logger.error("{} squawked NOK :-(", train);
     }
     if (lastSquawkSent == RadioSignal.NOK) {

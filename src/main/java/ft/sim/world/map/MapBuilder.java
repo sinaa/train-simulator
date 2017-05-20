@@ -329,6 +329,7 @@ public class MapBuilder {
           sectionIndexForDistantSignal, map.getTrackID(((Track) track)));
     } else {
       throw new IllegalArgumentException("Track is not long enough for placing distant signals");
+      //logger.error("Track-{} is not long enough for placing distant signals",map.getTrackID(track));
     }
     ((Track) nextTrack).addBlockSignal(mainSignal, 0);
     ((Track) nextTrack).addSignalController(signalController);
