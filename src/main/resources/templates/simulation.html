@@ -475,10 +475,25 @@
 
     const zOffset = 500;
 
+    var lastTimeUpdated;
+    var totalTime = 0;
+    var totalUpdated = 1;
+
     function updateVis() {
+        t1 = performance.now();
+        if(lastTimeUpdated !== undefined){
+            totalTime += t1 - lastTimeUpdated;
+            totalUpdated++;
+        } else {
+
+        }
+        lastTimeUpdated = performance.now();
+        var t0 = performance.now();
       updateTrainsVisual(data, globalStage);
       updateSignals(data, globalStage);
-      globalStage.update();
+      //globalStage.update();
+      var t1 = performance.now();
+      console.log("Call to doSomething took " + (t1 - t0) + " milliseconds.")
     }
 
     const colorMap = {
@@ -503,7 +518,9 @@
         var trainKey = parseInt(key.split("-")[1])
         //globalTrains[key].train.x = (tData.to + tData.from) / 2 - 25;
         //globalTrains[key].trainBlock.graphics.command.x = tData.from;
-        globalTrains[key].trainContainer.x = (tData.to + tData.from) / 2 - 25;
+        //globalTrains[key].trainContainer.x = (tData.to + tData.from) / 2;
+        var avg = totalUpdated>0?500 + totalTime*1.0/totalUpdated:2000;
+        createjs.Tween.get(globalTrains[key].trainContainer, {override:true}).to({x:(tData.to + tData.from) / 2}, avg);
         var status = "";
         var acceleration = data.world.journeysMap[trainKey].train.engine.acceleration;
         if (acceleration > 0) {
@@ -597,6 +614,8 @@
         trainContainer.addChild(trainBlock, train, trainIdentifier, trainObjective);
         trainContainer.x = (tData.to + tData.from) / 2 - 25;
 
+        trainContainer.snapToPixel = true;
+
         stage.addChild(trainContainer);
 
         globalTrains[key] = {
@@ -616,6 +635,7 @@
 
         station.graphics.beginFill("#6eb741")
         .rect(sData.from, -stationHeight + 60 + zOffset * sData.z, sData.to - sData.from, stationHeight);
+        //station.cache(sData.from, -stationHeight + 60 + zOffset * sData.z, sData.to - sData.from, stationHeight);
         stage.addChild(station);
 
         // top of track indicator
@@ -624,6 +644,9 @@
         stationBar.graphics.beginFill("#fff").rect(sData.from, -stationHeight + 60 - 10 + zOffset * sData.z,
             sData.to - sData.from,
             baseY);
+        /*  stationBar.cache(sData.from, -stationHeight + 60 - 10 + zOffset * sData.z,
+                           sData.to - sData.from,
+                           baseY);*/
         stage.addChild(stationBar);
 
         var stationIdentifier = new createjs.Text(key, "30px Arial", "#fff");
@@ -715,6 +738,9 @@
           stage.removeAllEventListeners("stagemousemove");
         });
       });
+
+      createjs.Ticker.setFPS(30);
+      createjs.Ticker.addEventListener("tick", stage);
 
       return stage;
     }
