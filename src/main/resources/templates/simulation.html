@@ -504,6 +504,14 @@
       "": "yellow"
     };
 
+    const animationMap = {
+      "accelerating": createjs.Ease.quadIn,
+      "decelerating": createjs.Ease.quadOut,
+      "still": createjs.Ease.linear,
+      "station": createjs.Ease.quintOut,
+      "": createjs.Ease.linear
+    };
+
     function updateSignals(data, stage) {
       for (const key in data.signalPoints) {
         var tData = data.signalPoints[key];
@@ -519,8 +527,7 @@
         //globalTrains[key].train.x = (tData.to + tData.from) / 2 - 25;
         //globalTrains[key].trainBlock.graphics.command.x = tData.from;
         //globalTrains[key].trainContainer.x = (tData.to + tData.from) / 2;
-        var avg = totalUpdated>0?500 + totalTime*1.0/totalUpdated:2000;
-        createjs.Tween.get(globalTrains[key].trainContainer, {override:true}).to({x:(tData.to + tData.from) / 2}, avg);
+
         var status = "";
         var acceleration = data.world.journeysMap[trainKey].train.engine.acceleration;
         if (acceleration > 0) {
@@ -535,6 +542,9 @@
         if (data.world.journeysMap[trainKey].train.atStation) {
           status = "station";
         }
+
+        var avg = totalUpdated>0?1500 + totalTime/totalUpdated:2000;
+        createjs.Tween.get(globalTrains[key].trainContainer, {override:true}).to({x:(tData.to + tData.from) / 2}, avg, animationMap[status]);
         //console.log(key + " is " + status)
         //console.log(data.world.trainMap[trainKey])
         globalTrains[key].trainStatusCommand.style = colorMap[status];

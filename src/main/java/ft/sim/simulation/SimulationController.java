@@ -148,7 +148,8 @@ public class SimulationController {
           }
           // Send stats to user every ...
           if (ticksElapsed % ticksPerSecond == 0) {
-            new Thread(this::sendStatistics).start();
+            sendStatistics();
+            //new Thread(this::sendStatistics).start();
             simulationTimeElapsed = (int) Math.floor(ticksElapsed * 1.0 / ticksPerSecond);
           }
         }
