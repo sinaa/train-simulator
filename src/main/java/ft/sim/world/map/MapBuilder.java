@@ -21,14 +21,14 @@ import ft.sim.world.signalling.SignalType;
 import ft.sim.world.signalling.SignalUnit;
 import ft.sim.world.train.Train;
 import ft.sim.world.train.TrainObjective;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -36,8 +36,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.core.io.support.ResourcePatternResolver;
 import org.yaml.snakeyaml.Yaml;
 
 /**
@@ -60,14 +58,14 @@ public class MapBuilder {
     MapBuilder mb = new MapBuilder();
     mb.map = globalMap;
     try {
-      if (!mapYamlFileName.startsWith("maps/")) {
-        mapYamlFileName = "maps/" + mapYamlFileName;
-      }
       if (!mapYamlFileName.endsWith(".yaml")) {
         mapYamlFileName += ".yaml";
       }
-      mb.importDefaults();
-      mb.importBasicMap(mapYamlFileName);
+      if (!mapYamlFileName.startsWith("maps/") && !new File(mapYamlFileName).isFile()) {
+        mapYamlFileName = "maps/" + mapYamlFileName;
+      }
+      mb.importDefaultConfigurations();
+      mb.importMapFile(mapYamlFileName);
       logger.info("Map {} imported successfully.", mapYamlFileName);
     } catch (IOException e) {
       logger.error("failed to import map");
@@ -79,39 +77,22 @@ public class MapBuilder {
     return mb.map;
   }
 
-  public static List<String> getMaps() {
-    List<String> maps = new ArrayList<>();
-    ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-    try {
-      Resource[] resources = resolver.getResources("maps/*.yaml");
-      Arrays.stream(resources).map(Resource::getFilename).map(f -> f.replace(".yaml", ""))
-          .filter(s -> !s.equals("defaults"))
-          .forEach(maps::add);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-
-    return maps;
-  }
-
-  private static double copyActiveBalises(Track copyFrom, Track copyTo) {
-    for (Entry<Integer, Placeable> e : copyFrom.getPlaceables().entrySet()) {
-      int position = e.getKey();
-      Placeable placeable = e.getValue();
-      if (!(placeable instanceof ActiveBalise)) {
-        continue;
-      }
-      int newPosition = (int) copyTo.getLength() - 1 - position;
-      Placeable balise = new ActiveBalise();
-      copyTo.placePlaceableOnSectionIndex(balise, newPosition);
-    }
-    return copyTo.getLength();
-  }
-
-  private void importBasicMap(String mapYamlFile) throws IOException {
+  private void importMapFile(String mapYamlFile) throws IOException {
     Resource resource = new ClassPathResource(mapYamlFile);
+    InputStream mapInputStream;
+    // Try the local jar resources
+    if (resource.exists()) {
+      mapInputStream = resource.getInputStream();
+    } else { // try to read it from the local directory
+      File mapFile = new File(mapYamlFile);
+      if (!mapFile.exists()) {
+        throw new IllegalStateException("Given file doesn't exist: " + mapYamlFile);
+      }
+      mapInputStream = new FileInputStream(mapFile);
+    }
+
     Yaml yaml = new Yaml();
-    Map<String, Object> mapYaml = (Map<String, Object>) yaml.load(resource.getInputStream());
+    Map<String, Object> mapYaml = (Map<String, Object>) yaml.load(mapInputStream);
 
     setConfigurations((Map<String, Object>) mapYaml.get("simulation"));
 
@@ -131,7 +112,7 @@ public class MapBuilder {
 
   }
 
-  private void importDefaults() throws IOException {
+  private void importDefaultConfigurations() throws IOException {
     Resource resource = new ClassPathResource("maps/defaults.yaml");
     Yaml yaml = new Yaml();
     Map<String, Object> mapYaml = (Map<String, Object>) yaml.load(resource.getInputStream());
@@ -153,6 +134,16 @@ public class MapBuilder {
     pairTracks();
 
     setRadioMasts();
+
+    setIDs();
+  }
+
+  private void setIDs() {
+    map.getTrains().forEach((id, train) -> train.setID(id));
+    map.getStations().forEach((id, station) -> station.setID(id));
+    map.getTracks().forEach((id, track) -> track.setID(id));
+    map.getSwitches().forEach((id, s) -> s.setID(id));
+
   }
 
   private void setRadioMasts() {
@@ -517,7 +508,8 @@ public class MapBuilder {
         if (c instanceof Track && c.getLength() > baliseDistance) {
           Track track = (Track) c;
           if (DualLineHelper.isTrackPairActiveBaliseInitialised(map, track)) {
-            length += copyActiveBalises(DualLineHelper.getTrackPair(map, track), track);
+            length += MapBuilderHelper
+                .copyActiveBalises(DualLineHelper.getTrackPair(map, track), track);
           } else {
             length = placeActiveBalisesOnTrack(length, track, baliseDistance);
           }
@@ -560,7 +552,7 @@ public class MapBuilder {
       } else {
         Train t = new Train(numCars);
         map.addTrain(trainID, t);
-        t.setTrainID(trainID);
+        //t.setTrainID(trainID);
       }
     }
   }

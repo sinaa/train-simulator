@@ -44,7 +44,7 @@ public class WorldHandler {
 
   public static WorldHandler getInstance() {
     if (instances.size() != 1) {
-      throw new IllegalStateException("more than one map instances created");
+      throw new IllegalStateException(instances.size() + " maps found! This method should be called with exactly 1 instance.");
     }
     return instances.values().iterator().next();
   }

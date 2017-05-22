@@ -52,7 +52,6 @@ public class CommandHelper {
         simulation.startTrains();
         return true;
       case "stop simulation":
-        simulation.removeSocketSessions(socketSession);
         simulation.kill();
         return true;
       case "get push data":

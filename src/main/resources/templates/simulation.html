@@ -609,9 +609,9 @@
         train.scaleY = 0.2;
         train.x = tData.from - (tData.to + tData.from) / 2;
         train.y = 9 + zOffset * tData.z;
-        train.image.onload = function () {
+        /*train.image.onload = function () {
           stage.update();
-        };
+        };*/
         train.snapToPixel = true;
 
         var trainIdentifier = new createjs.Text(key, "20px Arial", "#fff");

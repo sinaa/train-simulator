@@ -7,6 +7,7 @@ import ft.sim.world.connectables.Switch;
 import ft.sim.world.connectables.Track;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by Sina on 06/03/2017.
@@ -22,11 +23,13 @@ public class JourneyInformation {
   }
 
   private void setPath(JourneyPath path) {
-    this.path = connectableToString(path.getPath());
+    //this.path = connectableToString(path.getPath());
+    this.path = path.getPath().stream().map(Object::toString).collect(Collectors.toList());
   }
 
   private void setOccupied(JourneyPosition jp){
-    this.occupied = connectableToString(jp.getConnectablesOccupied());
+    //this.occupied = connectableToString(jp.getConnectablesOccupied());
+    this.occupied = jp.getConnectablesOccupied().stream().map(Object::toString).collect(Collectors.toList());
   }
 
   private List<String> connectableToString(List<Connectable> connectables){

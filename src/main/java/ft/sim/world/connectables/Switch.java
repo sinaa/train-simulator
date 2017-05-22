@@ -43,6 +43,8 @@ public class Switch implements Connectable, Tickable, SignalLinked {
   boolean isChanging = false;
   private SignalController signalController;
 
+  private int switchID = 0;
+
   public Switch(List<Track> a, List<Track> b) {
     this(a, b, a.get(0), b.get(0));
   }
@@ -116,6 +118,19 @@ public class Switch implements Connectable, Tickable, SignalLinked {
     if (signalController != null) {
       signalController.setStatus(GREEN);
     }
+  }
+
+  @Override
+  public int getID() {
+    return this.switchID;
+  }
+
+  @Override
+  public void setID(int switchID) {
+    if (this.switchID != 0) {
+      throw new IllegalStateException("The ID can only be set once!");
+    }
+    this.switchID = switchID;
   }
 
   @Override

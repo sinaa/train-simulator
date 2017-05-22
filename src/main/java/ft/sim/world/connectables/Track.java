@@ -6,20 +6,17 @@ import static java.util.stream.Collectors.toList;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import ft.sim.world.RealWorldConstants;
+import ft.sim.world.WorldHandler;
+import ft.sim.world.placeables.Balise;
+import ft.sim.world.placeables.Placeable;
 import ft.sim.world.signalling.SignalController;
 import ft.sim.world.signalling.SignalLinked;
 import ft.sim.world.signalling.SignalUnit;
 import ft.sim.world.train.Train;
-import ft.sim.world.WorldHandler;
-import ft.sim.world.placeables.Balise;
-import ft.sim.world.placeables.Placeable;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +35,8 @@ public class Track implements Connectable, SignalLinked {
   private transient BiMap<Integer, Placeable> placeables = HashBiMap.create();
 
   private transient LineCondition lineCondition = new LineCondition();
+
+  private int trackID = 0;
 
   public Track(List<Section> sections) {
     this.sections = sections;
@@ -167,10 +166,22 @@ public class Track implements Connectable, SignalLinked {
     return sections.indexOf(section);
   }
 
+  public int getID() {
+    return trackID;
+  }
+
+  public void setID(int trackID) {
+    if (this.trackID != 0) {
+      throw new IllegalStateException("The ID can only be set once!");
+    }
+    this.trackID = trackID;
+  }
+
   @Override
   public String toString() {
     try {
-      return "Track-" + WorldHandler.getInstance().getWorld().getTrackID(this);
+      return "Track-" + (this.trackID != 0 ? this.trackID
+          : WorldHandler.getInstance().getWorld().getTrackID(this));
     } catch (Exception e) {
       return super.toString();
     }

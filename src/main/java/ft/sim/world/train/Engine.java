@@ -62,7 +62,7 @@ public class Engine implements Tickable {
    */
   public Engine(Train train) {
     /*if (SimulationController.world != null) {
-      this.belongsToTrainID = SimulationController.world.getTrainID(train);
+      this.belongsToTrainID = SimulationController.world.getID(train);
     }*/
   }
 

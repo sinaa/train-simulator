@@ -71,6 +71,7 @@ public class SimulationController {
   // how many seconds should the simulation run for (max). Default: 2 days
   private long simulationDuration = 2 * 24 * 60 * 60;
   private boolean simulationCompleted = false;
+
   private SimulationController(String mapName) {
     logger.info("starting new simulation");
     buildWorld(mapName);
@@ -165,9 +166,8 @@ public class SimulationController {
   private void finish() {
     if (experiment != null) {
       experiment.finished();
-    } else {
-      kill();
     }
+    kill();
   }
 
   private void buildWorld(String mapYaml) {

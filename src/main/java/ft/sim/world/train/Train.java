@@ -52,7 +52,7 @@ public class Train implements Tickable, SignalListener {
   private boolean atStation = false;
 
   // train ID
-  private int tID = -1;
+  private int trainID = 0;
 
   private transient Set<Observable> observablesInSight = new HashSet<>();
 
@@ -133,7 +133,8 @@ public class Train implements Tickable, SignalListener {
         if (p instanceof Balise) {
           if (p instanceof ActiveBalise) {
             ActiveBalise balise = (ActiveBalise) p;
-            balise.update(tID, ecu.getTimer().getTime(), engine.getSpeed(), engine.isBreaking());
+            balise
+                .update(trainID, ecu.getTimer().getTime(), engine.getSpeed(), engine.isBreaking());
           }
         }
       }
@@ -156,9 +157,10 @@ public class Train implements Tickable, SignalListener {
 
     // send OK squawk down the line
     //if (engine.getObjective() != STOP) {
-      if (ecu.getTimeLastSquawkSent() + TRAIN_SQUAWK_INTERVAL < ecu.getTimer().getTime() && !atStation) {
-        ecu.sendSquawkDownTheLine(RadioSignal.OK);
-      }
+    if (ecu.getTimeLastSquawkSent() + TRAIN_SQUAWK_INTERVAL < ecu.getTimer().getTime()
+        && !atStation) {
+      ecu.sendSquawkDownTheLine(RadioSignal.OK);
+    }
     //}
   }
 
@@ -207,9 +209,11 @@ public class Train implements Tickable, SignalListener {
   }
 
   public void proceedWithCaution() {
+    if (engine.getObjective() != PROCEED_WITH_CAUTION) {
+      logger.warn("{} proceeding with caution!", this);
+    }
     engine.roll();
     engine.setObjective(PROCEED_WITH_CAUTION);
-    logger.warn("{} proceeding with caution!", this);
   }
 
   public void see(Set<Observable> observables) {
@@ -273,7 +277,7 @@ public class Train implements Tickable, SignalListener {
   @Override
   public String toString() {
     try {
-      return "Train-" + ((tID != -1) ? tID
+      return "Train-" + (trainID != 0 ? trainID
           : WorldHandler.getInstance().getWorld().getTrainID(this));
     } catch (Exception e) {
       return super.toString();
@@ -288,12 +292,15 @@ public class Train implements Tickable, SignalListener {
     return trail;
   }
 
-  public Integer getTrainID() {
-    return tID;
+  public Integer getID() {
+    return trainID;
   }
 
-  public void setTrainID(int trainID) {
-    this.tID = trainID;
+  public void setID(int trainID) {
+    if (this.trainID != 0) {
+      throw new IllegalStateException("The ID can only be set once!");
+    }
+    this.trainID = trainID;
   }
 
   public void ping(RadioSignal signal) {
@@ -317,7 +324,7 @@ public class Train implements Tickable, SignalListener {
     logger.warn("{} entered {}, stopping...", this, station);
   }
 
-  public void leftStation(Station station){
+  public void leftStation(Station station) {
     atStation = false;
   }
 

@@ -11,4 +11,7 @@ public interface Connectable {
 
   public void entered(Train train);
   public void left(Train train);
+
+  public int getID();
+  public void setID(int id);
 }

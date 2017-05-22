@@ -2,11 +2,11 @@ package ft.sim.world.connectables;
 
 import static ft.sim.world.signalling.SignalType.GREEN;
 
+import ft.sim.simulation.Tickable;
+import ft.sim.world.WorldHandler;
 import ft.sim.world.signalling.SignalController;
 import ft.sim.world.signalling.SignalType;
-import ft.sim.simulation.Tickable;
 import ft.sim.world.train.Train;
-import ft.sim.world.WorldHandler;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -35,6 +35,8 @@ public class Station implements Connectable, Tickable {
   Set<Train> trainsEntering = new HashSet<>();
 
   Map<Track, SignalController> nextBlockSignalController = new HashMap<>();
+
+  private int stationID = 0;
 
   public void setNextBlockSignalController(SignalController nextBlockSignalController,
       Track nextTrack) {
@@ -126,10 +128,22 @@ public class Station implements Connectable, Tickable {
     this.length = length;
   }
 
+  public void setID(int stationID) {
+    if (this.stationID != 0) {
+      throw new IllegalStateException("The ID can only be set once!");
+    }
+    this.stationID = stationID;
+  }
+
+  public int getID() {
+    return stationID;
+  }
+
   @Override
   public String toString() {
     try {
-      return "Station-" + WorldHandler.getInstance().getWorld().getStationID(this);
+      return "Station-" + (this.stationID != 0 ? this.stationID
+          : WorldHandler.getInstance().getWorld().getStationID(this));
     } catch (Exception e) {
       return super.toString();
     }

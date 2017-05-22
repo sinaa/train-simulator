@@ -5,6 +5,7 @@ package ft.sim.web;
  */
 
 import ft.sim.simulation.SimulationController;
+import ft.sim.world.map.MapBuilderHelper;
 import org.apache.commons.lang3.text.WordUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,12 +16,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Map;
 import java.util.stream.Collectors;
-import ft.sim.world.map.MapBuilder;
 
 @Controller
-public class BaseController {
+public class RootWebController {
 
-  private static final transient Logger logger = LoggerFactory.getLogger(BaseController.class);
+  private static final transient Logger logger = LoggerFactory.getLogger(RootWebController.class);
 
   @RequestMapping("/")
   public String index(Model model) {
@@ -37,7 +37,7 @@ public class BaseController {
 
   @RequestMapping("/simulation")
   public String simulation(Model model) {
-    Map<String, String> maps=MapBuilder.getMaps().stream().collect(Collectors
+    Map<String, String> maps= MapBuilderHelper.getMaps().stream().collect(Collectors
         .toMap(s -> WordUtils.capitalizeFully(s.replace("-", " ").replace("_", " ")), s -> s));
     model.addAttribute("maps", maps);
     return "simulation";

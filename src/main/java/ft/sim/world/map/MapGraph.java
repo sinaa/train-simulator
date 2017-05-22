@@ -92,6 +92,8 @@ public class MapGraph {
       logger.warn("adding {} root", to.getClass().getSimpleName());
       return;
     }
+
+    throw new IllegalStateException("failed to add edge to graph (?!)");
   }
 
   private GraphNode getRootGraphNode(Connectable c) {

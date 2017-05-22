@@ -3,6 +3,7 @@ package ft.sim.world;
 import com.google.gson.Gson;
 
 import ft.sim.simulation.SimulationController;
+import ft.sim.world.map.MapBuilderHelper;
 import org.junit.Test;
 
 import java.util.List;
@@ -37,7 +38,7 @@ public class GlobalMapTest {
 
   @Test
   public void testMapResolver() {
-    List<String> maps = MapBuilder.getMaps();
+    List<String> maps = MapBuilderHelper.getMaps();
     System.out.println(maps);
   }
 
