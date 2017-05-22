@@ -294,8 +294,8 @@ public class SimulationController {
   }
 
   public void kill() {
-    StatisticsController.getInstance().saveGzip();
-    StatisticsController.getInstance().clear();
+    StatisticsController.getOptionalInstance().ifPresent(StatisticsController::saveGzip);
+    StatisticsController.getOptionalInstance().ifPresent(StatisticsController::clear);
     sendStatistics();
     simThread.interrupt();
     isRunning = false;

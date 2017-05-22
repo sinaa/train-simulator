@@ -271,9 +271,9 @@ public class MapBuilder {
   private void setBlockSignals() {
     MapGraph graph = map.getGraph();
     Set<Connectable> roots = graph.getRootConnectables();
-    if (roots.stream().iterator().next() instanceof Track) {
+/*    if (roots.stream().iterator().next() instanceof Track) {
       logger.error("graph: {}", graph.getConnectablesGraph());
-    }
+    }*/
     logger.warn("roots: {}", roots);
     for (Connectable root : roots) {
       Track track = graph.getFirstTrack(root);

@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
 import org.slf4j.Logger;
@@ -47,6 +48,10 @@ public class StatisticsController {
 
   public static StatisticsController getInstance() {
     return instance;
+  }
+
+  public static Optional<StatisticsController> getOptionalInstance() {
+    return Optional.ofNullable(instance);
   }
 
   void record(StatisticsItem stat) {

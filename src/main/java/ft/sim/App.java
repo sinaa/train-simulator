@@ -60,8 +60,8 @@ public class App implements ApplicationRunner {
         if (f.isDirectory()) {
           toRemove.add(file);
           List<String> files = Arrays
-              .stream(f.listFiles((dir, name) -> name.toLowerCase().endsWith(".yaml"))).map(
-                  File::getAbsolutePath).collect(Collectors.toList());
+              .stream(f.listFiles((dir, name) -> name.toLowerCase().endsWith(".yaml")))
+              .map(File::getAbsolutePath).collect(Collectors.toList());
           AppConfig.experimentMaps.addAll(files);
         }
       });
