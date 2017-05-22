@@ -1,18 +1,14 @@
 package ft.sim.world.map;
 
-import ft.sim.world.connectables.Connectable;
 import ft.sim.world.connectables.Track;
-import ft.sim.world.journey.Journey;
 import ft.sim.world.placeables.ActiveBalise;
 import ft.sim.world.placeables.Placeable;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
-import java.util.TreeMap;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
@@ -40,6 +36,10 @@ public class MapBuilderHelper {
     } catch (IOException e) {
       e.printStackTrace();
     }
+    File[] localYamls = new File(".").listFiles(
+        (dir, name) -> name.toLowerCase().endsWith(".yaml")
+    );
+    Arrays.stream(localYamls).forEach(f -> maps.add(f.getName().replace(".yaml", "")));
 
     return maps;
   }

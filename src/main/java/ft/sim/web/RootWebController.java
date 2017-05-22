@@ -6,6 +6,9 @@ package ft.sim.web;
 
 import ft.sim.simulation.SimulationController;
 import ft.sim.world.map.MapBuilderHelper;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.text.WordUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,9 +16,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Controller
 public class RootWebController {
@@ -37,8 +37,12 @@ public class RootWebController {
 
   @RequestMapping("/simulation")
   public String simulation(Model model) {
-    Map<String, String> maps= MapBuilderHelper.getMaps().stream().collect(Collectors
-        .toMap(s -> WordUtils.capitalizeFully(s.replace("-", " ").replace("_", " ")), s -> s));
+    Map<String, String> maps = MapBuilderHelper.getMaps().stream().collect(Collectors
+        .toMap(s -> WordUtils.capitalizeFully(s.replace("-", " ").replace("_", " ")), s -> s,
+            (u, v) -> {
+              throw new IllegalStateException(String.format("Duplicate key %s", u));
+            },
+            LinkedHashMap::new));
     model.addAttribute("maps", maps);
     return "simulation";
   }
