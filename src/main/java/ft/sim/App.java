@@ -5,10 +5,12 @@ package ft.sim;
 
 import ft.sim.experiment.ExperimentController;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -52,6 +54,18 @@ public class App implements ApplicationRunner {
     if (mapsProvided) {
       List<String> maps = applicationArguments.getOptionValues("maps");
       maps.forEach(map -> AppConfig.experimentMaps.addAll(Arrays.asList(map.split(","))));
+      List<String> toRemove = new ArrayList<>();
+      AppConfig.experimentMaps.forEach(file -> {
+        File f = new File(file);
+        if (f.isDirectory()) {
+          toRemove.add(file);
+          List<String> files = Arrays
+              .stream(f.listFiles((dir, name) -> name.toLowerCase().endsWith(".yaml"))).map(
+                  File::getAbsolutePath).collect(Collectors.toList());
+          AppConfig.experimentMaps.addAll(files);
+        }
+      });
+      AppConfig.experimentMaps.removeAll(toRemove);
     }
   }
 
