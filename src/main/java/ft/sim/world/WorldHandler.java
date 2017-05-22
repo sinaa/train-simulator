@@ -1,11 +1,17 @@
 package ft.sim.world;
 
-import ft.sim.world.connectables.Connectable;
+import static ft.sim.statistics.StatisticsVariable.ACTIVE_TRAINS;
+import static ft.sim.statistics.StatisticsVariable.MAX_ACTIVE_TRAINS;
+import static ft.sim.statistics.StatisticsVariable.MIN_ACTIVE_TRAINS;
+import static ft.sim.statistics.StatisticsVariable.MIN_STATION_TRAINS;
+import static ft.sim.statistics.StatisticsVariable.STATION_TRAINS;
+import static ft.sim.statistics.StatisticsVariable.TRAIN_SPEED;
+
+import ft.sim.statistics.StatisticsItem;
+import ft.sim.statistics.StatsHelper;
 import ft.sim.world.journey.Journey;
 import ft.sim.world.map.GlobalMap;
-import ft.sim.world.train.Train;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,9 +22,9 @@ import org.slf4j.LoggerFactory;
 public class WorldHandler {
 
   protected static final transient Logger logger = LoggerFactory.getLogger(WorldHandler.class);
-
-  private GlobalMap world;
   private static Map<Journey, GlobalMap> journeysWorlds = new HashMap<>();
+  private static Map<GlobalMap, WorldHandler> instances = new HashMap<>();
+  private GlobalMap world;
   private double time = 0;
   private long tick = 0;
 
@@ -26,8 +32,6 @@ public class WorldHandler {
     this.world = map;
     this.world.getJourneys().values().forEach(j -> journeysWorlds.put(j, map));
   }
-
-  private static Map<GlobalMap, WorldHandler> instances = new HashMap<>();
 
   public static WorldHandler getInstance(GlobalMap world) {
     return instances.computeIfAbsent(world, WorldHandler::new);
@@ -46,7 +50,8 @@ public class WorldHandler {
 
   public static WorldHandler getInstance() {
     if (instances.size() != 1) {
-      throw new IllegalStateException(instances.size() + " maps found! This method should be called with exactly 1 instance.");
+      throw new IllegalStateException(
+          instances.size() + " maps found! This method should be called with exactly 1 instance.");
     }
     return instances.values().iterator().next();
   }
@@ -68,6 +73,38 @@ public class WorldHandler {
     world.getStations().forEach((id, station) -> station.tick(time));
 
     this.time += time;
+
+    logStats();
+  }
+
+  private void logStats() {
+    int numTrainsActive = (int) world.getJourneys().values().stream().filter(Journey::isInProgress)
+        .filter(j -> !j.getTrain().isAtStation()).count();
+    StatisticsItem stat = StatsHelper.getStatItem(MAX_ACTIVE_TRAINS);
+    if (stat == null || numTrainsActive > (int) stat.getValue()) {
+      StatsHelper.track(MAX_ACTIVE_TRAINS, numTrainsActive);
+    }
+
+    StatisticsItem statMin = StatsHelper.getStatItem(MIN_ACTIVE_TRAINS);
+    if (statMin == null || numTrainsActive < (int) statMin.getValue()) {
+      StatsHelper.track(MIN_ACTIVE_TRAINS, numTrainsActive);
+    }
+
+    int numTrainsAtStation = (int) world.getJourneys().values().stream().filter(Journey::isInProgress)
+        .filter(j -> j.getTrain().isAtStation()).count();
+    StatisticsItem statMinStation = StatsHelper.getStatItem(MIN_STATION_TRAINS);
+    if (statMinStation == null || numTrainsAtStation < (int) statMinStation.getValue()) {
+      StatsHelper.track(MIN_STATION_TRAINS, numTrainsAtStation);
+    }
+
+    if (tick % 10 == 0) {
+      StatsHelper.log(STATION_TRAINS, numTrainsAtStation);
+      StatsHelper.log(ACTIVE_TRAINS, numTrainsActive);
+
+      world.getJourneys().values().stream().filter(Journey::isInProgress).forEach(j -> {
+        StatsHelper.logFor(TRAIN_SPEED, j.getTrain(), j.getTrain().getEngine().getSpeed());
+      });
+    }
   }
 
   public double getTime() {

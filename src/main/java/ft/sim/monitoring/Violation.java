@@ -25,6 +25,10 @@ public class Violation {
     return severity;
   }
 
+  public String getDescription() {
+    return description;
+  }
+
   @Override
   public String toString() {
     return String.format("%s - [%s]: %s - %s ", tickTime, severity, type, description);

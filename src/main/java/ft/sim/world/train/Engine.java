@@ -8,6 +8,8 @@ import static ft.sim.world.RealWorldConstants.ROLLING_SPEED;
 import static ft.sim.world.train.TrainObjective.PROCEED;
 
 import ft.sim.simulation.Tickable;
+import ft.sim.statistics.StatisticsVariable;
+import ft.sim.statistics.StatsHelper;
 import ft.sim.world.RealWorldConstants;
 import ft.sim.world.connectables.LineCondition;
 import org.slf4j.Logger;
@@ -56,6 +58,9 @@ public class Engine implements Tickable {
   private double inaccuracyRate = RealWorldConstants.TRAIN_DISTANCE_MEASUREMENT_INACCURACY_RATE;
 
   private LineCondition lineCondition = null;
+
+  // max speed reached
+  private double maxSpeedReached = 0;
 
   /*
    * Construct an engine, along with the train this engine belongs to
@@ -170,6 +175,10 @@ public class Engine implements Tickable {
       speed = 0;
     }
 
+    if (speed > maxSpeedReached) {
+      maxSpeedReached = speed;
+    }
+
     updateAcceleration();
   }
 
@@ -269,5 +278,9 @@ public class Engine implements Tickable {
 
   public void setLineCondition(LineCondition lineCondition) {
     this.lineCondition = lineCondition;
+  }
+
+  public double getMaxSpeedReached() {
+    return maxSpeedReached;
   }
 }

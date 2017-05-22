@@ -2,6 +2,8 @@ package ft.sim.monitoring;
 
 import static ft.sim.monitoring.ViolationSeverity.CRITICAL;
 
+import ft.sim.statistics.StatisticsVariable;
+import ft.sim.statistics.StatsHelper;
 import ft.sim.world.connectables.Connectable;
 import ft.sim.world.connectables.Section;
 import ft.sim.world.connectables.Station;
@@ -38,6 +40,17 @@ public class Oracle {
 
   public void addViolation(Violation violation) {
     violations.add(violation);
+    switch (violation.getSeverity()) {
+      case CRITICAL:
+        StatsHelper.log(StatisticsVariable.CRITICAL_VIOLATION, violation.getType(),
+            violation.getDescription().replace(",", "-"));
+        break;
+      case HIGH:
+        StatsHelper.log(StatisticsVariable.HIGH_VIOLATION, violation.getType(),
+            violation.getDescription().replace(",", "-"));
+        break;
+    }
+
     if (violation.getSeverity() == CRITICAL) {
       throw new CriticalViolationException(violation);
     }

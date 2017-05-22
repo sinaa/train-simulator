@@ -9,6 +9,8 @@ import static ft.sim.world.train.TrainObjective.STOP_THEN_ROLL;
 
 import ft.sim.simulation.Tickable;
 import ft.sim.statistics.Recordable;
+import ft.sim.statistics.StatisticsVariable;
+import ft.sim.statistics.StatsHelper;
 import ft.sim.world.RealWorldConstants;
 import ft.sim.world.WorldHandler;
 import ft.sim.world.connectables.Observable;
@@ -21,6 +23,7 @@ import ft.sim.world.journey.Journey;
 import ft.sim.world.placeables.ActiveBalise;
 import ft.sim.world.placeables.ActiveBaliseData;
 import ft.sim.world.placeables.Balise;
+import ft.sim.world.placeables.Obstacle;
 import ft.sim.world.placeables.PassiveBalise;
 import ft.sim.world.placeables.Placeable;
 import ft.sim.world.signalling.SignalListener;
@@ -122,6 +125,10 @@ public class Train implements Tickable, SignalListener, Recordable {
               otherSideData = activeBalise.getOtherSideData();
             }
           }
+        } else if (p instanceof Obstacle) {
+          if (((Obstacle) p).hit()) {
+            crash();
+          }
         }
       }
     }
@@ -197,10 +204,12 @@ public class Train implements Tickable, SignalListener, Recordable {
         logger.warn("{} got GREEN signal! proceeding ...", this);
         engine.setTargetSpeed(engine.getLastAdvisorySpeed());
         engine.setObjective(PROCEED);
+        StatsHelper.logFor(StatisticsVariable.TRAIN_GOT_GREEN_SIGNAL, this);
         break;
       case RED:
         logger.warn("{} got RED signal! stopping ... (speed: {})", this, engine.getSpeed());
         engine.setTargetSpeed(0);
+        StatsHelper.logFor(StatisticsVariable.TRAIN_GOT_RED_SIGNAL, this);
         break;
       case AMBER:
         throw new IllegalArgumentException("AMBER signal is not implemented :-)");
@@ -211,7 +220,7 @@ public class Train implements Tickable, SignalListener, Recordable {
 
   public void proceedWithCaution() {
     if (engine.getObjective() != PROCEED_WITH_CAUTION) {
-      logger.warn("{} proceeding with caution!", this);
+      logger.debug("{} proceeding with caution!", this);
     }
     engine.roll();
     engine.setObjective(PROCEED_WITH_CAUTION);
@@ -333,5 +342,10 @@ public class Train implements Tickable, SignalListener, Recordable {
     ecu.sendSquawkDownTheLine(RadioSignal.NOK);
     engine.emergencyBreak();
     engine.setObjective(STOP);
+    StatsHelper.logFor(StatisticsVariable.TRAIN_CRASH, this);
+  }
+
+  public boolean isAtStation() {
+    return atStation;
   }
 }

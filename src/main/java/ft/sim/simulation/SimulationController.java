@@ -7,6 +7,9 @@ import com.google.gson.JsonObject;
 import ft.sim.experiment.Experiment;
 import ft.sim.monitoring.CriticalViolationException;
 import ft.sim.monitoring.Oracle;
+import ft.sim.statistics.StatisticsController;
+import ft.sim.statistics.StatisticsVariable;
+import ft.sim.statistics.StatsHelper;
 import ft.sim.visualisation.Point;
 import ft.sim.visualisation.SignalPoint;
 import ft.sim.web.SocketSession;
@@ -122,6 +125,7 @@ public class SimulationController {
   private void setSimulatorThread() {
     simThread = new Thread(() -> {
       logger.warn("simulation started!");
+      StatsHelper.trackEvent(StatisticsVariable.SIMULATION_STARTED);
       while (!Thread.currentThread().isInterrupted()
           && ticksElapsed * secondsPerTick < simulationDuration
           && !simulationCompleted) {
@@ -158,6 +162,7 @@ public class SimulationController {
       simulationCompleted = true;
       isRunning = false;
       logger.info("Simulation completed!");
+      StatsHelper.trackEvent(StatisticsVariable.SIMULATION_STOPPED);
       sendStatistics();
       finish();
     });
@@ -166,8 +171,9 @@ public class SimulationController {
   private void finish() {
     if (experiment != null) {
       experiment.finished();
+    } else {
+      kill();
     }
-    kill();
   }
 
   private void buildWorld(String mapYaml) {
@@ -180,6 +186,7 @@ public class SimulationController {
     }
     Disruptor disruptor = new Disruptor(RANDOM_SEED);
     disruptor.disruptTheWorld(world);
+    StatisticsController.getInstance(world);
   }
 
   private void tick() {
@@ -287,6 +294,8 @@ public class SimulationController {
   }
 
   public void kill() {
+    StatisticsController.getInstance().saveGzip();
+    StatisticsController.getInstance().clear();
     sendStatistics();
     simThread.interrupt();
     isRunning = false;

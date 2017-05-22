@@ -10,6 +10,8 @@ import static ft.sim.world.train.TrainObjective.STOP_THEN_ROLL;
 
 import ft.sim.physics.DistanceHelper;
 import ft.sim.simulation.Tickable;
+import ft.sim.statistics.StatisticsVariable;
+import ft.sim.statistics.StatsHelper;
 import ft.sim.world.RealWorldConstants;
 import ft.sim.world.gsm.RadioMast;
 import ft.sim.world.gsm.RadioSignal;
@@ -65,6 +67,9 @@ public class ECU implements Tickable {
     }
     logger.warn("{} seeing train ahead: {}", train, seeingTrainsAhead);
     this.seeingTrainsAhead = seeingTrainsAhead;
+    if (seeingTrainsAhead) {
+      StatsHelper.log(StatisticsVariable.TRAIN_SEEING_TRAIN_AHEAD, train);
+    }
   }
 
   public void updateNextTrainPrediction(ActiveBaliseData lastBaliseData) {
@@ -109,11 +114,15 @@ public class ECU implements Tickable {
           FULL_TRAIN_DECELERATION)) {
         engine.fullBreak();
       } else {
+        if (!engine.isEmergencyBreaking()) {
+          StatsHelper.logFor(StatisticsVariable.TRAIN_EMERGENCY_BREAK, train);
+        }
         engine.emergencyBreak();
-        sendSquawkDownTheLine(RadioSignal.NOK);
+        //sendSquawkDownTheLine(RadioSignal.NOK);
       }
       engine.setObjective(STOP_THEN_ROLL);
       sendSquawkDownTheLine(RadioSignal.NOK);
+      StatsHelper.logFor(StatisticsVariable.TRAIN_AHEAD_BROKEN, train);
       return;
     }
     /*if (nextDistancePrediction != -1) {
@@ -254,6 +263,9 @@ public class ECU implements Tickable {
   void ping(RadioSignal radioSignal) {
     timeReceivedLastSignal = timer.getTime();
     this.lastRadioSignal = radioSignal;
+    if (lastRadioSignal == RadioSignal.NOK) {
+      StatsHelper.logFor(StatisticsVariable.GSM_GOT_NOK, train);
+    }
   }
 
   public Optional<RadioMast> getRadioMast() {

@@ -12,9 +12,10 @@ public class StatisticsItem<V, T, U> {
   private T forObject; // For what object is this item being created?
   private U aux; // auxiliary data recorded for this item
 
-  StatisticsItem(StatisticsController controller) {
+  StatisticsItem(StatisticsController controller, StatisticsVariable type) {
     this.time = controller.getTime();
     this.tick = controller.getTick();
+    this.type = type;
   }
 
   StatisticsItem(StatisticsController controller, StatisticsVariable type, V value) {
@@ -28,6 +29,18 @@ public class StatisticsItem<V, T, U> {
     this.value = value;
   }
 
+  // different argument order due to generics
+  StatisticsItem(T forObject, StatisticsController controller, StatisticsVariable type) {
+    this(forObject, controller.getTime(), controller.getTick(), type);
+  }
+
+  StatisticsItem(T forObject, double time, long tick, StatisticsVariable type) {
+    this.time = time;
+    this.tick = tick;
+    this.type = type;
+    this.forObject = forObject;
+  }
+
   StatisticsItem(StatisticsController controller, StatisticsVariable type, T forObject, V value) {
     this(controller.getTime(), controller.getTick(), type, forObject, value);
   }
@@ -38,6 +51,10 @@ public class StatisticsItem<V, T, U> {
     this.type = type;
     this.forObject = forObject;
     this.value = value;
+  }
+
+  public static String getHeader() {
+    return "time,tick,type,value,obj,aux";
   }
 
   public void setAuxData(U aux) {
@@ -69,7 +86,7 @@ public class StatisticsItem<V, T, U> {
   }
 
   public String toString() {
-    return String.format("%s,%s,%s,%s", time, tick, type, getValueObjectAuxCsv());
+    return String.format("%.2f,%s,%s,%s", time, tick, type, getValueObjectAuxCsv());
   }
 
   private String getValueObjectAuxCsv() {
@@ -78,9 +95,5 @@ public class StatisticsItem<V, T, U> {
       default:
         return String.format("%s,%s,%s", value, forObject, aux);
     }
-  }
-
-  public static String getHeader(){
-    return "time,tick,type,value,obj,aux";
   }
 }

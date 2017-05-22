@@ -2,7 +2,6 @@ package ft.sim.world.map;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import ft.sim.world.train.Train;
 import ft.sim.world.connectables.Connectable;
 import ft.sim.world.connectables.Section;
 import ft.sim.world.connectables.Station;
@@ -11,6 +10,8 @@ import ft.sim.world.connectables.Track;
 import ft.sim.world.journey.Journey;
 import ft.sim.world.journey.JourneyPath;
 import ft.sim.world.placeables.Placeable;
+import ft.sim.world.train.Train;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,11 +27,6 @@ public class GlobalMap {
   protected static transient final Logger logger = LoggerFactory.getLogger(GlobalMap.class);
 
   private final String name;
-
-  public GlobalMap(String mapName){
-    name = mapName;
-  }
-
   private BiMap<Integer, Journey> journeysMap = HashBiMap.create();
   private BiMap<Integer, JourneyPath> journeyPathsMap = HashBiMap.create();
   private BiMap<Integer, Track> trackMap = HashBiMap.create();
@@ -38,13 +34,14 @@ public class GlobalMap {
   private BiMap<Integer, Switch> switchMap = HashBiMap.create();
   private BiMap<Integer, Train> trainMap = HashBiMap.create();
   private BiMap<Integer, Station> stationMap = HashBiMap.create();
-  private BiMap<Integer,Integer> trackPairMap = HashBiMap.create();
-
+  private BiMap<Integer, Integer> trackPairMap = HashBiMap.create();
   private HashMap<String, Object> configurationsMap = new HashMap<>();
-
   private transient HashMap<Section, Integer> sectionsRegistry = new HashMap<>();
-
   private MapGraph graph = new MapGraph();
+
+  public GlobalMap(String mapName) {
+    name = mapName;
+  }
 
   public void registerSectionsForTrack(List<Section> sections, int trackID) {
     sections.forEach(section -> sectionsRegistry.put(section, trackID));
@@ -79,7 +76,7 @@ public class GlobalMap {
     return conf != null && conf.toString().equals(value.toString());
   }
 
-  public void addTrackPair(int fromTrackID, int toTrackID){
+  public void addTrackPair(int fromTrackID, int toTrackID) {
     trackPairMap.put(fromTrackID, toTrackID);
   }
 
@@ -242,5 +239,13 @@ public class GlobalMap {
 
   public String getName() {
     return name;
+  }
+
+  public String getSimpleFileName() {
+    File mapfile = new File(name);
+    if (mapfile.exists()) {
+      return mapfile.getName().replaceAll("\\s+", "_").replace(".yaml", "");
+    }
+    return name.substring(name.lastIndexOf(File.separator) + 1).replace(".yaml", "");
   }
 }

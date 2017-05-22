@@ -3,6 +3,8 @@ package ft.sim.world.connectables;
 import static ft.sim.world.signalling.SignalType.GREEN;
 
 import ft.sim.simulation.Tickable;
+import ft.sim.statistics.StatisticsVariable;
+import ft.sim.statistics.StatsHelper;
 import ft.sim.world.WorldHandler;
 import ft.sim.world.signalling.SignalController;
 import ft.sim.world.signalling.SignalType;
@@ -56,6 +58,8 @@ public class Station implements Connectable, Tickable {
     train.signalChange(SignalType.RED);
     train.enteredStation(this);
     trainsEntering.remove(train);
+
+    StatsHelper.logFor(StatisticsVariable.TRAIN_ENTERED_STATION, train, this);
   }
 
   @Override

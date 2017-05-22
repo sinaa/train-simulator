@@ -25,7 +25,7 @@ public class Experiment {
   }
 
   public void finished() {
-    //simulation.kill();
+    simulation.kill();
     //NOTE: this is to be executed before experiment is killed
     experimentListener.experimentFinishedEvent(this);
   }

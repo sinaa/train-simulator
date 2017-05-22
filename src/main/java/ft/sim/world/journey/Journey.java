@@ -1,7 +1,13 @@
 package ft.sim.world.journey;
 
+import static ft.sim.statistics.StatisticsVariable.JOURNEY_DURATION;
+import static ft.sim.statistics.StatisticsVariable.JOURNEY_FINISHED;
+import static ft.sim.statistics.StatisticsVariable.JOURNEY_STARTED;
+import static ft.sim.statistics.StatisticsVariable.TRAIN_MAX_SPEED;
+
 import ft.sim.simulation.Tickable;
 import ft.sim.statistics.Recordable;
+import ft.sim.statistics.StatsHelper;
 import ft.sim.world.WorldHandler;
 import ft.sim.world.map.GlobalMap;
 import ft.sim.world.train.Train;
@@ -21,6 +27,9 @@ public class Journey implements Tickable, Recordable {
 
   private boolean journeyStarted = false;
   private boolean journeyFinished = false;
+
+  private double timeStarted = 0;
+  private double timeFinished = 0;
 
   private Train train;
   private JourneyPath path;
@@ -97,6 +106,14 @@ public class Journey implements Tickable, Recordable {
     return journeyFinished;
   }
 
+  public boolean isJourneyStarted() {
+    return journeyStarted;
+  }
+
+  public boolean isInProgress() {
+    return journeyStarted && !journeyFinished;
+  }
+
   public double getTotalDistanceTravelled() {
     return totalDistanceTravelled;
   }
@@ -133,10 +150,17 @@ public class Journey implements Tickable, Recordable {
 
   private void journeyStarted() {
     journeyStarted = true;
+    StatsHelper.logFor(JOURNEY_STARTED, train);
+    timeStarted = journeyTimer.getTime();
   }
 
   private void journeyFinished() {
     journeyFinished = true;
+    StatsHelper.logFor(TRAIN_MAX_SPEED, train, train.getEngine().getMaxSpeedReached());
+    StatsHelper.logFor(JOURNEY_FINISHED, train);
+    timeFinished = journeyTimer.getTime();
+
+    StatsHelper.logFor(JOURNEY_DURATION, train, timeFinished - timeStarted);
   }
 
   public JourneyTimer getJourneyTimer() {

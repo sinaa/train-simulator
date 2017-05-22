@@ -14,6 +14,7 @@ import ft.sim.world.journey.Journey;
 import ft.sim.world.journey.JourneyPath;
 import ft.sim.world.placeables.ActiveBalise;
 import ft.sim.world.placeables.Balise;
+import ft.sim.world.placeables.Obstacle;
 import ft.sim.world.placeables.PassiveBalise;
 import ft.sim.world.placeables.Placeable;
 import ft.sim.world.signalling.SignalController;
@@ -480,9 +481,12 @@ public class MapBuilder {
       }
       Map<String, Object> placeableData = (Map<String, Object>) placeable.getValue();
       Placeable p = null;
-      if (placeableData.getOrDefault("type", "fixedBalise").equals("fixedBalise")) {
+      String placeableType = (String) placeableData.getOrDefault("type", "fixedBalise");
+      if (placeableType.equals("fixedBalise")) {
         p = new PassiveBalise(Double.valueOf((int) placeableData.get("advisorySpeed")),
             placeableID);
+      } else if(placeableType.equals("obstacle")){
+        p = new Obstacle();
       }
       Map<String, Integer> placeOnMap = ((Map<String, Integer>) placeableData.get("placeOn"));
       int trackID = placeOnMap.get("track");

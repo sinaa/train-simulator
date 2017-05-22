@@ -1,13 +1,18 @@
 package ft.sim.experiment;
 
 import ft.sim.App;
+import ft.sim.App.AppConfig;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by sina on 20/05/2017.
  */
 public class ExperimentController implements ExperimentListenerInterface {
+
+  protected static transient Logger logger = LoggerFactory.getLogger(ExperimentController.class);
 
   private static ExperimentController instance;
 
@@ -17,10 +22,14 @@ public class ExperimentController implements ExperimentListenerInterface {
   private App app;
 
   private ExperimentController() {
-    Experiment experiment = new Experiment("basic");
-    experiments.add(experiment);
-    Experiment e2 = new Experiment("experiment-single-track-debugging-1");
-    experiments.add(e2);
+    if (AppConfig.experimentMaps.isEmpty()) {
+      logger.error(
+          "Empty list of experiment map configurations provided. Please add experimentMaps by providing: --maps=filename1,filename2,...");
+      finished();
+      return;
+    }
+    AppConfig.experimentMaps.forEach(map -> experiments.add(new Experiment(map)));
+    logger.info("{} experimentMaps added.", AppConfig.experimentMaps.size());
   }
 
   public static ExperimentController getInstance() {
