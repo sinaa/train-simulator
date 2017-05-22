@@ -1,16 +1,17 @@
 package ft.sim.world.journey;
 
 import ft.sim.simulation.Tickable;
-import ft.sim.world.train.Train;
+import ft.sim.statistics.Recordable;
 import ft.sim.world.WorldHandler;
 import ft.sim.world.map.GlobalMap;
+import ft.sim.world.train.Train;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Created by Sina on 27/02/2017.
  */
-public class Journey implements Tickable {
+public class Journey implements Tickable, Recordable {
 
   protected static transient final Logger logger = LoggerFactory.getLogger(Journey.class);
 
@@ -18,6 +19,7 @@ public class Journey implements Tickable {
   private double tailPosition = 0;
   private boolean directionForward = true;
 
+  private boolean journeyStarted = false;
   private boolean journeyFinished = false;
 
   private Train train;
@@ -74,8 +76,12 @@ public class Journey implements Tickable {
     headPosition = journeyPosition.getHeadPosition();
     tailPosition = journeyPosition.getTailPosition();
 
+    if (!journeyStarted && totalDistanceTravelled > 0) {
+      journeyStarted();
+    }
+
     if (journeyPosition.isEnded()) {
-      journeyFinished = true;
+      journeyFinished();
     }
   }
 
@@ -111,18 +117,26 @@ public class Journey implements Tickable {
     return directionForward;
   }
 
-  public double getHeadPositionFromRoot(){
+  public double getHeadPositionFromRoot() {
     return journeyPosition.getHeadPosition() + path.getDistanceFromGraphRoot();
   }
 
-  public double getTailPositionFromRoot(){
+  public double getTailPositionFromRoot() {
     return journeyPosition.getTailPosition() + path.getDistanceFromGraphRoot();
   }
 
 
-  public GlobalMap getWorld(){
+  public GlobalMap getWorld() {
     logger.error("Friendly advice: try not to use journey.getWorld()!");
     return WorldHandler.getWorldForJourney(this);
+  }
+
+  private void journeyStarted() {
+    journeyStarted = true;
+  }
+
+  private void journeyFinished() {
+    journeyFinished = true;
   }
 
   public JourneyTimer getJourneyTimer() {
@@ -142,5 +156,10 @@ public class Journey implements Tickable {
           + ", isForward:" + directionForward + "}";
       return journey;
     }
+  }
+
+  @Override
+  public int getID() {
+    return train.getID();
   }
 }

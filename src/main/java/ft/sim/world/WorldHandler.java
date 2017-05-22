@@ -19,6 +19,8 @@ public class WorldHandler {
 
   private GlobalMap world;
   private static Map<Journey, GlobalMap> journeysWorlds = new HashMap<>();
+  private double time = 0;
+  private long tick = 0;
 
   private WorldHandler(GlobalMap map) {
     this.world = map;
@@ -54,6 +56,7 @@ public class WorldHandler {
   }
 
   public void tick(double time) {
+    tick++;
     // tick all journeys
     for (Map.Entry<Integer, Journey> entry : world.getJourneys().entrySet()) {
       Journey j = entry.getValue();
@@ -63,5 +66,15 @@ public class WorldHandler {
 
     // tick all stations
     world.getStations().forEach((id, station) -> station.tick(time));
+
+    this.time += time;
+  }
+
+  public double getTime() {
+    return time;
+  }
+
+  public long getTick() {
+    return tick;
   }
 }

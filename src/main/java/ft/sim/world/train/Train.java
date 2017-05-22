@@ -8,6 +8,7 @@ import static ft.sim.world.train.TrainObjective.STOP_AND_ROLL;
 import static ft.sim.world.train.TrainObjective.STOP_THEN_ROLL;
 
 import ft.sim.simulation.Tickable;
+import ft.sim.statistics.Recordable;
 import ft.sim.world.RealWorldConstants;
 import ft.sim.world.WorldHandler;
 import ft.sim.world.connectables.Observable;
@@ -35,7 +36,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Created by Sina on 21/02/2017.
  */
-public class Train implements Tickable, SignalListener {
+public class Train implements Tickable, SignalListener, Recordable {
 
   protected static final transient Logger logger = LoggerFactory.getLogger(Train.class);
 
@@ -292,7 +293,7 @@ public class Train implements Tickable, SignalListener {
     return trail;
   }
 
-  public Integer getID() {
+  public int getID() {
     return trainID;
   }
 
