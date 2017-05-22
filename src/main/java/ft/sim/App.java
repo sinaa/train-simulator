@@ -29,7 +29,9 @@ public class App implements ApplicationRunner {
   private static ConfigurableApplicationContext context = null;
 
   public static void main(String[] args) {
+    AppConfig.isNonInteractive = Arrays.asList(args).contains("experiment");
     AppConfig.init();
+
     context = new SpringApplicationBuilder(App.class).web(!AppConfig.isNonInteractive).run(args);
     //context = SpringApplication.run(App.class, args);
 
@@ -46,8 +48,6 @@ public class App implements ApplicationRunner {
 
   @Override
   public void run(ApplicationArguments applicationArguments) throws Exception {
-    List<String> baseOptions = applicationArguments.getNonOptionArgs();
-    AppConfig.isNonInteractive = baseOptions.contains("experiment");
     boolean mapsProvided = applicationArguments.containsOption("maps");
     if (mapsProvided) {
       List<String> maps = applicationArguments.getOptionValues("maps");
