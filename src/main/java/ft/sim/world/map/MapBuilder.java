@@ -79,17 +79,20 @@ public class MapBuilder {
   }
 
   private void importMapFile(String mapYamlFile) throws IOException {
+    logger.info("Loading map: {}", mapYamlFile);
+
     Resource resource = new ClassPathResource(mapYamlFile);
     InputStream mapInputStream;
     // Try the local jar resources
-    if (resource.exists()) {
-      mapInputStream = resource.getInputStream();
-    } else { // try to read it from the local directory
-      File mapFile = new File(mapYamlFile);
-      if (!mapFile.exists()) {
+    File mapFile = new File(mapYamlFile);
+    if (mapFile.exists()) {
+      mapInputStream = new FileInputStream(mapFile);
+    } else {
+      if (resource.exists()) {
+        mapInputStream = resource.getInputStream();
+      } else {
         throw new IllegalStateException("Given file doesn't exist: " + mapYamlFile);
       }
-      mapInputStream = new FileInputStream(mapFile);
     }
 
     Yaml yaml = new Yaml();
@@ -485,7 +488,7 @@ public class MapBuilder {
       if (placeableType.equals("fixedBalise")) {
         p = new PassiveBalise(Double.valueOf((int) placeableData.get("advisorySpeed")),
             placeableID);
-      } else if(placeableType.equals("obstacle")){
+      } else if (placeableType.equals("obstacle")) {
         p = new Obstacle();
       }
       Map<String, Integer> placeOnMap = ((Map<String, Integer>) placeableData.get("placeOn"));
