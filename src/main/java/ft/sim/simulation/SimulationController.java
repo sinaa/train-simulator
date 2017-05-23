@@ -158,6 +158,13 @@ public class SimulationController {
             simulationTimeElapsed = (int) Math.floor(ticksElapsed * 1.0 / ticksPerSecond);
           }
         }
+
+        // Every 100 ticks check if all trains are stopped and any got NOK (it cannot progress further)
+        if (ticksElapsed % 100 == 0 &&
+            world.getTrains().values().stream().allMatch(t -> t.getEngine().isStopped()) &&
+            world.getTrains().values().stream().anyMatch(t -> t.getEcu().gotNOKRadio())) {
+          simulationCompleted = true;
+        }
       }
       simulationCompleted = true;
       isRunning = false;

@@ -268,6 +268,10 @@ public class ECU implements Tickable {
     }
   }
 
+  public boolean gotNOKRadio() {
+    return lastRadioSignal == RadioSignal.NOK;
+  }
+
   public Optional<RadioMast> getRadioMast() {
     return Optional.ofNullable(radioMast);
   }
