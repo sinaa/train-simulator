@@ -97,7 +97,7 @@
                      data-slider-max="300"
                      data-slider-step="1" data-slider-value="0"/>
               <button class='btn btn-info set_speed'>Set Target Speed</button>
-              <button class='btn btn-danger emergency_break'>Emergency Break</button>
+              <button class='btn btn-danger emergency_brake'>Emergency Brake</button>
             </li>
           </ul>
         </div>
@@ -436,8 +436,8 @@
     function setTrainTargetSpeed(trainID, speed) {
       sendSet('trainTargetSpeed', trainID, speed);
     }
-    function emergencyBreak(trainID) {
-      sendSet('emergencyBreak', trainID, null);
+    function emergencyBrake(trainID) {
+      sendSet('emergencyBrake', trainID, null);
     }
     $(document).ready(function () {
       $('#control-deck').hide();
@@ -453,9 +453,9 @@
         var newSpeed = sliders[tid].slider('getValue');
         setTrainTargetSpeed(tid, newSpeed);
       });
-      $(document).on('click', '.emergency_break', function () {
+      $(document).on('click', '.emergency_brake', function () {
         var tid = $(this).parents('.single_train').data('trainID');
-        emergencyBreak(tid);
+        emergencyBrake(tid);
       });
     })
 

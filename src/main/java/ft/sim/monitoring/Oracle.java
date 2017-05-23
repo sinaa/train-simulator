@@ -66,11 +66,11 @@ public class Oracle {
       ensureOneTrainPerTrackOrSwitch();
     }
     if (world.isConfiguration("mode", "variable_block")) {
-      ensureTrainsWithinEmergencyBreakingDistance();
+      ensureTrainsWithinEmergencyBrakingDistance();
     }
   }
 
-  private void ensureTrainsWithinEmergencyBreakingDistance() {
+  private void ensureTrainsWithinEmergencyBrakingDistance() {
     Map<Journey, Journey> trainMap = JourneyHelper.getInstance(world)
         .getJourneysFollowingEachOther();
     for (Entry<Journey, Journey> pair : trainMap.entrySet()) {
@@ -84,13 +84,13 @@ public class Oracle {
       }
       double distance = JourneyHelper.getJourneyDistanceBetween(j2, j1);
 
-      double breakingDistance = j1.getTrain().getEcu().calculateBreakingDistance();
+      double brakingDistance = j1.getTrain().getEcu().calculateBrakingDistance();
 
       j1.getTrain().getEcu().setActualDistance(distance);
 
-      if (breakingDistance > distance) {
-        logger.info("{} and {}, distance: {} , breaking distance:{}", j1, j2, distance,
-            breakingDistance);
+      if (brakingDistance > distance) {
+        logger.info("{} and {}, distance: {} , braking distance:{}", j1, j2, distance,
+            brakingDistance);
         ViolationBuilder.createVariableBlockViolation(this, j1.getTrain(), j2.getTrain(), distance);
       }
     }

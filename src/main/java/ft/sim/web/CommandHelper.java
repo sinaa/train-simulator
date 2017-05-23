@@ -26,7 +26,7 @@ public class CommandHelper {
         }
         return true;
       }
-      case "emergencyBreak": {
+      case "emergencyBrake": {
         int trainID = Integer.valueOf(map.get("targetID"));
         simulation.getWorld().getTrain(trainID).crash();
         return true;

@@ -142,7 +142,7 @@ public class Train implements Tickable, SignalListener, Recordable {
           if (p instanceof ActiveBalise) {
             ActiveBalise balise = (ActiveBalise) p;
             balise
-                .update(trainID, ecu.getTimer().getTime(), engine.getSpeed(), engine.isBreaking());
+                .update(trainID, ecu.getTimer().getTime(), engine.getSpeed(), engine.isBraking());
           }
         }
       }
@@ -232,13 +232,13 @@ public class Train implements Tickable, SignalListener, Recordable {
       if (!ObservableHelper.allGreen(observables)) {
         if (engine.getObjective() != STOP && engine.getObjective() != STOP_AND_ROLL) {
           if (ObservableHelper.hasBlockSignal(observables)) {
-            engine.fullBreak();
-            logger.error("{} Full breaking, for red signal!", this);
+            engine.fullBrake();
+            logger.error("{} Full braking, for red signal!", this);
             engine.setObjective(STOP);
           } else {
             engine.setTargetSpeed(0);
             engine.setObjective(STOP_AND_ROLL);
-            logger.error("{} normal breaking, for red signal!", this);
+            logger.error("{} normal braking, for red signal!", this);
           }
           ObservableHelper.getRedSignals(observables).forEach(s -> s.addListener(this));
         }
@@ -260,8 +260,8 @@ public class Train implements Tickable, SignalListener, Recordable {
           // give a fake estimate to the train to not start running like crazy.
           ecu.updateNextTrainPrediction(
               new ActiveBaliseData(-1, ecu.getTimer().getTime(), 1, true));
-          engine.fullBreak();
-          logger.error("{} Full breaking! There's a train ahead!", this);
+          engine.fullBrake();
+          logger.error("{} Full braking! There's a train ahead!", this);
           engine.setObjective(STOP_THEN_ROLL);
         }
         ecu.setSeeingTrainsAhead(true);
@@ -327,7 +327,7 @@ public class Train implements Tickable, SignalListener, Recordable {
 
   public void enteredStation(Station station) {
     ecu.sendSquawkDownTheLine(RadioSignal.AT_STATION);
-    engine.fullBreak();
+    engine.fullBrake();
     engine.setObjective(STOP);
     trail.atStation();
     atStation = true;
@@ -340,7 +340,7 @@ public class Train implements Tickable, SignalListener, Recordable {
 
   public void crash() {
     ecu.sendSquawkDownTheLine(RadioSignal.NOK);
-    engine.emergencyBreak();
+    engine.emergencyBrake();
     engine.setObjective(STOP);
     StatsHelper.logFor(StatisticsVariable.TRAIN_CRASH, this);
   }

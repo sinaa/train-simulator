@@ -5,8 +5,8 @@ package ft.sim.world;
  */
 public class RealWorldConstants {
 
-  // service break distance (actual distance is 6944 meters)
-  public static final int BREAK_DISTANCE = 7200;
+  // service brake distance (actual distance is 6944 meters)
+  public static final int BRAKE_DISTANCE = 7200;
 
   // max deceleration speed (m/s^2)
   public static final double MAX_TRAIN_DECELERATION = -1.0;
@@ -14,10 +14,10 @@ public class RealWorldConstants {
   // normal deceleration speed (m/s2)
   public static final double NORMAL_TRAIN_DECELERATION = -0.5;
 
-  // full breaking (deceleration) speed (m/s2)
+  // full braking (deceleration) speed (m/s2)
   public static final double FULL_TRAIN_DECELERATION = -0.7;
 
-  // minimum breaking (deceleration) speed (m/s2)
+  // minimum braking(deceleration) speed (m/s2)
   public static final double MIN_TRAIN_DECELERATION = -0.2;
 
   // normal acceleration speed (m/s2)

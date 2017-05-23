@@ -8,8 +8,6 @@ import static ft.sim.world.RealWorldConstants.ROLLING_SPEED;
 import static ft.sim.world.train.TrainObjective.PROCEED;
 
 import ft.sim.simulation.Tickable;
-import ft.sim.statistics.StatisticsVariable;
-import ft.sim.statistics.StatsHelper;
 import ft.sim.world.RealWorldConstants;
 import ft.sim.world.connectables.LineCondition;
 import org.slf4j.Logger;
@@ -86,27 +84,26 @@ public class Engine implements Tickable {
     setTargetSpeed(ROLLING_SPEED);
   }
 
-  public void emergencyBreak() {
-    if (!isEmergencyBreaking()) {
-      logger.warn("Emergency breaking!");
+  public void emergencyBrake() {
+    if (!isEmergencyBraking()) {
+      logger.warn("Emergency braking!");
       this.targetSpeed = 0;
       acceleration = maxDeceleration;
     }
   }
 
-  public boolean isEmergencyBreaking() {
+  public boolean isEmergencyBraking() {
     return (speed == 0 && acceleration == maxDeceleration);
   }
 
-  public void fullBreak() {
+  public void fullBrake() {
     if (speed != 0) {
-      //logger.warn("full breaking...");
       this.targetSpeed = 0;
       acceleration = FULL_TRAIN_DECELERATION;
     }
   }
 
-  public void normalBreak() {
+  public void normalBrake() {
     if (speed != 0) {
       this.targetSpeed = 0;
       acceleration = normalDeceleration;
@@ -152,7 +149,7 @@ public class Engine implements Tickable {
   /*
    * Set the normal deceleration rate of the engine (m/s2)
    */
-  public void setBreakingRate(double a) {
+  public void setBrakingRate(double a) {
     // deceleration rate should be negative
     if (a > 0) {
       a = -a;
@@ -222,7 +219,7 @@ public class Engine implements Tickable {
     return totalDistanceTravelled;
   }
 
-  public boolean isBreaking() {
+  public boolean isBraking() {
     return (acceleration < 0);
   }
 

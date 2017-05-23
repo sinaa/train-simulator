@@ -1,7 +1,7 @@
 package ft.sim.world.map;
 
 import static ft.sim.world.RealWorldConstants.ACCELERATION_COEFFICIENT;
-import static ft.sim.world.RealWorldConstants.BREAK_DISTANCE;
+import static ft.sim.world.RealWorldConstants.BRAKE_DISTANCE;
 import static ft.sim.world.RealWorldConstants.DECELERATION_COEFFICIENT;
 
 import com.google.common.collect.Iterables;
@@ -314,8 +314,8 @@ public class MapBuilder {
     SignalUnit mainSignal = signalController.getMainSignal();
     SignalUnit distantSignal = signalController.newDistantSignal();
 
-    if (track.getLength() > BREAK_DISTANCE) {
-      int sectionIndexForDistantSignal = (int) (track.getLength() - BREAK_DISTANCE - 1);
+    if (track.getLength() > BRAKE_DISTANCE) {
+      int sectionIndexForDistantSignal = (int) (track.getLength() - BRAKE_DISTANCE - 1);
       track.addBlockSignal(distantSignal, sectionIndexForDistantSignal);
       logger.info("added distance signal {} on section {} on track {}", distantSignal,
           sectionIndexForDistantSignal, map.getTrackID(((Track) track)));
