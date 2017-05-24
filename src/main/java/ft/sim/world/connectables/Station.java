@@ -9,8 +9,10 @@ import ft.sim.world.WorldHandler;
 import ft.sim.world.signalling.SignalController;
 import ft.sim.world.signalling.SignalType;
 import ft.sim.world.train.Train;
+import ft.sim.world.train.TrainObjective;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -23,31 +25,29 @@ import org.slf4j.LoggerFactory;
 public class Station implements Connectable, Tickable {
 
   protected static transient final Logger logger = LoggerFactory.getLogger(Station.class);
-
+  private final int delay;
+  private final int capacity;
   ConnectableType type = ConnectableType.STATION;
   // in meters
   private int length = 400;
-  private final int delay;
-
-  private final int capacity;
   private int reservedCapacity = 0;
 
-  Map<Train, Double> trains = new HashMap<>();
-  Set<Train> trainsLeaving = new HashSet<>();
-  Set<Train> trainsEntering = new HashSet<>();
+  private Map<Train, Double> trains = new LinkedHashMap<>();
+  private Set<Train> trainsLeaving = new HashSet<>();
+  private Set<Train> trainsEntering = new HashSet<>();
 
-  Map<Track, SignalController> nextBlockSignalController = new HashMap<>();
+  private Map<Track, SignalController> nextBlockSignalController = new HashMap<>();
 
   private int stationID = 0;
-
-  public void setNextBlockSignalController(SignalController nextBlockSignalController,
-      Track nextTrack) {
-    this.nextBlockSignalController.put(nextTrack, nextBlockSignalController);
-  }
 
   public Station(int capacity, int delay) {
     this.capacity = capacity;
     this.delay = delay;
+  }
+
+  public void setNextBlockSignalController(SignalController nextBlockSignalController,
+      Track nextTrack) {
+    this.nextBlockSignalController.put(nextTrack, nextBlockSignalController);
   }
 
   public void enteredTrain(Train train) {
@@ -80,31 +80,42 @@ public class Station implements Connectable, Tickable {
   }
 
   public void tick(double time) {
+    if (trainsLeaving.size() > 1) {
+      throw new IllegalStateException("This shouldn't be possible!");
+    }
     for (Entry<Train, Double> trainElement : trains.entrySet()) {
       Train t = trainElement.getKey();
       SignalController signalController = nextBlockSignalController
           .get(t.getEcu().getJourneyPlan().getJourneyPath().getTrackAfterStation(this));
       if (signalController == null) {
+        if (t.getEcu().getJourneyPlan().getJourneyPath().getLast() != this) {
+          logger.error("SignallController is null (shouldn't be)");
+        }
         continue;
       }
       double delay = trainElement.getValue();
       if (trainsLeaving.contains(t)) {
+        if (t.getEngine().getObjective() != TrainObjective.PROCEED) {
+          t.signalChange(SignalType.GREEN);
+        }
         continue; // ignore them, they're leaving
       }
       if (trainsLeaving.size() > 0) {
         // if there are other trains leaving, wait for them to leave
         continue;
       }
-      delay -= time;
-      if (delay <= 0) {
-        if (signalController.getStatus() != GREEN) {
-          delay += 5; // wait for 5 more seconds
-        } else {
+      if (signalController.getStatus() == GREEN) {
+        delay -= time;
+        if (delay <= 0) {
           t.signalChange(SignalType.GREEN);
           trainsLeaving.add(t);
         }
+      } else {
+        break;
       }
+
       trainElement.setValue(delay);
+      break; // Only do this for one train
     }
   }
 
@@ -132,15 +143,15 @@ public class Station implements Connectable, Tickable {
     this.length = length;
   }
 
+  public int getID() {
+    return stationID;
+  }
+
   public void setID(int stationID) {
     if (this.stationID != 0) {
       throw new IllegalStateException("The ID can only be set once!");
     }
     this.stationID = stationID;
-  }
-
-  public int getID() {
-    return stationID;
   }
 
   @Override

@@ -133,6 +133,7 @@ public class ECU implements Tickable {
         && nextDistancePrediction < safeBrakingDistance) {
       if (nextDistancePrediction > calculateBrakingDistance(engine.getNormalDeceleration())) {
         engine.setTargetSpeed(0);
+        engine.variableBrake(nextDistancePrediction);
         engine.setObjective(STOP_AND_ROLL);
         logger.debug("{} normal braking, there's a train within breaking distance {} ({}) {}",
             train, nextDistancePrediction, safeBrakingDistance,
@@ -148,7 +149,8 @@ public class ECU implements Tickable {
         engine.setObjective(STOP_THEN_ROLL);
         logger.debug("{} stop then roll, {}, {}", nextDistancePrediction,
             calculateBrakingDistance(FULL_TRAIN_DECELERATION));
-        engine.fullBrake();
+        //engine.fullBrake();
+        engine.variableBrake(nextDistancePrediction);
       } else {
 
         if (!engine.isEmergencyBraking() && engine.getObjective() != STOP_THEN_ROLL) {
@@ -234,6 +236,12 @@ public class ECU implements Tickable {
     return maxSpeed;
   }
 
+  public void resetRadioTimer() {
+    if (lastRadioSignal == RadioSignal.OK || lastRadioSignal == RadioSignal.AT_STATION) {
+      timeReceivedLastSignal = timer.getTime();
+    }
+  }
+
   JourneyTimer getTimer() {
     return timer;
   }
@@ -249,7 +257,8 @@ public class ECU implements Tickable {
       logger.warn("train ahead not ok for {}", train);
       return true;
     }
-    if (timeReceivedLastSignal + 2 * RealWorldConstants.TRAIN_SQUAWK_INTERVAL < timer.getTime()) {
+    if (!train.isAtStation() &&
+        timeReceivedLastSignal + 2 * RealWorldConstants.TRAIN_SQUAWK_INTERVAL < timer.getTime()) {
       logger.warn("did not hear from next train, likely broken for {}", train);
       return true;
     }

@@ -2,11 +2,13 @@ package ft.sim.world.train;
 
 import static ft.sim.world.RealWorldConstants.FULL_TRAIN_DECELERATION;
 import static ft.sim.world.RealWorldConstants.MAX_TRAIN_DECELERATION;
+import static ft.sim.world.RealWorldConstants.MIN_TRAIN_DECELERATION;
 import static ft.sim.world.RealWorldConstants.NORMAL_TRAIN_ACCELERATION;
 import static ft.sim.world.RealWorldConstants.NORMAL_TRAIN_DECELERATION;
 import static ft.sim.world.RealWorldConstants.ROLLING_SPEED;
 import static ft.sim.world.train.TrainObjective.PROCEED;
 
+import ft.sim.physics.DistanceHelper;
 import ft.sim.simulation.Tickable;
 import ft.sim.world.RealWorldConstants;
 import ft.sim.world.connectables.LineCondition;
@@ -107,6 +109,17 @@ public class Engine implements Tickable {
     if (speed != 0) {
       this.targetSpeed = 0;
       acceleration = normalDeceleration;
+    }
+  }
+
+  public void variableBrake(double distance) {
+    if (speed != 0) {
+      // The (distance -1) is to stop _before_ the other train
+      double potentialBrakeAcc = DistanceHelper.decelerationRateToStop(speed, distance - 1);
+      double varDecelerationRate = Math.min(potentialBrakeAcc, FULL_TRAIN_DECELERATION);
+      varDecelerationRate = Math.max(varDecelerationRate, MIN_TRAIN_DECELERATION);
+      this.targetSpeed = 0;
+      acceleration = varDecelerationRate;
     }
   }
 

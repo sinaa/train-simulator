@@ -48,7 +48,7 @@ public class JourneyHelper {
   }
 
   public BiMap<Train, Train> getTrainsFollowingEachOther() {
-    if (trailingTrains.size() + 1 == world.getTrains().size()) {
+    if (false && trailingTrains.size() + 1 == world.getTrains().size()) {
       return trailingTrains;
     }
     trailingTrains.clear();
@@ -60,7 +60,7 @@ public class JourneyHelper {
   }
 
   public Map<Journey, Journey> getJourneysFollowingEachOther() {
-    if (trailingJourneys.size() + 1 == world.getJourneys().size()) {
+    if (false && trailingJourneys.size() + 1 == world.getJourneys().size()) {
       // for all journeys, check if none of the trains are at stations
       if (world.getJourneys().values().stream().allMatch(
           j -> j.getJourneyPosition().getConnectablesOccupied().stream()

@@ -228,6 +228,8 @@ public class Train implements Tickable, SignalListener, Recordable {
 
   public void see(Set<Observable> observables) {
     // handle signals
+    if(atStation)
+      return;
     if (observables.size() > 0) {
       if (!ObservableHelper.allGreen(observables)) {
         if (engine.getObjective() != STOP && engine.getObjective() != STOP_AND_ROLL) {
@@ -249,7 +251,7 @@ public class Train implements Tickable, SignalListener, Recordable {
           if (sawGreenBlockSignal && engine.getObjective() == PROCEED_WITH_CAUTION) {
             engine.setTargetSpeed(engine.getLastAdvisorySpeed());
             engine.setObjective(PROCEED);
-            logger.warn("Saw green Block Signal. Proceeding at {}", engine.getLastAdvisorySpeed());
+            logger.warn("{} Saw green Block Signal. Proceeding at {}", this, engine.getLastAdvisorySpeed());
           }
         }
       }
@@ -336,6 +338,7 @@ public class Train implements Tickable, SignalListener, Recordable {
 
   public void leftStation(Station station) {
     atStation = false;
+    ecu.resetRadioTimer();
   }
 
   public void crash() {

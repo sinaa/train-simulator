@@ -133,6 +133,12 @@ public class SimulationController {
         if (world.getJourneys().values().stream().allMatch(Journey::isJourneyFinished)) {
           simulationCompleted = true;
         }
+        // Every 100 ticks check if all trains are stopped and any got NOK (it cannot progress further)
+        if (ticksElapsed % 100 == 0 &&
+            world.getTrains().values().stream().allMatch(t -> t.getEngine().isStopped()) &&
+            world.getTrains().values().stream().anyMatch(t -> t.getEcu().gotNOKRadio())) {
+          simulationCompleted = true;
+        }
         tick();
         long elapsed = System.nanoTime() - startTime;
         nanosElapsed += elapsed;
@@ -143,13 +149,13 @@ public class SimulationController {
           // wait for the remaining time (to match ticksPerSecond)
           int waitTime = (int) Math.floor((userRefreshRate / ticksPerSecond) - ms);
           if (waitTime > 0) {
-            try {
+            /*try {
               Thread.sleep(waitTime);
             } catch (InterruptedException e) {
               //e.printStackTrace();
               logger.warn("Simulation Stopped");
               Thread.currentThread().interrupt();
-            }
+            }*/
           }
           // Send stats to user every ...
           if (ticksElapsed % ticksPerSecond == 0) {
@@ -159,12 +165,6 @@ public class SimulationController {
           }
         }
 
-        // Every 100 ticks check if all trains are stopped and any got NOK (it cannot progress further)
-        if (ticksElapsed % 100 == 0 &&
-            world.getTrains().values().stream().allMatch(t -> t.getEngine().isStopped()) &&
-            world.getTrains().values().stream().anyMatch(t -> t.getEcu().gotNOKRadio())) {
-          simulationCompleted = true;
-        }
       }
       simulationCompleted = true;
       isRunning = false;
@@ -200,9 +200,9 @@ public class SimulationController {
     WorldHandler.getInstance(world).tick(secondsPerTick);
     ticksElapsed++;
     try {
-      if (ticksElapsed % 1000 == 0) {
+      //if (ticksElapsed % 1000 == 0) {
         oracle.checkState(world, ticksElapsed);
-      }
+      //}
     } catch (CriticalViolationException e) {
       logger.error("Critical Violation detected: {}", e.getMessage());
       sendStatistics();
