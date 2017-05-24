@@ -67,6 +67,13 @@ public class App implements ApplicationRunner {
       });
       AppConfig.experimentMaps.removeAll(toRemove);
     }
+    boolean resultsDir = applicationArguments.containsOption("results");
+    if(resultsDir){
+      List<String> outDirs = applicationArguments.getOptionValues("results");
+      if(outDirs.size()>1)
+        throw new IllegalArgumentException("Cannot have more than 1 results directories");
+      AppConfig.outputDir = outDirs.get(0);
+    }
   }
 
   /*@Override
