@@ -7,10 +7,15 @@ import ft.sim.App.AppConfig;
 import ft.sim.world.WorldHandler;
 import ft.sim.world.map.GlobalMap;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -107,16 +112,44 @@ public class StatisticsController {
     String stats = collect();
     String filename = AppConfig.outputDir + "/" + map.getSimpleFileName() + ".csv.gz";
 
+    Path path = Paths.get(filename);
     // if file exists, remove it
-    (new File(filename)).delete();
+    if (java.nio.file.Files.exists(path)) {
+      // file exist
+      try {
+        java.nio.file.Files.delete(path);
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
 
-    try (FileOutputStream output = new FileOutputStream(filename)) {
+    // NIO
+    try {
+      FileOutputStream fos = new FileOutputStream(new File(filename));
+      FileChannel channel = fos.getChannel();
+
+      try {
+        Writer writer = new OutputStreamWriter(
+            new GZIPOutputStream(Channels.newOutputStream(channel)), "UTF-8");
+        writer.write(stats);
+        writer.flush();
+        writer.close();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    } catch (FileNotFoundException e) {
+      e.printStackTrace();
+    }
+
+   /* try (FileOutputStream output = new FileOutputStream(filename)) {
       try (Writer writer = new OutputStreamWriter(new GZIPOutputStream(output), "UTF-8")) {
         writer.write(stats);
+      } catch (IOException e){
+        e.printStackTrace();
       }
     } catch (IOException e) {
       e.printStackTrace();
-    }
+    }*/
 
     logger.info("Exported statistics to: {}", filename);
   }
