@@ -5,6 +5,10 @@ package ft.sim;
 
 import ft.sim.experiment.ExperimentController;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
@@ -91,11 +95,15 @@ public class App implements ApplicationRunner {
 
     public static void init() {
       // create output dir
-      File basedirFile = (new File(AppConfig.outputDir));
-      if (!basedirFile.exists()) {
-        boolean createdResultsDir = basedirFile.mkdirs();
-        if (!createdResultsDir) {
-          throw new IllegalStateException("Failed to create results directory");
+      Path path = Paths.get(AppConfig.outputDir);
+      //if directory exists?
+      if (!Files.exists(path)) {
+        try {
+          Files.createDirectories(path);
+        } catch (IOException e) {
+          //failed to create directory
+          logger.error("Failed to create results directory!");
+          e.printStackTrace();
         }
       }
     }
