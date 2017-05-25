@@ -32,9 +32,9 @@ public class App implements ApplicationRunner {
 
   public static void main(String[] args) {
     AppConfig.isNonInteractive = Arrays.asList(args).contains("experiment");
-    AppConfig.init();
 
     context = new SpringApplicationBuilder(App.class).web(!AppConfig.isNonInteractive).run(args);
+    AppConfig.init();
     //context = SpringApplication.run(App.class, args);
 
     if (AppConfig.isNonInteractive) {
@@ -68,10 +68,11 @@ public class App implements ApplicationRunner {
       AppConfig.experimentMaps.removeAll(toRemove);
     }
     boolean resultsDir = applicationArguments.containsOption("results");
-    if(resultsDir){
+    if (resultsDir) {
       List<String> outDirs = applicationArguments.getOptionValues("results");
-      if(outDirs.size()>1)
+      if (outDirs.size() > 1) {
         throw new IllegalArgumentException("Cannot have more than 1 results directories");
+      }
       AppConfig.outputDir = outDirs.get(0);
     }
   }
