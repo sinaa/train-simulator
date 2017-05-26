@@ -27,6 +27,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -152,7 +153,10 @@ public class MapBuilder {
 
   private void setRadioMasts() {
     for (Train train : map.getTrains().values()) {
-      train.getEcu().setRadioMast(RadioMast.getInstance(map));
+      train.
+          getEcu().
+          setRadioMast(
+              RadioMast.getInstance(map));
     }
   }
 
@@ -378,6 +382,7 @@ public class MapBuilder {
     if (journeys == null) {
       return;
     }
+    Set<Integer> allocatedTrains = new HashSet<>();
     for (Map.Entry<String, Object> j : journeys.entrySet()) {
       int journeyID = Integer.parseInt(j.getKey());
       Map<String, Object> journeyData = (Map<String, Object>) j.getValue();
@@ -385,13 +390,24 @@ public class MapBuilder {
       int jpID = (int) journeyData.get("path");
       boolean isForward = (boolean) journeyData.getOrDefault("isForward", true);
 
-      if (journeyID == 0) {
+      if (journeyID <= 0) {
         if ((int) journeyData.get("repeat") != 1) {
           throw new IllegalStateException("Special feature not yet implemented");
         }
 
         int numJourneys = map.getJourneys().keySet().size();
+        double ratio = (double) journeyData.getOrDefault("ratio", 1.0);
+        int limit = (int) Math.round(map.getTrains().keySet().size() * ratio);
+
         for (int trainID : map.getTrains().keySet()) {
+          if(allocatedTrains.contains(trainID))
+            continue;
+          if (limit-- <= 0) {
+            break;
+          }
+
+          allocatedTrains.add(trainID);
+          logger.warn("numJourneys {}, jpID {}, trainID {}, isForward {}", numJourneys, jpID, trainID, isForward);
           map.addJourney(++numJourneys, jpID, trainID, isForward);
         }
       } else {
