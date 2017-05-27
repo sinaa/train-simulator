@@ -33,7 +33,8 @@ public class RealWorldConstants {
   public static final double DEFAULT_SET_OFF_SPEED = 13.4;
 
   // Rolling speed (20 mph - 8.9408 m/s)
-  public static final double ROLLING_SPEED = 8.9;
+  // 21 km/h = 6 m/s == stopping distance is 36 meters
+  public static final double ROLLING_SPEED = 6;
 
   // Human eye can see this far (m)
   public static final int EYE_SIGHT_DISTANCE = 40;

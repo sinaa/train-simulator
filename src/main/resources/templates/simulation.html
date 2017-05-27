@@ -500,6 +500,7 @@
       "accelerating": "green",
       "decelerating": "red",
       "still": "orange",
+      "stopped": "purple",
       "station": "white",
       "": "yellow"
     };
@@ -530,11 +531,15 @@
 
         var status = "";
         var acceleration = data.world.journeysMap[trainKey].train.engine.acceleration;
+        var speed = data.world.journeysMap[trainKey].train.engine.speed;
         if (acceleration > 0) {
           status = "accelerating";
         } else {
           if (acceleration == 0) {
-            status = "still";
+            if (speed == 0) {
+              status = "stopped";
+            } else
+              status = "still";
           } else {
             status = "decelerating";
           }
@@ -610,8 +615,8 @@
         train.x = tData.from - (tData.to + tData.from) / 2;
         train.y = 9 + zOffset * tData.z;
         /*train.image.onload = function () {
-          stage.update();
-        };*/
+         stage.update();
+         };*/
         train.snapToPixel = true;
 
         var trainIdentifier = new createjs.Text(key, "20px Arial", "#fff");
