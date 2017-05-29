@@ -47,10 +47,10 @@ public class SimulationController {
   public static int RANDOM_SEED = 0;
   private static SimulationController instance = null;
   // From the point of view of a user, how many ticks we should do per second
-  int ticksPerSecond = 1000;
+  private int ticksPerSecond = 1000;
   // oracle instance
-  Oracle oracle;
-  Experiment experiment = null;
+  private Oracle oracle;
+  private Experiment experiment = null;
   // world instance
   private GlobalMap world = null;
   // From the view of the simulation, how much time passed since last tick (in seconds)
@@ -191,8 +191,8 @@ public class SimulationController {
       logger.error("!!!! Exception happened while building map: {} \n", t.getMessage());
       throw t;
     }
-    Disruptor disruptor = new Disruptor(RANDOM_SEED);
-    disruptor.disruptTheWorld(world);
+    //Disruptor disruptor = new Disruptor(RANDOM_SEED);
+    //disruptor.disruptTheWorld(world);
     StatisticsController.getInstance(world);
   }
 
@@ -200,9 +200,7 @@ public class SimulationController {
     WorldHandler.getInstance(world).tick(secondsPerTick);
     ticksElapsed++;
     try {
-      //if (ticksElapsed % 1000 == 0) {
         oracle.checkState(world, ticksElapsed);
-      //}
     } catch (CriticalViolationException e) {
       logger.error("Critical Violation detected: {}", e.getMessage());
       sendStatistics();
@@ -322,6 +320,7 @@ public class SimulationController {
     this.socketSessions.remove(socketSessions);
   }
 
+  @Deprecated
   public void startTrains() {
     List<Journey> journeys = new ArrayList<>(world.getJourneys().values());
     int i = 0;
@@ -331,6 +330,7 @@ public class SimulationController {
     }
   }
 
+  @Deprecated
   void displayStatistics() {
     List<Train> trains = new ArrayList<Train>(world.getTrains().values());
     List<Journey> journeys = new ArrayList<Journey>(world.getJourneys().values());

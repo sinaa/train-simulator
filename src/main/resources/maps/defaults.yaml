@@ -2,3 +2,5 @@
 simulation:
   'mode': "fixed_block"
   'seed': 0
+  'gsm_failure_rate': 0
+  'balise_failure_rate': 0

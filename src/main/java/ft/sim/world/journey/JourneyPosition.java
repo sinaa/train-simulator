@@ -97,7 +97,7 @@ public class JourneyPosition {
     double toSkip = getPositionFromFirstConnectable();
     int trainLength = train.getLength();
 
-    // Fast lookup
+    // If train is on one Track, perform a fast index-based O(1) lookup
     if (position.size() == 1 && isForward) {
       Connectable firstConnectable = position.peek();
       if (firstConnectable instanceof Track) {

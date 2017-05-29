@@ -1,5 +1,6 @@
 package ft.sim.world.gsm;
 
+import ft.sim.simulation.Disruptor;
 import ft.sim.world.journey.JourneyHelper;
 import ft.sim.world.map.GlobalMap;
 import ft.sim.world.train.Train;
@@ -16,6 +17,7 @@ public class RadioMast {
   private static Map<GlobalMap, RadioMast> instances = new HashMap<>();
   private GlobalMap world;
   private List<String> messagesSent = new ArrayList<>();
+  private int failureRatio = 0;
 
   private RadioMast(GlobalMap map) {
     this.world = map;
@@ -27,9 +29,17 @@ public class RadioMast {
 
   public void passMessageToTrainBehind(Train train, RadioSignal signal) {
     JourneyHelper.getInstance(world).getTrainBehind(train).ifPresent(t -> {
+      if (failureRatio > 0 && Disruptor.getInstance(world).shouldDisrupt(failureRatio)) {
+        return;
+      }
       t.ping(signal);
-      messagesSent.add(String.format("%s sent %s to %s",train, signal, t));
+      messagesSent.add(String.format("%s sent %s to %s", train, signal, t));
+
     });
+  }
+
+  public void setFailureRatio(int ratio) {
+    failureRatio = ratio;
   }
 
 }

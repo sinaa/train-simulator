@@ -5,6 +5,8 @@ import static ft.sim.world.RealWorldConstants.BRAKE_DISTANCE;
 import static ft.sim.world.RealWorldConstants.DECELERATION_COEFFICIENT;
 
 import com.google.common.collect.Iterables;
+import ft.sim.simulation.Disruptable;
+import ft.sim.simulation.Disruptor;
 import ft.sim.world.connectables.Connectable;
 import ft.sim.world.connectables.LineCondition;
 import ft.sim.world.connectables.Station;
@@ -152,11 +154,9 @@ public class MapBuilder {
   }
 
   private void setRadioMasts() {
+    RadioMast.getInstance(map).setFailureRatio((int) map.getConfiguration("gsm_failure_rate"));
     for (Train train : map.getTrains().values()) {
-      train.
-          getEcu().
-          setRadioMast(
-              RadioMast.getInstance(map));
+      train.getEcu().setRadioMast(RadioMast.getInstance(map));
     }
   }
 
@@ -400,14 +400,16 @@ public class MapBuilder {
         int limit = (int) Math.round(map.getTrains().keySet().size() * ratio);
 
         for (int trainID : map.getTrains().keySet()) {
-          if(allocatedTrains.contains(trainID))
+          if (allocatedTrains.contains(trainID)) {
             continue;
+          }
           if (limit-- <= 0) {
             break;
           }
 
           allocatedTrains.add(trainID);
-          logger.warn("numJourneys {}, jpID {}, trainID {}, isForward {}", numJourneys, jpID, trainID, isForward);
+          logger.debug("numJourneys {}, jpID {}, trainID {}, isForward {}", numJourneys, jpID,
+              trainID, isForward);
           map.addJourney(++numJourneys, jpID, trainID, isForward);
         }
       } else {
@@ -518,6 +520,7 @@ public class MapBuilder {
 
   private void createActiveBalises() {
     int baliseDistance = (int) map.getConfiguration("ferromone_distance");
+    int baliseFailure = (int) map.getConfiguration("gsm_failure_rate");
 
     MapGraph graph = map.getGraph();
     Set<Connectable> roots = graph.getRootConnectables();
@@ -534,7 +537,9 @@ public class MapBuilder {
             length += MapBuilderHelper
                 .copyActiveBalises(DualLineHelper.getTrackPair(map, track), track);
           } else {
-            length = placeActiveBalisesOnTrack(length, track, baliseDistance);
+            boolean isBroken =
+                baliseFailure > 0 && Disruptor.getInstance(map).shouldDisrupt(baliseFailure);
+            length = placeActiveBalisesOnTrack(length, track, baliseDistance, isBroken);
           }
         }
         length += c.getLength();
@@ -542,13 +547,17 @@ public class MapBuilder {
     }
   }
 
-  private double placeActiveBalisesOnTrack(double length, Track track, int baliseDistance) {
+  private double placeActiveBalisesOnTrack(double length, Track track, int baliseDistance,
+      boolean isBroken) {
     for (double d = 0; d < track.getLength(); d += baliseDistance) {
       if (length == 0) {
         length += baliseDistance;
         continue;
       }
       Placeable balise = new ActiveBalise();
+      if (isBroken) {
+        ((Disruptable) balise).setIsBroken(true);
+      }
       track.placePlaceableOnSectionIndex(balise, (int) d);
       logger.debug("Palced active balise on track {} position {}", map.getTrackID(track), (int) d);
       length += baliseDistance;

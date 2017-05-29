@@ -7,6 +7,7 @@ import static ft.sim.world.train.TrainObjective.STOP;
 import static ft.sim.world.train.TrainObjective.STOP_AND_ROLL;
 import static ft.sim.world.train.TrainObjective.STOP_THEN_ROLL;
 
+import ft.sim.simulation.Disruptable;
 import ft.sim.simulation.Tickable;
 import ft.sim.statistics.Recordable;
 import ft.sim.statistics.StatisticsVariable;
@@ -104,6 +105,11 @@ public class Train implements Tickable, SignalListener, Recordable {
     for (Section s : sections) {
       List<Placeable> sectionPlaceables = s.getPlaceables();
       for (Placeable p : sectionPlaceables) {
+        if (p instanceof Disruptable) {
+          if (((Disruptable) p).isBroken()) {
+            continue;
+          }
+        }
         if (p instanceof Balise) {
           if (p instanceof PassiveBalise) {
             PassiveBalise balise = (PassiveBalise) p;
@@ -138,6 +144,11 @@ public class Train implements Tickable, SignalListener, Recordable {
     for (Section s : sections) {
       List<Placeable> sectionPlaceables = s.getPlaceables();
       for (Placeable p : sectionPlaceables) {
+        if (p instanceof Disruptable) {
+          if (((Disruptable) p).isBroken()) {
+            continue;
+          }
+        }
         if (p instanceof Balise) {
           if (p instanceof ActiveBalise) {
             ActiveBalise balise = (ActiveBalise) p;
@@ -228,8 +239,9 @@ public class Train implements Tickable, SignalListener, Recordable {
 
   public void see(Set<Observable> observables) {
     // handle signals
-    if(atStation)
+    if (atStation) {
       return;
+    }
     if (observables.size() > 0) {
       if (!ObservableHelper.allGreen(observables)) {
         if (engine.getObjective() != STOP && engine.getObjective() != STOP_AND_ROLL) {
@@ -251,7 +263,8 @@ public class Train implements Tickable, SignalListener, Recordable {
           if (sawGreenBlockSignal && engine.getObjective() == PROCEED_WITH_CAUTION) {
             engine.setTargetSpeed(engine.getLastAdvisorySpeed());
             engine.setObjective(PROCEED);
-            logger.warn("{} Saw green Block Signal. Proceeding at {}", this, engine.getLastAdvisorySpeed());
+            logger.warn("{} Saw green Block Signal. Proceeding at {}", this,
+                engine.getLastAdvisorySpeed());
           }
         }
       }

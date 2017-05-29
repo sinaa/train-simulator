@@ -1,11 +1,14 @@
 package ft.sim.world.placeables;
 
-import ft.sim.simulation.Disruptable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by Sina on 06/03/2017.
  */
 public class ActiveBalise extends Balise {
+
+  protected transient static final Logger logger = LoggerFactory.getLogger(ActiveBalise.class);
 
   private ActiveBaliseData data = new ActiveBaliseData();
 
@@ -17,7 +20,9 @@ public class ActiveBalise extends Balise {
   private boolean isBroken = false;
 
   public void update(int lastTrainID, double timePassing, double speed, boolean isDecelerating) {
-    data.setData(lastTrainID, timePassing, speed, isDecelerating);
+    if (!isBroken) {
+      data.setData(lastTrainID, timePassing, speed, isDecelerating);
+    }
   }
 
   public ActiveBaliseData getData() {
@@ -32,6 +37,7 @@ public class ActiveBalise extends Balise {
   @Override
   public void setIsBroken(boolean isBroken) {
     this.isBroken = isBroken;
+    logger.info("Balise {} is set to broken!");
   }
 
   public void setDualTrackPair(ActiveBalise dualTrackPair) {
@@ -45,11 +51,13 @@ public class ActiveBalise extends Balise {
     return (dualTrackPair != null) ? dualTrackPair.getData() : null;
   }
 
-  public void setUpAheadData(ActiveBaliseData broughtForwardData) {
-    this.upAheadData = broughtForwardData;
-  }
-
   public ActiveBaliseData getUpAheadData() {
     return upAheadData.clone();
+  }
+
+  public void setUpAheadData(ActiveBaliseData broughtForwardData) {
+    if (!isBroken) {
+      this.upAheadData = broughtForwardData;
+    }
   }
 }

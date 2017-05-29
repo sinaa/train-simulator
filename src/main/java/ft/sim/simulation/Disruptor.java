@@ -8,14 +8,27 @@ import java.util.Random;
  */
 public class Disruptor {
 
-  Random randomGenerator;
+  private static Disruptor instance;
+  private Random randomGenerator;
 
-  Disruptor(long seed){
+  private Disruptor(GlobalMap map) {
+    randomGenerator = new Random((int) map.getConfiguration("seed"));
+  }
+
+  public static Disruptor getInstance(GlobalMap map) {
+    if (instance == null) {
+      instance = new Disruptor(map);
+    }
+    return instance;
+  }
+
+  Disruptor(long seed) {
     randomGenerator = new Random(seed);
   }
 
-  public void disruptTheWorld(GlobalMap map){
-    //TODO
+  public boolean shouldDisrupt(int ratio) {
+    int chance = randomGenerator.nextInt(100);
+    return chance < ratio;
   }
 
 }
