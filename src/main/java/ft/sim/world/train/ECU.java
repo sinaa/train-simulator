@@ -5,6 +5,7 @@ import static ft.sim.world.RealWorldConstants.FULL_TRAIN_DECELERATION;
 import static ft.sim.world.RealWorldConstants.ROLLING_SPEED;
 import static ft.sim.world.train.TrainObjective.PROCEED;
 import static ft.sim.world.train.TrainObjective.PROCEED_WITH_CAUTION;
+import static ft.sim.world.train.TrainObjective.STOP;
 import static ft.sim.world.train.TrainObjective.STOP_AND_ROLL;
 import static ft.sim.world.train.TrainObjective.STOP_THEN_ROLL;
 
@@ -107,22 +108,29 @@ public class ECU implements Tickable {
     }
 
     if (isTrainAheadBroken()) {
-      if (nextTrainPredictor.getWorstCaseDistance() < calculateBrakingDistance(
-          engine.getNormalDeceleration())) {
-        engine.normalBrake();
-      } else if (nextTrainPredictor.getWorstCaseDistance() < calculateBrakingDistance(
-          FULL_TRAIN_DECELERATION)) {
-        engine.fullBrake();
-      } else {
-        if (!engine.isEmergencyBraking()) {
-          StatsHelper.logFor(StatisticsVariable.TRAIN_EMERGENCY_BRAKE, train);
-        }
-        engine.emergencyBrake();
-        //sendSquawkDownTheLine(RadioSignal.NOK);
+      if (engine.isStopped() && engine.getObjective() == STOP) {
+        return;
       }
-      engine.setObjective(STOP_THEN_ROLL);
-      sendSquawkDownTheLine(RadioSignal.NOK);
-      StatsHelper.logFor(StatisticsVariable.TRAIN_AHEAD_BROKEN, train);
+      if(!engine.isStopped()) {
+        if (nextTrainPredictor.getWorstCaseDistance() < calculateBrakingDistance(
+            engine.getNormalDeceleration())) {
+          engine.normalBrake();
+        } else if (nextTrainPredictor.getWorstCaseDistance() < calculateBrakingDistance(
+            FULL_TRAIN_DECELERATION)) {
+          engine.fullBrake();
+        } else {
+          if (!engine.isEmergencyBraking()) {
+            StatsHelper.logFor(StatisticsVariable.TRAIN_EMERGENCY_BRAKE, train);
+          }
+          engine.emergencyBrake();
+          //sendSquawkDownTheLine(RadioSignal.NOK);
+        }
+      }
+      engine.setObjective(STOP);
+      if (lastSquawkSent != RadioSignal.NOK) {
+        sendSquawkDownTheLine(RadioSignal.NOK);
+        StatsHelper.logFor(StatisticsVariable.TRAIN_AHEAD_BROKEN, train);
+      }
       return;
     }
     /*if (nextDistancePrediction != -1) {
@@ -271,7 +279,7 @@ public class ECU implements Tickable {
 
   void ping(RadioSignal radioSignal) {
     timeReceivedLastSignal = timer.getTime();
-    if(lastRadioSignal == RadioSignal.NOK){
+    if (lastRadioSignal == RadioSignal.NOK) {
       logger.debug("{} already got an NOK radio, ignoring new {} signal.", train, radioSignal);
       return;
     }

@@ -87,7 +87,7 @@ public class Engine implements Tickable {
   }
 
   public void emergencyBrake() {
-    if (!isEmergencyBraking()) {
+    if (!isEmergencyBraking() && !isStopped() && targetSpeed != 0) {
       logger.warn("Emergency braking!");
       this.targetSpeed = 0;
       acceleration = maxDeceleration;
@@ -99,21 +99,21 @@ public class Engine implements Tickable {
   }
 
   public void fullBrake() {
-    if (speed != 0) {
+    if (!isStopped() && targetSpeed != 0) {
       this.targetSpeed = 0;
       acceleration = FULL_TRAIN_DECELERATION;
     }
   }
 
   public void normalBrake() {
-    if (speed != 0) {
+    if (!isStopped() && targetSpeed != 0) {
       this.targetSpeed = 0;
       acceleration = normalDeceleration;
     }
   }
 
   public void variableBrake(double distance) {
-    if (speed != 0) {
+    if (!isStopped() && targetSpeed != 0) {
       // The (distance -1) is to stop _before_ the other train
       double potentialBrakeAcc = DistanceHelper.decelerationRateToStop(speed, distance - 1);
       double varDecelerationRate = Math.min(potentialBrakeAcc, FULL_TRAIN_DECELERATION);
