@@ -136,7 +136,8 @@ public class SimulationController {
         // Every 100 ticks check if all trains are stopped and any got NOK (it cannot progress further)
         if (ticksElapsed % 100 == 0 &&
             world.getTrains().values().stream().allMatch(t -> t.getEngine().isStopped()) &&
-            world.getTrains().values().stream().anyMatch(t -> t.getEcu().gotNOKRadio())) {
+            world.getTrains().values().stream()
+                .anyMatch(t -> t.getEcu().gotNOKRadio() || t.getEcu().nextTrainLikelyBroken())) {
           simulationCompleted = true;
         }
         tick();
@@ -200,7 +201,7 @@ public class SimulationController {
     WorldHandler.getInstance(world).tick(secondsPerTick);
     ticksElapsed++;
     try {
-        oracle.checkState(world, ticksElapsed);
+      oracle.checkState(world, ticksElapsed);
     } catch (CriticalViolationException e) {
       logger.error("Critical Violation detected: {}", e.getMessage());
       sendStatistics();

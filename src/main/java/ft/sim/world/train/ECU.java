@@ -265,12 +265,16 @@ public class ECU implements Tickable {
       logger.warn("train ahead not ok for {}", train);
       return true;
     }
-    if (!train.isAtStation() &&
-        timeReceivedLastSignal + 2 * RealWorldConstants.TRAIN_SQUAWK_INTERVAL < timer.getTime()) {
+    if (nextTrainLikelyBroken()) {
       logger.warn("did not hear from next train, likely broken for {}", train);
       return true;
     }
     return false;
+  }
+
+  public boolean nextTrainLikelyBroken() {
+    return !train.isAtStation() && (
+        timeReceivedLastSignal + 2 * RealWorldConstants.TRAIN_SQUAWK_INTERVAL < timer.getTime());
   }
 
   public JourneyPlan getJourneyPlan() {
