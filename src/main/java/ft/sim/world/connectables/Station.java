@@ -164,9 +164,7 @@ public class Station implements Connectable, Tickable {
     }
   }
 
-  /**
-   * @deprecated
-   */
+  @Deprecated
   public boolean reserveCapacity(Train train) {
     if (trainsEntering.contains(train)) {
       return true;

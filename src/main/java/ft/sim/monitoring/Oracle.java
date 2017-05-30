@@ -56,6 +56,13 @@ public class Oracle {
     }
   }
 
+  /**
+   * Check whether the current state of the world conform to the requirements.
+   *
+   * @param world
+   * @param tick Current tick of the simulation
+   * @throws CriticalViolationException
+   */
   public void checkState(GlobalMap world, long tick) throws CriticalViolationException {
     this.world = world;
     this.tick = tick;
@@ -89,7 +96,7 @@ public class Oracle {
       j1.getTrain().getEcu().setActualDistance(distance);
 
       if (brakingDistance > distance) {
-        logger.info("{} and {}, distance: {} , braking distance:{}", j1, j2, distance,
+        logger.error("{} and {}, distance: {} , braking distance:{}", j1, j2, distance,
             brakingDistance);
         ViolationBuilder.createVariableBlockViolation(this, j1.getTrain(), j2.getTrain(), distance);
       }

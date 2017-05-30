@@ -27,7 +27,7 @@ public class TrainTrail implements Observable, Placeable {
     section = newSection;
   }
 
-  public void atStation(){
+  public void atStation() {
     nowOnSection(null);
   }
 

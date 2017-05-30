@@ -41,22 +41,25 @@ import org.springframework.web.socket.TextMessage;
 public class SimulationController {
 
   public static final String DEFAULT_MAP = "basic";
+  // random seed for disruptor's random generation
+  public static final int RANDOM_SEED = 0;
   protected static transient final Logger logger = LoggerFactory
       .getLogger(SimulationController.class);
-  // random seed for disruptor's random generation
-  public static int RANDOM_SEED = 0;
-  private static SimulationController instance = null;
   // From the point of view of a user, how many ticks we should do per second
-  private int ticksPerSecond = 1000;
+  private static final int TICKS_PER_SECOND = 1000;
+  // How often to send request to user
+  private static final int USER_REFRESH_RATE = 50;
+  // how many seconds should the simulation run for (max). Default: 2 days
+  private static final long MAX_SIMULATION_DURATION = 2 * 24 * 60 * 60;
+  // From the view of the simulation, how much time passed since last tick (in seconds)
+  private static final double SECONDS_PER_TICK = 1.0 / 10.0;
+
+  private static SimulationController instance = null;
   // oracle instance
   private Oracle oracle;
   private Experiment experiment = null;
   // world instance
   private GlobalMap world = null;
-  // From the view of the simulation, how much time passed since last tick (in seconds)
-  private double secondsPerTick = 1.0 / 10.0;
-  // How often to send request to user
-  private int userRefreshRate = 50;
   // elapsed time/tick during the simulation
   private long ticksElapsed = 0;
   private long timeElapsed = 0;
@@ -71,8 +74,6 @@ public class SimulationController {
   //private SocketSession socketSession = null;
   private Set<SocketSession> socketSessions = new HashSet<>();
   private boolean interactiveSimulation = true;
-  // how many seconds should the simulation run for (max). Default: 2 days
-  private long simulationDuration = 2 * 24 * 60 * 60;
   private boolean simulationCompleted = false;
 
   private SimulationController(String mapName) {
@@ -127,7 +128,7 @@ public class SimulationController {
       logger.warn("simulation started!");
       StatsHelper.trackEvent(StatisticsVariable.SIMULATION_STARTED);
       while (!Thread.currentThread().isInterrupted()
-          && ticksElapsed * secondsPerTick < simulationDuration
+          && ticksElapsed * SECONDS_PER_TICK < MAX_SIMULATION_DURATION
           && !simulationCompleted) {
         long startTime = System.nanoTime();
         if (world.getJourneys().values().stream().allMatch(Journey::isJourneyFinished)) {
@@ -146,8 +147,8 @@ public class SimulationController {
         timeElapsed += ms;
 
         if (interactiveSimulation) {
-          // wait for the remaining time (to match ticksPerSecond)
-          int waitTime = (int) Math.floor((userRefreshRate / ticksPerSecond) - ms);
+          // wait for the remaining time (to match TICKS_PER_SECOND)
+          int waitTime = (int) Math.floor((USER_REFRESH_RATE / TICKS_PER_SECOND) - ms);
           if (waitTime > 0) {
             /*try {
               Thread.sleep(waitTime);
@@ -158,10 +159,10 @@ public class SimulationController {
             }*/
           }
           // Send stats to user every ...
-          if (ticksElapsed % ticksPerSecond == 0) {
+          if (ticksElapsed % TICKS_PER_SECOND == 0) {
             sendStatistics();
             //new Thread(this::sendStatistics).start();
-            simulationTimeElapsed = (int) Math.floor(ticksElapsed * 1.0 / ticksPerSecond);
+            simulationTimeElapsed = (int) Math.floor(ticksElapsed * 1.0 / TICKS_PER_SECOND);
           }
         }
 
@@ -197,10 +198,10 @@ public class SimulationController {
   }
 
   private void tick() {
-    WorldHandler.getInstance(world).tick(secondsPerTick);
+    WorldHandler.getInstance(world).tick(SECONDS_PER_TICK);
     ticksElapsed++;
     try {
-        oracle.checkState(world, ticksElapsed);
+      oracle.checkState(world, ticksElapsed);
     } catch (CriticalViolationException e) {
       logger.error("Critical Violation detected: {}", e.getMessage());
       sendStatistics();
@@ -265,21 +266,26 @@ public class SimulationController {
 
     JsonObject jsonObject = new JsonObject();
     jsonObject.addProperty("type", "journeyMap");
-    //jsonObject.add("journeys", gson.toJsonTree(journeysMap));
+
     jsonObject.add("world", gsonBuilder.toJsonTree(world));
     jsonObject.add("trainPoints", gsonBuilder.toJsonTree(trainPoints));
     jsonObject.add("trackPoints", gsonBuilder.toJsonTree(trackPoints));
     jsonObject.add("stationPoints", gsonBuilder.toJsonTree(stationPoints));
     jsonObject.add("signalPoints", gsonBuilder.toJsonTree(signalPoints));
+    jsonObject.add("violations", gsonBuilder.toJsonTree(oracle.getViolations()));
+
     jsonObject.addProperty("timeElapsedCalculating", timeElapsed);
     jsonObject.addProperty("nanosElapsed", nanosElapsed);
     jsonObject.addProperty("ticksElapsed", ticksElapsed);
-    jsonObject.addProperty("simulationTimeElapsed", ticksElapsed * secondsPerTick);
+    jsonObject.addProperty("simulationTimeElapsed", ticksElapsed * SECONDS_PER_TICK);
     jsonObject.addProperty("interactive", interactiveSimulation);
-    jsonObject.add("violations", gsonBuilder.toJsonTree(oracle.getViolations()));
-    //String json = gson.toJson(journeysMap);
+
     String json = gsonBuilder.toJson(jsonObject);
-    //logger.info("JSON: {}", json);.
+
+    sendMessageToAllSockets(json);
+  }
+
+  private void sendMessageToAllSockets(String json) {
     Iterator<SocketSession> socketsIterator = socketSessions.iterator();
     while (socketsIterator.hasNext()) {
       SocketSession socketSession = socketsIterator.next();

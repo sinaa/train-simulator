@@ -19,11 +19,10 @@ public class GlobalMapTest {
   @Test
   public void testOriginalMap() {
     Gson gson = new Gson();
-    //Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     OriginalMapBuilder world = new OriginalMapBuilder();
     String j = gson.toJson(world);
-    System.out.println(j);
+    //System.out.println(j);
   }
 
   @Test
@@ -31,15 +30,14 @@ public class GlobalMapTest {
     GlobalMap gm = MapBuilder.buildNewMap(SimulationController.DEFAULT_MAP);
     WorldHandler.getInstance(gm);
     Gson gson = new Gson();
-    //Gson gson = new GsonBuilder().setPrettyPrinting().create();
     String json = gson.toJson(gm);
-    System.out.println(json);
+    //System.out.println(json);
   }
 
   @Test
   public void testMapResolver() {
     List<String> maps = MapBuilderHelper.getMaps();
-    System.out.println(maps);
+    //System.out.println(maps);
   }
 
 }

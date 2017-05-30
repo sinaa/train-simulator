@@ -74,8 +74,8 @@ public class JourneyPositionBackwardTest {
     List<Section> lastTrackSections = ((Track) journeyPath.get(2)).getSections();
 
     List<Section> sections = jp.getSectionsOccupied();
-    System.out.println("sections: " + sections);
-    System.out.println("sections: " + lastTrackSections);
+    //System.out.println("sections: " + sections);
+    //System.out.println("sections: " + lastTrackSections);
 
     assertEquals(41, sections.size());
     assertEquals(sections.get(0), lastTrackSections.get(59));
@@ -87,7 +87,7 @@ public class JourneyPositionBackwardTest {
     assertEquals(58.99, jp.getPositionFromFirstConnectable(), 0.0000001);
 
     sections = jp.getSectionsOccupied();
-    System.out.println("sections: " + sections);
+    //System.out.println("sections: " + sections);
     assertEquals(sections.get(0), lastTrackSections.get(58));
     assertEquals(sections.get(40), lastTrackSections.get(98));
     assertEquals(41, sections.size());

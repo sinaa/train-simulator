@@ -90,7 +90,8 @@ public class WorldHandler {
       StatsHelper.track(MIN_ACTIVE_TRAINS, numTrainsActive);
     }
 
-    int numTrainsAtStation = (int) world.getJourneys().values().stream().filter(Journey::isInProgress)
+    int numTrainsAtStation = (int) world.getJourneys().values().stream()
+        .filter(Journey::isInProgress)
         .filter(j -> j.getTrain().isAtStation()).count();
     StatisticsItem statMinStation = StatsHelper.getStatItem(MIN_STATION_TRAINS);
     if (statMinStation == null || numTrainsAtStation < (int) statMinStation.getValue()) {

@@ -1,6 +1,5 @@
 package ft.sim.world.train;
 
-import static ft.sim.world.RealWorldConstants.FULL_TRAIN_DECELERATION;
 import static ft.sim.world.RealWorldConstants.MAX_TRAIN_DECELERATION;
 import static ft.sim.world.RealWorldConstants.NORMAL_TRAIN_DECELERATION;
 
@@ -98,7 +97,8 @@ public class NextTrainPredictor {
     }
     if (distance < 0) {
       logger.error("distance ({}) cannot be negative", distance);
-      logger.warn("time: {}, tDelta: {}, distanceSinceLastBalise: {}, sameTrainAhead: {}, lastData: {}",
+      logger.warn(
+          "time: {}, tDelta: {}, distanceSinceLastBalise: {}, sameTrainAhead: {}, lastData: {}",
           time, timeDelta, distanceTravelledSinceLastBalise, sameTrainAhead, lastData);
       throw new IllegalStateException("this should never happen!");
     }

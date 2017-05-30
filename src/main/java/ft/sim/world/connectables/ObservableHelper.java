@@ -15,8 +15,8 @@ import java.util.stream.Collectors;
  */
 public class ObservableHelper {
 
-  public static boolean anyTrains(Set<Observable> observables){
-    return observables.stream().anyMatch(o-> o instanceof TrainTrail);
+  public static boolean anyTrains(Set<Observable> observables) {
+    return observables.stream().anyMatch(o -> o instanceof TrainTrail);
   }
 
   public static boolean allGreen(Set<Observable> observables) {
@@ -40,29 +40,29 @@ public class ObservableHelper {
   /**
    * Get observables that are in new (current) set, but not in the old set
    */
-  public static Set<Observable> getNewObservables(Set<Observable> old, Set<Observable> current){
+  public static Set<Observable> getNewObservables(Set<Observable> old, Set<Observable> current) {
     Set<Observable> currentClone = Sets.newHashSet(current);
     current.removeAll(old);
 
     return currentClone;
   }
 
-  public static Set<SignalUnit> getNewSignals(Set<Observable> old, Set<Observable> current){
-    return getSignals(getNewObservables(old,current));
+  public static Set<SignalUnit> getNewSignals(Set<Observable> old, Set<Observable> current) {
+    return getSignals(getNewObservables(old, current));
   }
 
   /**
    * Get observables which are in the old set, but not in the new (current) set
    */
-  public static Set<Observable> getOldObservables(Set<Observable> old, Set<Observable> current){
+  public static Set<Observable> getOldObservables(Set<Observable> old, Set<Observable> current) {
     Set<Observable> oldClone = Sets.newHashSet(old);
     oldClone.removeAll(current);
 
     return oldClone;
   }
 
-  public static Set<SignalUnit> getOldSignals(Set<Observable> old, Set<Observable> current){
-    return getSignals(getOldObservables(old,current));
+  public static Set<SignalUnit> getOldSignals(Set<Observable> old, Set<Observable> current) {
+    return getSignals(getOldObservables(old, current));
   }
 
   public static Set<SignalUnit> getSignalTyped(Set<Observable> observables, SignalType signalType) {

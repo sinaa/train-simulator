@@ -62,6 +62,7 @@ public class SocketSession {
     return session;
   }
 
+  @Deprecated
   void boop() {
     int i = 1;
     while (i < 10) {

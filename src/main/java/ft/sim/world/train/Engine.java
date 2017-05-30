@@ -88,7 +88,7 @@ public class Engine implements Tickable {
 
   public void emergencyBrake() {
     if (!isEmergencyBraking()) {
-      logger.warn("Emergency braking!");
+      logger.debug("Emergency braking!");
       this.targetSpeed = 0;
       acceleration = maxDeceleration;
     }

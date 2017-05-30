@@ -212,13 +212,13 @@ public class Train implements Tickable, SignalListener, Recordable {
   public void signalChange(SignalType signal) {
     switch (signal) {
       case GREEN:
-        logger.warn("{} got GREEN signal! proceeding ...", this);
+        logger.debug("{} got GREEN signal! proceeding ...", this);
         engine.setTargetSpeed(engine.getLastAdvisorySpeed());
         engine.setObjective(PROCEED);
         StatsHelper.logFor(StatisticsVariable.TRAIN_GOT_GREEN_SIGNAL, this);
         break;
       case RED:
-        logger.warn("{} got RED signal! stopping ... (speed: {})", this, engine.getSpeed());
+        logger.debug("{} got RED signal! stopping ... (speed: {})", this, engine.getSpeed());
         engine.setTargetSpeed(0);
         StatsHelper.logFor(StatisticsVariable.TRAIN_GOT_RED_SIGNAL, this);
         break;
@@ -276,7 +276,7 @@ public class Train implements Tickable, SignalListener, Recordable {
           ecu.updateNextTrainPrediction(
               new ActiveBaliseData(-1, ecu.getTimer().getTime(), 1, true));
           engine.fullBrake();
-          logger.error("{} Full braking! There's a train ahead!", this);
+          logger.debug("{} Full braking! There's a train ahead!", this);
           engine.setObjective(STOP_THEN_ROLL);
         }
         ecu.setSeeingTrainsAhead(true);
@@ -346,7 +346,7 @@ public class Train implements Tickable, SignalListener, Recordable {
     engine.setObjective(STOP);
     trail.atStation();
     atStation = true;
-    logger.warn("{} entered {}, stopping...", this, station);
+    logger.info("{} entered {}, stopping...", this, station);
   }
 
   public void leftStation(Station station) {

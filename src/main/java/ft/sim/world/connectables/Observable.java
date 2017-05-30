@@ -6,5 +6,4 @@ package ft.sim.world.connectables;
 public interface Observable {
 
 
-
 }

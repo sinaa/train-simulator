@@ -20,6 +20,7 @@ public class DistanceHelper {
   }
 
   public static double decelerationRateToStop(double speedCurrent, double distance) {
+    // Here is how the formula is derived:
     // S = 1/2 * a * (Vf-Vi)^2/a^2  == 1/2 * (Vf-V1)^2 / a =>
     // 2 * s * a = (Vf-Vi)^2 => (-V)^2 = 2sa => a = - V^2/ 2S
     // negative because V^2 was negative before being powered by 2

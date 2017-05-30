@@ -22,10 +22,15 @@ public class Disruptor {
     return instance;
   }
 
-  Disruptor(long seed) {
+  public Disruptor(long seed) {
     randomGenerator = new Random(seed);
   }
 
+  /**
+   * Randomly check whether an item should be disrupted.
+   *
+   * @param ratio (e.g., a ratio of 3 will 3% of the times be true)
+   */
   public boolean shouldDisrupt(int ratio) {
     int chance = randomGenerator.nextInt(100);
     return chance < ratio;

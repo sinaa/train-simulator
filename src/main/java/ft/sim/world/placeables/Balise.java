@@ -22,11 +22,11 @@ public abstract class Balise implements Placeable, Disruptable {
     return position.get(journeyPath);
   }
 
-  public void setPosition(double miles) {
-    globalPosition = miles;
-  }
-
   public double getPosition() {
     return globalPosition;
+  }
+
+  public void setPosition(double miles) {
+    globalPosition = miles;
   }
 }

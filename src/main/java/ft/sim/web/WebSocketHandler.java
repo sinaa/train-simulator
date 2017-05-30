@@ -21,11 +21,7 @@ public class WebSocketHandler extends TextWebSocketHandler {
 
   private AtomicReference<String> messagePayload;
 
-  public SocketSession ss;
-
-  public WebSocketHandler() {
-
-  }
+  private SocketSession ss;
 
   @Override
   public void afterConnectionEstablished(WebSocketSession session) throws Exception {

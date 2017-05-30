@@ -271,7 +271,7 @@ public class ECU implements Tickable {
 
   void ping(RadioSignal radioSignal) {
     timeReceivedLastSignal = timer.getTime();
-    if(lastRadioSignal == RadioSignal.NOK){
+    if (lastRadioSignal == RadioSignal.NOK) {
       logger.debug("{} already got an NOK radio, ignoring new {} signal.", train, radioSignal);
       return;
     }

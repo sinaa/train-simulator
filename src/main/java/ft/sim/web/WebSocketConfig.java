@@ -25,7 +25,7 @@ public class WebSocketConfig extends SpringBootServletInitializer
       return;
     }
     registry.addHandler(new WebSocketHandler(), "/ws").withSockJS()
-        .setClientLibraryUrl("https://cdn.jsdelivr.net/sockjs/1.1.2/sockjs.min.js");
+        .setClientLibraryUrl("https://cdn.jsdelivr.net/sockjs/1.1.4/sockjs.min.js");
   }
 
   @Override

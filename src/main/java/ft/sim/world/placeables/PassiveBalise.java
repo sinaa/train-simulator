@@ -1,10 +1,5 @@
 package ft.sim.world.placeables;
 
-import ft.sim.world.journey.Journey;
-import ft.sim.world.journey.JourneyPath;
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * Created by Sina on 06/03/2017.
  */
@@ -21,22 +16,21 @@ public class PassiveBalise extends Balise {
     this.baliseID = baliseID;
   }
 
-  public void setAdvisorySpeed(int advisorySpeed) {
-    this.advisorySpeed = advisorySpeed;
-  }
-
   public double getAdvisorySpeed() {
     return advisorySpeed;
   }
 
-  public void setBaliseID(int baliseID) {
-    this.baliseID = baliseID;
+  public void setAdvisorySpeed(int advisorySpeed) {
+    this.advisorySpeed = advisorySpeed;
   }
 
   public int getBaliseID() {
     return baliseID;
   }
 
+  public void setBaliseID(int baliseID) {
+    this.baliseID = baliseID;
+  }
 
   @Override
   public boolean isBroken() {

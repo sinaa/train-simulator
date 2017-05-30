@@ -25,8 +25,8 @@ import org.slf4j.LoggerFactory;
  */
 public class Track implements Connectable, SignalLinked {
 
-  private static final transient int DEFAULT_LENGTH = 20;
   protected static transient final Logger logger = LoggerFactory.getLogger(Track.class);
+  private static final transient int DEFAULT_LENGTH = 20;
   private final ConnectableType type = ConnectableType.TRACK;
   private transient List<Section> sections;
   private int length = DEFAULT_LENGTH;
@@ -98,7 +98,7 @@ public class Track implements Connectable, SignalLinked {
     }
 
     // length sanity check
-    int length = sectionsBetween.stream().mapToInt(s -> s.getLength()).sum();
+    int length = sectionsBetween.stream().mapToInt(Section::getLength).sum();
     double delta = to - from;
     if (length < delta || length > delta + 2) {
       throw new IllegalStateException("sections length: " + length + " | to - from: " + delta);

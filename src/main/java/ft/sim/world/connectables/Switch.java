@@ -3,15 +3,15 @@ package ft.sim.world.connectables;
 import static ft.sim.world.signalling.SignalType.GREEN;
 import static ft.sim.world.signalling.SignalType.RED;
 
+import ft.sim.simulation.Tickable;
+import ft.sim.world.WorldHandler;
 import ft.sim.world.signalling.SignalController;
 import ft.sim.world.signalling.SignalLinked;
-import ft.sim.simulation.Tickable;
 import ft.sim.world.train.Train;
-import ft.sim.world.WorldHandler;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,26 +21,18 @@ import org.slf4j.LoggerFactory;
 public class Switch implements Connectable, Tickable, SignalLinked {
 
   protected static transient final Logger logger = LoggerFactory.getLogger(Switch.class);
-
-  private final ConnectableType type = ConnectableType.SWITCH;
-
-  private List<Track> from;
-  private List<Track> to;
-
-  private Map<Track, Track> status = new HashMap<Track, Track>(2);
-
   // delay of the switch to change position
   private static final double delay = 10;
-
+  private final ConnectableType type = ConnectableType.SWITCH;
+  private boolean isChanging = false;
+  private List<Track> from;
+  private List<Track> to;
+  private Map<Track, Track> status = new HashMap<Track, Track>(2);
   private double delayed = 0;
   private List<Track> newStatus = new ArrayList<>(2);
-
   private SignalController lcu;
-
   // By default, a switch is 5 metres long
   private int length = 5;
-
-  boolean isChanging = false;
   private SignalController signalController;
 
   private int switchID = 0;
