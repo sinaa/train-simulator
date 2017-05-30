@@ -5,13 +5,16 @@ package ft.sim.visualisation;
  */
 public class Point {
 
+  // Scale down the track by a factor
+  private static final double SCALE_DOWN_FACTOR = 2.0;
+
   private double from = 0;
   private double to = 0;
   private int z = 0;
 
   public Point(double from, double to, int z) {
-    this.from = from / 2.0;
-    this.to = to / 2.0;
+    this.from = from / SCALE_DOWN_FACTOR;
+    this.to = to / SCALE_DOWN_FACTOR;
     this.z = z;
   }
 

@@ -91,6 +91,7 @@ public class StatisticsController {
     return stat;
   }
 
+  @Deprecated
   public void save() {
     String stats = collect();
     String filename = AppConfig.outputDir + "/" + map.getSimpleFileName() + ".csv";
@@ -140,16 +141,6 @@ public class StatisticsController {
     } catch (FileNotFoundException e) {
       e.printStackTrace();
     }
-
-   /* try (FileOutputStream output = new FileOutputStream(filename)) {
-      try (Writer writer = new OutputStreamWriter(new GZIPOutputStream(output), "UTF-8")) {
-        writer.write(stats);
-      } catch (IOException e){
-        e.printStackTrace();
-      }
-    } catch (IOException e) {
-      e.printStackTrace();
-    }*/
 
     logger.info("Exported statistics to: {}", filename);
   }

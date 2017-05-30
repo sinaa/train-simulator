@@ -306,6 +306,7 @@ public class SimulationController {
   }
 
   public void kill() {
+    logger.info("Killing simulation");
     StatisticsController.getOptionalInstance().ifPresent(StatisticsController::saveGzip);
     StatisticsController.getOptionalInstance().ifPresent(StatisticsController::clear);
     sendStatistics();

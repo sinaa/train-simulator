@@ -7,9 +7,9 @@ import ft.sim.world.signalling.SignalType;
  */
 public class SignalPoint {
 
-  int offset = 0;
-  int trackID = 0;
-  String status = "green";
+  private int offset = 0;
+  private int trackID = 0;
+  private String status = "green";
 
   public SignalPoint(int offset, int trackID, SignalType status) {
     this.offset = offset;
