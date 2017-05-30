@@ -22,7 +22,7 @@ public class MapImporterTest {
     Yaml yaml = new Yaml();
     String document = "\n- Hesperiidae\n- Papilionidae\n- Apatelodidae\n- Epiplemidae";
     List<String> list = (List<String>) yaml.load(document);
-    System.out.println(list);
+    //System.out.println(list);
   }
 
   @Test
@@ -31,7 +31,7 @@ public class MapImporterTest {
     Yaml yaml = new Yaml();
     Map<String, Object> list = (Map<String, Object>) yaml.load(resource.getInputStream());
 
-    System.out.println(list);
+    //System.out.println(list);
   }
 
   @Test
@@ -81,7 +81,7 @@ public class MapImporterTest {
       Map<String, Object> jData = (Map<String, Object>) journeyPath.getValue();
       List<Map<String, String>> path = (List<Map<String, String>>) jData.get("path");
       for(Map<String, String> connectable: path){
-        System.out.println(connectable);
+        //System.out.println(connectable);
       }
     }
   }

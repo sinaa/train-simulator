@@ -7,7 +7,7 @@ public class JourneyPlan {
 
   JourneyPath journeyPath;
 
-  public JourneyPlan(Journey journey){
+  public JourneyPlan(Journey journey) {
     journeyPath = journey.getJourneyPath();
   }
 

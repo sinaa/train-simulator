@@ -8,14 +8,12 @@ import org.slf4j.LoggerFactory;
  */
 public class Car {
 
+  // length of railway cars
+  private final static transient int DEFAULT_LENGTH = 20;
   protected static transient final Logger logger = LoggerFactory.getLogger(Car.class);
-
   private boolean isFirst = false;
   private boolean isLast = false;
   private double length = Car.DEFAULT_LENGTH;
-
-  // length of railway cars
-  public final static transient int DEFAULT_LENGTH = 20;
 
   public Car() {
     this(false, false);

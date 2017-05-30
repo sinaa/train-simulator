@@ -29,7 +29,7 @@ public class ExperimentController implements ExperimentListenerInterface {
       return;
     }
     AppConfig.experimentMaps.forEach(map -> experiments.add(new Experiment(map)));
-    logger.info("{} experimentMaps added.", AppConfig.experimentMaps.size());
+    logger.info("{} experiment maps added.", AppConfig.experimentMaps.size());
   }
 
   public static ExperimentController getInstance() {

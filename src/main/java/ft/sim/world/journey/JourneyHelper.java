@@ -64,7 +64,7 @@ public class JourneyHelper {
       // for all journeys, check if none of the trains are at stations
       if (world.getJourneys().values().stream().allMatch(
           j -> j.getJourneyPosition().getConnectablesOccupied().stream()
-              .noneMatch(c -> c instanceof Station))){
+              .noneMatch(c -> c instanceof Station))) {
         return trailingJourneys;
       }
     }

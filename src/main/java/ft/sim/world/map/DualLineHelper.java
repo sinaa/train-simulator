@@ -7,7 +7,6 @@ import ft.sim.world.placeables.ActiveBalise;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Created by sina on 02/05/2017.

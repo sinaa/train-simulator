@@ -56,7 +56,7 @@ public class StatsHelper {
     in.track(var, new StatisticsItem<>(in, var));
   }
 
-  public static StatisticsItem getStatItem(StatisticsVariable var){
+  public static StatisticsItem getStatItem(StatisticsVariable var) {
     StatisticsController in = StatisticsController.getInstance();
     if (in == null) {
       return null;

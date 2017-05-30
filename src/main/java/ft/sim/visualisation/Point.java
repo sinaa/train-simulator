@@ -5,13 +5,13 @@ package ft.sim.visualisation;
  */
 public class Point {
 
-  double from = 0;
-  double to = 0;
-  int z = 0;
+  private double from = 0;
+  private double to = 0;
+  private int z = 0;
 
   public Point(double from, double to, int z) {
-    this.from = from/2.0;
-    this.to = to/2.0;
+    this.from = from / 2.0;
+    this.to = to / 2.0;
     this.z = z;
   }
 
@@ -21,6 +21,6 @@ public class Point {
 
   @Override
   public String toString() {
-    return String.format("X: %d, Y: %d, Z: %d", from, to, z);
+    return String.format("X: %.2f, Y: %.2f, Z: %d", from, to, z);
   }
 }

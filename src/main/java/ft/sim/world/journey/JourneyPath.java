@@ -11,14 +11,10 @@ import ft.sim.world.map.MapGraph;
 import ft.sim.world.placeables.Balise;
 import ft.sim.world.placeables.Placeable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +39,12 @@ public class JourneyPath {
   private BiMap<Connectable, Integer> connectableIndexes = HashBiMap.create();
 
   private MapGraph pathGraph = new MapGraph();
+  private double length = 0;
+
+  public JourneyPath(List<Connectable> path) {
+    this.path.addAll(path);
+    init();
+  }
 
   private void buildGraph() {
     Connectable previousConnectable = null;
@@ -60,13 +62,6 @@ public class JourneyPath {
 
   public Track getTrackAfterStation(Station station) {
     return (Track) pathGraph.getNexTConnectable(station);
-  }
-
-  private double length = 0;
-
-  public JourneyPath(List<Connectable> path) {
-    this.path.addAll(path);
-    init();
   }
 
   public double getConnectableStartingPosition(Connectable connectable) {
@@ -267,20 +262,20 @@ public class JourneyPath {
     return path.get(path.size() - 1);
   }
 
-  public void setDistanceFromGraphRoot(double distanceFromGraphRoot) {
-    this.distanceFromGraphRoot = distanceFromGraphRoot;
-  }
-
   public double getDistanceFromGraphRoot() {
     return distanceFromGraphRoot;
   }
 
-  public void setGraphRootConnectable(Connectable graphRootConnectable) {
-    this.graphRootConnectable = graphRootConnectable;
+  public void setDistanceFromGraphRoot(double distanceFromGraphRoot) {
+    this.distanceFromGraphRoot = distanceFromGraphRoot;
   }
 
   public Connectable getGraphRootConnectable() {
     return graphRootConnectable;
+  }
+
+  public void setGraphRootConnectable(Connectable graphRootConnectable) {
+    this.graphRootConnectable = graphRootConnectable;
   }
 
   public boolean isDualed() {
