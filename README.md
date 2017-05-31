@@ -10,7 +10,7 @@ The simulator application was built under the Department for Transport T-TRIG gr
 # How to Get It
 ## Download Release
 
-Download Latest Release: 1.0.0
+[Download Latest Release: 1.0.0](https://github.com/sinaa/train-simulator/releases/download/1.0.0/train-simulator-1.0.0-SNAPSHOT.jar)
 
 ## Run it!
 
@@ -27,6 +27,8 @@ Navigate to http://localhost:8080 and follow the intstructions on the page to ru
 Maps can be created in YAML format. You can pass custom maps to the program using the argument: 
 
     java -jar train-simulator.jar --maps=path/to/my_map.yaml,path/to/map/folder,...
+    
+All maps used to evaluate this study are [available here](https://github.com/sinaa/train-simulator/releases/download/1.0.0/experiment-maps.zip).
 
 ### Output folder
 
