@@ -4,7 +4,7 @@
 
 Ferromone Trails is a concept of using the existing train infrastructure such that trains can self-organise safely, without having to rely on a centralised network. This project is a Java-based simulator created from scratch which was built to investigate the feasibility of this concept. The concept is modeled after ant-colony algorithms, where pheromone trails are used for organisation and navigation.
 
-![Train Simulator Screenshot](/.github/screenshot.png)
+![Train Simulator Screenshot](gh/screenshot.png)
 
 # Getting Started
 ## Download
@@ -19,7 +19,7 @@ Start by executing the program (Notice: Java 1.8 is required):
 
 Navigate to http://localhost:8080 and follow the intstructions on the page to run your desired simulation.
 
-![Simulator Menu](/.github/menu.png)
+![Simulator Menu](gh/menu.png)
 
 ## Runtime Arguments
 
