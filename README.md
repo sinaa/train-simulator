@@ -1,7 +1,5 @@
-Ferromone Trails Concept
-------
-
-## Decentralised Self-Driving / Self-Organising Train Simulator 
+# Decentralised Self-Driving / Self-Organising Train Simulator 
+### Ferromone Trails Concept
 
 Ferromone Trails is a concept of using the existing train infrastructure such that trains can self-organise safely, without having to rely on a centralised network. This project is a Java-based simulator created from scratch which was built to investigate the feasibility of this concept.
 
