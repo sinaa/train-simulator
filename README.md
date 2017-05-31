@@ -6,10 +6,6 @@ Ferromone Trails is a concept of using the existing train infrastructure such th
 
 ![Train Simulator Screenshot](/.github/screenshot.png)
 
-# Development Status
-
-The simulator application was built under the Department for Transport T-TRIG grant, and since the objectives of the study have already been investigated, the project is no longer actively maintained. However, contributions are more than welcome!
-
 # Getting Started
 ## Download
 
@@ -38,6 +34,10 @@ All maps used to evaluate this study are [available here](https://github.com/sin
 ### Output folder
 
 By default, the results will be exported to the `./results` directory in the current working directory. This can be changed by passing the runtime argument `--output=my/custom/path`.
+
+# Development Status
+
+The simulator application was built under the Department for Transport T-TRIG grant, and since the objectives of the study have already been investigated, the project is no longer actively maintained. However, contributions are more than welcome!
 
 # License
 This project is released under GPL License. Please review [License file](LICENSE) for more details.
