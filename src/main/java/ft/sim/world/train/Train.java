@@ -172,18 +172,16 @@ public class Train implements Tickable, SignalListener, Recordable {
     engine.tick(time);
     ecu.tick(time);
 
-    evaluateObjectives();
+    evaluateObjective();
 
     // send OK squawk down the line
-    //if (engine.getObjective() != STOP) {
     if (ecu.getTimeLastSquawkSent() + TRAIN_SQUAWK_INTERVAL < ecu.getTimer().getTime()
         && !atStation) {
       ecu.sendSquawkDownTheLine(RadioSignal.OK);
     }
-    //}
   }
 
-  private void evaluateObjectives() {
+  private void evaluateObjective() {
     switch (engine.getObjective()) {
       case PROCEED:
         if (engine.isStill() &&

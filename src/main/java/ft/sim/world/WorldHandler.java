@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 public class WorldHandler {
 
   protected static final transient Logger logger = LoggerFactory.getLogger(WorldHandler.class);
+  private static final int SPEED_RECORD_TICK_INTERVAL = 10;
   private static Map<Journey, GlobalMap> journeysWorlds = new HashMap<>();
   private static Map<GlobalMap, WorldHandler> instances = new HashMap<>();
   private GlobalMap world;
@@ -74,31 +75,34 @@ public class WorldHandler {
 
     this.time += time;
 
-    logStats();
+    logWorldStatistics();
   }
 
-  private void logStats() {
-    int numTrainsActive = (int) world.getJourneys().values().stream().filter(Journey::isInProgress)
-        .filter(j -> !j.getTrain().isAtStation()).count();
+  private void logWorldStatistics() {
+    int numTrainsActive = (int) world.getJourneys().values().stream()
+        .filter(Journey::isInProgress).filter(j -> !j.getTrain().isAtStation()).count();
+    int numTrainsAtStation = (int) world.getJourneys().values().stream()
+        .filter(Journey::isInProgress).filter(j -> j.getTrain().isAtStation()).count();
+
+    // Track max active trains (updates existing data if higher)
     StatisticsItem stat = StatsHelper.getStatItem(MAX_ACTIVE_TRAINS);
     if (stat == null || numTrainsActive > (int) stat.getValue()) {
       StatsHelper.track(MAX_ACTIVE_TRAINS, numTrainsActive);
     }
 
+    // Track min active trains (updates existing data if lower)
     StatisticsItem statMin = StatsHelper.getStatItem(MIN_ACTIVE_TRAINS);
     if (statMin == null || numTrainsActive < (int) statMin.getValue()) {
       StatsHelper.track(MIN_ACTIVE_TRAINS, numTrainsActive);
     }
 
-    int numTrainsAtStation = (int) world.getJourneys().values().stream()
-        .filter(Journey::isInProgress)
-        .filter(j -> j.getTrain().isAtStation()).count();
+    // Track min trains at station (updates existing data if lower)
     StatisticsItem statMinStation = StatsHelper.getStatItem(MIN_STATION_TRAINS);
     if (statMinStation == null || numTrainsAtStation < (int) statMinStation.getValue()) {
       StatsHelper.track(MIN_STATION_TRAINS, numTrainsAtStation);
     }
 
-    if (tick % 10 == 0) {
+    if (tick % SPEED_RECORD_TICK_INTERVAL == 0) {
       StatsHelper.log(STATION_TRAINS, numTrainsAtStation);
       StatsHelper.log(ACTIVE_TRAINS, numTrainsActive);
 

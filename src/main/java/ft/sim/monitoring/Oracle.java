@@ -59,9 +59,7 @@ public class Oracle {
   /**
    * Check whether the current state of the world conform to the requirements.
    *
-   * @param world
    * @param tick Current tick of the simulation
-   * @throws CriticalViolationException
    */
   public void checkState(GlobalMap world, long tick) throws CriticalViolationException {
     this.world = world;
@@ -91,7 +89,8 @@ public class Oracle {
       }
       double distance = JourneyHelper.getJourneyDistanceBetween(j2, j1);
 
-      double brakingDistance = j1.getTrain().getEcu().calculateBrakingDistance();
+      double brakingDistance = j1.getTrain().getEcu()
+          .getStoppingDistance(j1.getTrain().getEngine().getMaxDeceleration());
 
       j1.getTrain().getEcu().setActualDistance(distance);
 

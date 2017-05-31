@@ -4,7 +4,6 @@ import static ft.sim.world.RealWorldConstants.EYE_SIGHT_DISTANCE;
 import static ft.sim.world.RealWorldConstants.FULL_TRAIN_DECELERATION;
 import static ft.sim.world.RealWorldConstants.ROLLING_SPEED;
 import static ft.sim.world.train.TrainObjective.PROCEED;
-import static ft.sim.world.train.TrainObjective.PROCEED_WITH_CAUTION;
 import static ft.sim.world.train.TrainObjective.STOP;
 import static ft.sim.world.train.TrainObjective.STOP_AND_ROLL;
 import static ft.sim.world.train.TrainObjective.STOP_THEN_ROLL;
@@ -102,6 +101,7 @@ public class ECU implements Tickable {
     nextTrainPredictor.predict(timer.getTime(), getEstimatedDistanceTravelledSinceLastBalise());
     double nextDistancePrediction = nextTrainPredictor.getDistance();
 
+    // If we are seeing a train ahead, assume that it is too close
     int arbitaryCloseDistance = 5;
     if (seeingTrainsAhead && nextDistancePrediction > arbitaryCloseDistance) {
       nextDistancePrediction = arbitaryCloseDistance;
@@ -111,11 +111,11 @@ public class ECU implements Tickable {
       if (engine.isStopped() && engine.getObjective() == STOP) {
         return;
       }
-      if(!engine.isStopped()) {
-        if (nextTrainPredictor.getWorstCaseDistance() < calculateBrakingDistance(
+      if (!engine.isStopped()) {
+        if (nextTrainPredictor.getWorstCaseDistance() < getStoppingDistance(
             engine.getNormalDeceleration())) {
           engine.normalBrake();
-        } else if (nextTrainPredictor.getWorstCaseDistance() < calculateBrakingDistance(
+        } else if (nextTrainPredictor.getWorstCaseDistance() < getStoppingDistance(
             FULL_TRAIN_DECELERATION)) {
           engine.fullBrake();
         } else {
@@ -133,19 +133,18 @@ public class ECU implements Tickable {
       }
       return;
     }
-    /*if (nextDistancePrediction != -1) {
-      logger.info("[{}] Next train is {} meters away. safe distance: {}", train,
-          nextDistancePrediction, safeBrakingDistance);
-    }*/
+
+    // If we predict the next train to be within the safe breaking distance
     if (engine.getSpeed() > 1 && nextDistancePrediction >= 0
         && nextDistancePrediction < safeBrakingDistance) {
-      if (nextDistancePrediction > calculateBrakingDistance(engine.getNormalDeceleration())) {
+      // Do variable breaking based on how close we predict the next train to be
+      if (nextDistancePrediction > getStoppingDistance(engine.getNormalDeceleration())) {
         engine.setTargetSpeed(0);
         engine.variableBrake(nextDistancePrediction);
         engine.setObjective(STOP_AND_ROLL);
         logger.debug("{} normal braking, there's a train within breaking distance {} ({}) {}",
             train, nextDistancePrediction, safeBrakingDistance,
-            calculateBrakingDistance(engine.getNormalDeceleration()));
+            getStoppingDistance(engine.getNormalDeceleration()));
       } else if (nextDistancePrediction < EYE_SIGHT_DISTANCE) {
         logger.debug("{} rolling, {}, {}", nextDistancePrediction, EYE_SIGHT_DISTANCE);
         engine.setObjective(STOP_AND_ROLL);
@@ -153,10 +152,10 @@ public class ECU implements Tickable {
         if (engine.getSpeed() > ROLLING_SPEED) {
           engine.fullBrake();
         }
-      } else if (nextDistancePrediction < calculateBrakingDistance(FULL_TRAIN_DECELERATION)) {
+      } else if (nextDistancePrediction < getStoppingDistance(FULL_TRAIN_DECELERATION)) {
         engine.setObjective(STOP_THEN_ROLL);
         logger.debug("{} stop then roll, {}, {}", nextDistancePrediction,
-            calculateBrakingDistance(FULL_TRAIN_DECELERATION));
+            getStoppingDistance(FULL_TRAIN_DECELERATION));
         //engine.fullBrake();
         engine.variableBrake(nextDistancePrediction);
       } else {
@@ -165,7 +164,7 @@ public class ECU implements Tickable {
           logger.debug(
               "{} FULL braking, there's a train within braking distance {} ({}) full braking distance: {}",
               train, nextDistancePrediction, safeBrakingDistance,
-              calculateBrakingDistance(FULL_TRAIN_DECELERATION));
+              getStoppingDistance(FULL_TRAIN_DECELERATION));
           //engine.emergencyBrake();
           engine.fullBrake();
           //sendSquawkDownTheLine(RadioSignal.NOK);
@@ -173,23 +172,28 @@ public class ECU implements Tickable {
           engine.setObjective(STOP_THEN_ROLL);
         }
       }
-    } else {
-      if (engine.getObjective() == STOP_AND_ROLL) {
-        if (nextDistancePrediction + arbitaryCloseDistance >= safeBrakingDistance) {
-          return;
-        }
-        logger.warn("Keeping a distance [{}]", train);
-        engine.setObjective(PROCEED);
-      }
+    } else { // If train is stopped or not too close to a preceding train
 
-      if (engine.getObjective() == PROCEED_WITH_CAUTION && !seeingTrainsAhead) {
-        logger.warn("It's probably safe to proceed [{}]", train);
-        engine.setObjective(PROCEED);
-      }
-      if (engine.getObjective() == PROCEED && nextDistancePrediction >= 0 &&
-          (engine.getTargetSpeed() <= engine.getLastAdvisorySpeed()
-              || engine.getSpeed() > getMaxSpeed())) {
-        engine.setTargetSpeed(Math.min(getMaxSpeed(), engine.getLastAdvisorySpeed()));
+      switch (engine.getObjective()) {
+        case STOP_AND_ROLL:
+          if (nextDistancePrediction + arbitaryCloseDistance >= safeBrakingDistance) {
+            return; // This is to avoid oscillation within the safe breaking distance
+          }
+          engine.setObjective(PROCEED);
+          break;
+        case PROCEED_WITH_CAUTION:
+          if (!seeingTrainsAhead) {
+            logger.debug("It's probably safe to proceed [{}]", train);
+            engine.setObjective(PROCEED);
+          }
+          break;
+        case PROCEED:
+          if (nextDistancePrediction >= 0 && (
+              engine.getTargetSpeed() <= engine.getLastAdvisorySpeed()
+                  || engine.getSpeed() > getMaxSafeSpeed())) {
+            engine.setTargetSpeed(Math.min(getMaxSafeSpeed(), engine.getLastAdvisorySpeed()));
+          }
+          break;
       }
     }
   }
@@ -208,24 +212,15 @@ public class ECU implements Tickable {
     return realTravelled + inaccuracy;
   }
 
-  public double calculateBrakingDistance() {
+  public double getStoppingDistance(double decelerationSpeed) {
     double currentSpeed = engine.getSpeed();
     double targetSpeed = 0;
-    double deceleration = engine.getMaxDeceleration();
 
-    return DistanceHelper.distanceToReachTargetSpeed(targetSpeed, currentSpeed, deceleration);
-  }
-
-  public double calculateBrakingDistance(double decelerationSpeed) {
-    double currentSpeed = engine.getSpeed();
-    double targetSpeed = 0;
-    double deceleration = decelerationSpeed;
-
-    return DistanceHelper.distanceToReachTargetSpeed(targetSpeed, currentSpeed, deceleration);
+    return DistanceHelper.distanceToReachTargetSpeed(targetSpeed, currentSpeed, decelerationSpeed);
   }
 
   private void calculateSafeBrakingDistance(double decelerationSpeed) {
-    double distance = calculateBrakingDistance(decelerationSpeed);
+    double distance = getStoppingDistance(decelerationSpeed);
 
     double safetyMargin = SAFETY_DISTANCE_MARGIN_COEFFICIENT * distance;
 
@@ -236,7 +231,7 @@ public class ECU implements Tickable {
     calculateSafeBrakingDistance(engine.getMaxDeceleration());
   }
 
-  private double getMaxSpeed() {
+  private double getMaxSafeSpeed() {
     double acceleration = engine.getNormalDeceleration();
     double distance = nextTrainPredictor.getDistance();
     double maxSpeed = Math.sqrt(-2.0 * acceleration * distance);
@@ -254,7 +249,7 @@ public class ECU implements Tickable {
     return timer;
   }
 
-  public boolean isTrainAheadBroken() {
+  private boolean isTrainAheadBroken() {
     if (lastRadioSignal == null) {
       return false;
     }
@@ -297,7 +292,7 @@ public class ECU implements Tickable {
     return lastRadioSignal == RadioSignal.NOK;
   }
 
-  public Optional<RadioMast> getRadioMast() {
+  private Optional<RadioMast> getRadioMast() {
     return Optional.ofNullable(radioMast);
   }
 
