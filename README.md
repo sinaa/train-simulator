@@ -8,7 +8,7 @@ Ferromone Trails is a concept of using the existing train infrastructure such th
 The simulator application was built under the Department for Transport T-TRIG grant, and since the objectives of the study have already been investigated, the project is no longer actively maintained. However, contributions are more than welcome!
 
 # How to Get It
-## Download Release
+## Download
 
 [Download Latest Release: 1.0.0](https://github.com/sinaa/train-simulator/releases/download/1.0.0/train-simulator-1.0.0-SNAPSHOT.jar)
 
